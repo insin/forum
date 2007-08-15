@@ -1,0 +1,26 @@
+body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-size: 12px; }
+a img { border: none; }
+img { vertical-align: text-bottom; }
+
+table  { border-collapse: collapse; width: 100%; }
+td, th { padding: .2em .5em; border: 1px solid #999; }
+td p.description { margin: 0; }
+
+.odd { background-color: #e9e9f9; }
+.even { background-color: #e3e3f3; }
+.clear { clear: both; }
+
+div.paginator { float: left; }
+div.topic-actions { float: right; }
+
+div.post { overflow: hidden; padding: 0 10px; }
+  div.postbody { float: left; width: 76%; clear: both; }
+    div.postbody ul.actions { float: right; margin: 0; }
+    div.postbody ul.actions li { list-style-type: none; float: left; margin-left: 10px; }
+    p.author { margin: 0 0 .5em 0; }
+  div.profile { border-left: 1px solid #fff; float: right; width: 22%; margin: 5px 0 10px 0; }
+    div.profile dt { display: none; }
+    div.profile dd { margin-left: 8px; }
+    div.profile dd.user { margin-bottom: 1em; }
+
+#debug { clear: both; }

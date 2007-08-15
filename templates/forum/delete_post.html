@@ -1,0 +1,45 @@
+{% extends "forum/base.html" %}{% load forum %}
+{% block content %}
+<h2><a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a></h2>
+<h3><a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a></h3>
+<p>Are you sure you want to delete the following post?</p>
+
+<div class="post">
+  <div class="postbody">
+    <div class="body">
+      <p class="author"><a href="{{ post.get_absolute_url }}">#</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time }}</p>
+      <div class="content">
+      {{ post.body_html }}
+      </div>
+    </div>
+  </div>
+  <div class="profile">
+    <dl>
+      {% if post.user_avatar %}
+      <dt class="avatar">Avatar:</dt>
+      <dd class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""></dt>
+      {% endif %}
+      <dt class="user">User:</dt>
+      <dd class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dd>
+      {% if post.user_title %}
+      <dt class="title">Title:</dt>
+      <dd class="title"><img src="{{ post.user_title|escape }}" alt=""></dt>
+      {% endif %}
+      <dt class="postcount">Posts:</dt>
+      <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
+      <dt class="joined">Joined:</dt>
+      <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
+      {% if post.user_location %}
+      <dt class="location">Location:</dt>
+      <dd class="location">{{ post.user_location|escape }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+
+<form name="deletePostForm" id="deletePostForm" action="." method="POST">
+<div class="buttons">
+  <input type="submit" value="Confirm Deletion">
+  <a href="{{ post.get_absolute_url }}">Cancel</a>
+</form>
+{% endblock %}

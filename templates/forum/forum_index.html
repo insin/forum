@@ -1,0 +1,21 @@
+{% extends "forum/base.html" %}
+{% block content %}
+<table>
+<thead>
+  <tr>
+    <th>Forum</th>
+    <th>Topics</th>
+  </tr>
+</thead>
+<tbody>
+{% for forum in forum_list %}
+  <tr class="forum {% cycle odd,even %}">
+    <td>
+      <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>
+      {% if forum.description %}<p class="description">{{ forum.description|escape }}</p>{% endif %}
+    </td>
+    <td>{{ forum.topic_count }}</td>
+  </tr>{% endfor %}
+</tbody>
+</table>
+{% endblock %}

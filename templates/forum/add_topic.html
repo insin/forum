@@ -1,0 +1,23 @@
+{% extends "forum/base.html" %}
+{% block content %}
+{% if preview %}
+<div class="preview">
+<h2>Post Preview</h2>
+<div class="body">
+{{ preview }}
+</div>
+{% endif %}
+<form name="addTopicForm" id="addTopicForm" action="." method="POST">
+<table>
+<tbody>
+{{ topic_form }}
+{{ post_form }}
+</tbody>
+</table>
+<div class="buttons">
+  <input type="submit" name="submit" value="Add Topic">
+  <input type="submit" name="preview" value="Preview Topic">
+  <a href="{{ forum.get_absolute_url }}">Cancel</a>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "forum/base.html" %}{% load forum %}
+{% block content %}
+<h2>{{ forum.name|escape }}</h2>
+{% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
+<div class="topic-actions">
+  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+</div>
+<div class="clear"></div>
+<table>
+<thead>
+  <tr>
+    <th>Topic Title</th>
+    <th>Started By</th>
+    <th>Posts</th>
+    <th>Views</th>
+    <th>Last Post</th>
+  </tr>
+</thead>
+{% if pinned_topics %}
+<tbody>
+{% for topic in pinned_topics %}
+  <tr class="topic {% cycle odd,even %}">
+    <td>
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+    </td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td>{{ topic.post_count }}</td>
+    <td>{{ topic.view_count }}</td>
+    <td>{{ topic.last_post_at|post_time }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+  </tr>{% endfor %}
+</tbody>
+<thead>
+  <tr>
+    <th colspan="5">Forum Topics</th>
+  </tr>
+</thead>
+{% endif %}
+<tbody>
+{% for topic in topic_list %}
+  <tr class="topic {% cycle odd,even %}">
+    <td>
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+    </td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td>{{ topic.post_count }}</td>
+    <td>{{ topic.view_count }}</td>
+    <td>{{ topic.last_post_at|post_time }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+  </tr>{% endfor %}
+</tbody>
+</table>
+{% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
+<div class="topic-actions">
+  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+</div>
+<div class="clear"></div>
+{% endblock %}
