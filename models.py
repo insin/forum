@@ -12,6 +12,9 @@ DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 qn = backend.quote_name
 
 class UserProfile(models.Model):
+    """
+    A user's forum profile.
+    """
     user     = models.OneToOneField(User, related_name='forum_profile')
     title    = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
@@ -38,6 +41,9 @@ class UserProfile(models.Model):
         )
 
 class Forum(models.Model):
+    """
+    Provides categorisation for discussion topics.
+    """
     name        = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     order       = models.PositiveIntegerField(unique=True)
@@ -101,6 +107,9 @@ class TopicManager(models.Manager):
         )
 
 class Topic(models.Model):
+    """
+    A discussion topic.
+    """
     title       = models.CharField(max_length=100)
     forum       = models.ForeignKey(Forum, related_name='topics')
     user        = models.ForeignKey(User, related_name='topics')
@@ -201,6 +210,9 @@ class PostManager(models.Manager):
         )
 
 class Post(models.Model):
+    """
+    A post which forms part of a discussion.
+    """
     user      = models.ForeignKey(User, related_name='posts')
     topic     = models.ForeignKey(Topic, related_name='posts')
     body      = models.TextField()
@@ -253,6 +265,12 @@ class Post(models.Model):
         return ('forum_redirect_to_post', (smart_unicode(self.id),))
 
 class Metapost(models.Model):
+    """
+    A post which forms part of a discussion *about* a discussion.
+
+    For example, posts which are about how a discussion is going could
+    be considered metaposts.
+    """
     user      = models.ForeignKey(User, related_name='metaposts')
     topic     = models.ForeignKey(Topic, related_name='metaposts')
     body      = models.TextField()
