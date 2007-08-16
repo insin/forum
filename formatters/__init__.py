@@ -3,7 +3,7 @@ def get_formatter():
     try:
         formatter_module = settings.FORUM_POST_FORMATTER
     except AttributeError:
-        formatter_module = 'forum.formatters.bbcode_formatter'
+        formatter_module = 'forum.formatters.markdown_formatter'
     try:
         return __import__(formatter_module, {}, {}, [''])
     except ImportError, e:
