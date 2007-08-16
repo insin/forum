@@ -5,7 +5,7 @@ from django.db import backend, models
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
-from forum.post_formatter import format_post_body
+from forum.formatters import post_formatter
 
 DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
@@ -215,7 +215,7 @@ class Post(models.Model):
 
     def save(self):
         self.body = self.body.strip()
-        self.body_html = format_post_body(self.body)
+        self.body_html = post_formatter.format_post_body(self.body)
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()
@@ -267,7 +267,7 @@ class Metapost(models.Model):
 
     def save(self):
         self.body = self.body.strip()
-        self.body_html = format_post_body(self.body)
+        self.body_html = post_formatter.format_post_body(self.body)
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()

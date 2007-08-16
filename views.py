@@ -8,7 +8,7 @@ from django.template import RequestContext
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
-from forum import post_formatter
+from forum.formatters import post_formatter
 from forum.models import Forum, Metapost, Post, Topic
 
 def forum_index(request):
