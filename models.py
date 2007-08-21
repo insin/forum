@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import User
-from django.db import backend, models
+from django.db import connection, models
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
@@ -9,7 +9,7 @@ from forum.formatters import post_formatter
 
 DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
-qn = backend.quote_name
+qn = connection.ops.quote_name
 
 class UserProfile(models.Model):
     """
