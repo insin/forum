@@ -11,7 +11,7 @@ DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
 qn = connection.ops.quote_name
 
-class UserProfile(models.Model):
+class ForumProfile(models.Model):
     """
     A user's forum profile.
     """

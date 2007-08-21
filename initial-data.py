@@ -5,7 +5,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from forum.models import Forum, Metapost, Post, Topic, UserProfile
+from forum.models import Forum, ForumProfile, Metapost, Post, Topic
 
 POST_TEXT = """
 Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer facilisis
@@ -65,13 +65,13 @@ def create_initial_data():
     admin.is_staff = True
     admin.is_superuser = True
     admin.save()
-    UserProfile.objects.create(user=admin, avatar_url='http://www.jonathanbuchanan.plus.com/images/stipeav.png')
+    ForumProfile.objects.create(user=admin, avatar='http://www.jonathanbuchanan.plus.com/images/stipeav.png')
 
     testuser = User.objects.create_user('testuser', 'tu@tu.com', 'testuser')
     testuser.first_name = 'Test'
     testuser.last_name = 'User'
     testuser.save()
-    UserProfile.objects.create(user=testuser)
+    ForumProfile.objects.create(user=testuser)
 
     # Forums
     discussion = Forum.objects.create(name='Discussion', order=1, description='Blah-de-blah about this, that and the other.')
