@@ -179,20 +179,20 @@ class PostManager(models.Manager):
         """
         opts = self.model._meta
         user_opts = User._meta
-        user_profile_opts = UserProfile._meta
+        forum_profile_opts = ForumProfile._meta
         user_table = qn(user_opts.db_table)
-        user_profile_table = qn(user_profile_opts.db_table)
+        forum_profile_table = qn(forum_profile_opts.db_table)
         return super(PostManager, self).get_query_set().extra(
             select={
                 'user_username': '%s.%s' % (user_table, qn(user_opts.get_field('username').column)),
                 'user_date_joined': '%s.%s' % (user_table, qn(user_opts.get_field('date_joined').column)),
-                'user_title': '%s.%s' % (user_profile_table, qn(user_profile_opts.get_field('title').column)),
-                'user_avatar': '%s.%s' % (user_profile_table, qn(user_profile_opts.get_field('avatar').column)),
-                'user_post_count': '%s.%s' % (user_profile_table, qn(user_profile_opts.get_field('post_count').column)),
-                'user_location': '%s.%s' % (user_profile_table, qn(user_profile_opts.get_field('location').column)),
-                'user_website': '%s.%s' % (user_profile_table, qn(user_profile_opts.get_field('website').column)),
+                'user_title': '%s.%s' % (forum_profile_table, qn(forum_profile_opts.get_field('title').column)),
+                'user_avatar': '%s.%s' % (forum_profile_table, qn(forum_profile_opts.get_field('avatar').column)),
+                'user_post_count': '%s.%s' % (forum_profile_table, qn(forum_profile_opts.get_field('post_count').column)),
+                'user_location': '%s.%s' % (forum_profile_table, qn(forum_profile_opts.get_field('location').column)),
+                'user_website': '%s.%s' % (forum_profile_table, qn(forum_profile_opts.get_field('website').column)),
             },
-            tables=[user_table, user_profile_table],
+            tables=[user_table, forum_profile_table],
             where=[
                 '%s.%s=%s.%s' % (
                     qn(opts.db_table),
@@ -201,8 +201,8 @@ class PostManager(models.Manager):
                     qn(user_opts.pk.column),
                 ),
                 '%s.%s=%s.%s' % (
-                    user_profile_table,
-                    qn(user_profile_opts.pk.column),
+                    forum_profile_table,
+                    qn(forum_profile_opts.pk.column),
                     user_table,
                     qn(user_opts.pk.column),
                 ),
