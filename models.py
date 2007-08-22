@@ -53,7 +53,12 @@ class Forum(models.Model):
     hidden = models.BooleanField(default=False)
 
     # Denormalised data
-    topic_count = models.PositiveIntegerField(default=0)
+    topic_count      = models.PositiveIntegerField(default=0)
+    last_post_at     = models.DateTimeField(null=True, blank=True)
+    last_topic_id    = models.PositiveIntegerField(null=True, blank=True)
+    last_topic_title = models.CharField(max_length=100, blank=True)
+    last_user_id     = models.PositiveIntegerField(null=True, blank=True)
+    last_username    = models.CharField(max_length=30, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -74,7 +79,8 @@ class Forum(models.Model):
             (u'Denormalised data', {
                 'classes': 'collapse',
                 'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('topic_count',),
+                'fields': ('topic_count', 'last_post_at', 'last_topic_id',
+                           'last_topic_title','last_user_id', 'last_username'),
             }),
         )
 
@@ -241,6 +247,13 @@ class Post(models.Model):
             self.topic.last_user_id = self.user.id
             self.topic.last_username = self.user.username
             self.topic.save()
+            forum = self.topic.forum
+            forum.last_post_at = self.posted_at
+            forum.last_topic_id = self.topic.id
+            forum.last_topic_title = self.topic.title
+            forum.last_user_id = self.user.id
+            forum.last_username = self.user.username
+            forum.save()
             # Forum Profiles may be automatically created the first time
             # a User adds a Post.
             forum_profile, created = \
