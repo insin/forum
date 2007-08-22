@@ -77,6 +77,8 @@ def topic_detail(request, topic_id):
     Displays a Topic's Posts.
     """
     topic = get_object_or_404(Topic, pk=topic_id)
+    topic.view_count += 1
+    topic.save()
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic), paginate_by=20,
         allow_empty=True, template_name='forum/topic_detail.html',
