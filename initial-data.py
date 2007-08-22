@@ -76,8 +76,20 @@ def create_initial_data():
     # Forums
     discussion = Forum.objects.create(name='Discussion', order=1, description='Blah-de-blah about this, that and the other.')
     off_topic = Forum.objects.create(name='Off Topic', order=2, description='Everything else goes here, or, like, die and stuff. (Will this do?)')
+    test_pagination = Forum.objects.create(name='Test Pagination', order=3, description='Contain lots of Topics and Posts.')
 
     # Topics + Posts
+    for i in xrange(1, 401):
+        topic = Topic.objects.create(user=testuser, title='Test Topic %s' % i,
+                                     description='Test Description %s' % i,
+                                     forum=test_pagination)
+        topic.posts.create(user=testuser, body='Test Topic %s' % i)
+    topic = Topic.objects.create(user=testuser, title='Test Post Pagination',
+                                 description='Contains 400 Posts',
+                                 forum=test_pagination)
+    for i in xrange(1, 401):
+        topic.posts.create(user=testuser, body='Post %s' % i)
+
     re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=testuser)
     re4_wii.posts.create(user=testuser, body=POST_TEXT)
     re4_wii.metaposts.create(user=testuser, body='I hate topics like this one.')
