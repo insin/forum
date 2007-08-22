@@ -1,4 +1,5 @@
 {% extends "forum/base.html" %}{% load forum %}
+{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block content %}
 <h2>{{ forum.name|escape }}</h2>
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
