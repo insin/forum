@@ -1,7 +1,7 @@
 from django import newforms as forms
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.db import backend, connection
+from django.db import connection
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -9,7 +9,9 @@ from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
 from forum.formatters import post_formatter
-from forum.models import Forum, Metapost, Post, Topic
+from forum.models import Forum, ForumProfile, Metapost, Post, Topic
+
+qn = connection.ops.quote_name
 
 def forum_index(request):
     """
@@ -21,7 +23,7 @@ def forum_index(request):
 
 def forum_detail(request, forum_id):
     """
-    Display's a Forum's Topics.
+    Displays a Forum's Topics.
     """
     forum = get_object_or_404(Forum, pk=forum_id)
     extra_context = {'forum': forum}
@@ -140,10 +142,10 @@ def redirect_to_post(request, post_id, post=None):
     FROM %(post)s
     WHERE %(topic_fk)s = %%s
     ORDER BY %(posted_at)s ASC""" % {
-        'post_pk': backend.quote_name(opts.pk.column),
-        'post': backend.quote_name(opts.db_table),
-        'topic_fk': backend.quote_name(opts.get_field('topic').column),
-        'posted_at': backend.quote_name(opts.get_field('posted_at').column),
+        'post_pk': qn(opts.pk.column),
+        'post': qn(opts.db_table),
+        'topic_fk': qn(opts.get_field('topic').column),
+        'posted_at': qn(opts.get_field('posted_at').column),
     }
     cursor = connection.cursor()
     cursor.execute(query, [post.topic_id])
@@ -211,7 +213,12 @@ def user_profile(request, user_id):
     """
     Displays the Forum Profile for the user with the given id.
     """
-    user = get_object_or_404(User, pk=user_id)
+    forum_user = get_object_or_404(User, pk=user_id)
+    # Forum Profiles may be automatically created the first time a
+    # User's profile page is viewed.
+    forum_profile, created = \
+        ForumProfile.objects.get_or_create(user=forum_user)
     return render_to_response('forum/user_profile.html', {
-        'user_': user,
+        'forum_user': forum_user,
+        'forum_profile': forum_profile,
     }, context_instance=RequestContext(request))

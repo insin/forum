@@ -241,7 +241,10 @@ class Post(models.Model):
             self.topic.last_user_id = self.user.id
             self.topic.last_username = self.user.username
             self.topic.save()
-            forum_profile = self.user.forum_profile
+            # Forum Profiles may be automatically created the first time
+            # a User adds a Post.
+            forum_profile, created = \
+                ForumProfile.objects.get_or_create(user=self.user)
             forum_profile.post_count = self.user.posts.count()
             forum_profile.save()
 
