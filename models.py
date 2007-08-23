@@ -11,6 +11,17 @@ DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
 qn = connection.ops.quote_name
 
+class ForumProfileManager(models.Manager):
+    def get_for_user(self, user):
+        """
+        Returns the Forum Profile for this user, creating it first if
+        necessary and caching it the first time it is looked up.
+        """
+        if not hasattr(user, '_forum_profile_cache'):
+            profile, created = self.get_or_create(user=user)
+            user._forum_profile_cache = profile
+        return user._forum_profile_cache
+
 class ForumProfile(models.Model):
     """
     A user's forum profile.
@@ -23,6 +34,8 @@ class ForumProfile(models.Model):
 
     # Denormalised data
     post_count = models.PositiveIntegerField(default=0)
+
+    objects = ForumProfileManager()
 
     def __unicode__(self):
         return u'Forum Profile for %s' % self.user
@@ -254,17 +267,14 @@ class Post(models.Model):
             forum.last_user_id = self.user.id
             forum.last_username = self.user.username
             forum.save()
-            # Forum Profiles may be automatically created the first time
-            # a User adds a Post.
-            forum_profile, created = \
-                ForumProfile.objects.get_or_create(user=self.user)
+            forum_profile = ForumProfile.objects.get_for_user(self.user)
             forum_profile.post_count = self.user.posts.count()
             forum_profile.save()
 
     def delete(self):
         topic = self.topic
         user = self.user
-        forum_profile = user.forum_profile
+        forum_profile = ForumProfile.objects.get_for_user(self.user)
         super(Post, self).delete()
         topic.post_count = topic.posts.count()
         topic.save()

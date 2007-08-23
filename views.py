@@ -216,11 +216,7 @@ def user_profile(request, user_id):
     Displays the Forum Profile for the user with the given id.
     """
     forum_user = get_object_or_404(User, pk=user_id)
-    # Forum Profiles may be automatically created the first time a
-    # User's profile page is viewed.
-    forum_profile, created = \
-        ForumProfile.objects.get_or_create(user=forum_user)
     return render_to_response('forum/user_profile.html', {
         'forum_user': forum_user,
-        'forum_profile': forum_profile,
+        'forum_profile': ForumProfile.objects.get_for_user(forum_user),
     }, context_instance=RequestContext(request))
