@@ -2,7 +2,7 @@
 |
 <span class="pages" onclick="Paginator.jumpToPage({{ pages }})" title="Page Jump">Page {{ page }} of {{ pages }}</span>
 |
-{% if show_first %}<span class="first"><a href="?page=1" title="First Page">1</a></span> &hellip;{% endif %}
+{% if show_first %}<span class="first"><a href="?page=1" title="First Page">1</a></span>{% if show_first_divider %} &hellip;{% endif %}{% endif %}
 {% for num in page_numbers %}
   {% ifequal num page %}
     <span class="current" title="Current Page">{{ num }}</span>
@@ -10,4 +10,4 @@
     <span class="pagelink"><a href="?page={{ num }}" title="Page {{ num }}">{{ num }}</a></span>
   {% endifequal %}
 {% endfor %}
-{% if show_last %}&hellip; <span class="last"><a href="?page={{ pages }}" title="Last Page">{{ pages }}</a></span>{% endif %}
+{% if show_last %}{% if show_last_divider %}&hellip; {% endif %}<span class="last"><a href="?page={{ pages }}" title="Last Page">{{ pages }}</a></span>{% endif %}

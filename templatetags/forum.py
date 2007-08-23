@@ -10,7 +10,7 @@ register = template.Library()
 ##################
 
 @register.inclusion_tag('forum/pagination.html', takes_context=True)
-def paginator(context, what, adjacent_pages=2):
+def paginator(context, what, adjacent_pages=3):
     """
     Adds pagination context variables for use in displaying first,
     adjacent and last page links, in addition to those created by the
@@ -20,6 +20,8 @@ def paginator(context, what, adjacent_pages=2):
                     range(context['page'] - adjacent_pages,
                           context['page'] + adjacent_pages + 1) \
                     if n > 0 and n <= context['pages']]
+    show_first = 1 not in page_numbers
+    show_last = context['pages'] not in page_numbers
     return {
         'what': what,
         'hits': context['hits'],
@@ -31,8 +33,10 @@ def paginator(context, what, adjacent_pages=2):
         'previous': context['previous'],
         'has_next': context['has_next'],
         'has_previous': context['has_previous'],
-        'show_first': 1 not in page_numbers,
-        'show_last': context['pages'] not in page_numbers,
+        'show_first': show_first,
+        'show_first_divider': show_first and page_numbers[0] != 2,
+        'show_last': show_last,
+        'show_last_divider': show_last and page_numbers[-1] != context['pages'] - 1,
     }
 
 ###########
