@@ -22,11 +22,18 @@ class ForumProfileManager(models.Manager):
             user._forum_profile_cache = profile
         return user._forum_profile_cache
 
+USER_GROUP_CHOICES = (
+    ('U', 'Users'),
+    ('M', 'Moderators'),
+    ('A', 'Admins'),
+)
+
 class ForumProfile(models.Model):
     """
     A user's forum profile.
     """
     user     = models.OneToOneField(User, related_name='forum_profile')
+    group    = models.CharField(max_length=1, choices=USER_GROUP_CHOICES, default='U')
     title    = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
     avatar   = models.URLField(verify_exists=False, blank=True)
@@ -41,10 +48,12 @@ class ForumProfile(models.Model):
         return u'Forum Profile for %s' % self.user
 
     class Admin:
-        list_display = ('user', 'title', 'location', 'post_count')
+        list_display = ('user', 'group', 'title', 'location', 'post_count')
+        list_filter = ('group',)
         fields = (
             (None, {
-                'fields': ('user', 'title', 'location', 'avatar', 'website'),
+                'fields': ('user', 'group', 'title', 'location', 'avatar',
+                           'website'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',

@@ -1,5 +1,7 @@
 import datetime
 import os
+import random
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'
 
 from django.contrib.auth.models import User
@@ -65,13 +67,21 @@ def create_initial_data():
     admin.is_staff = True
     admin.is_superuser = True
     admin.save()
-    ForumProfile.objects.create(user=admin, avatar='http://www.jonathanbuchanan.plus.com/images/stipeav.png')
+    ForumProfile.objects.create(user=admin, group='A', avatar='http://www.jonathanbuchanan.plus.com/images/stipeav.png')
 
-    testuser = User.objects.create_user('testuser', 'tu@tu.com', 'testuser')
-    testuser.first_name = 'Test'
-    testuser.last_name = 'User'
-    testuser.save()
-    ForumProfile.objects.create(user=testuser)
+    moderator = User.objects.create_user('testmoderator', 'm@m.com', 'testmoderator')
+    moderator.first_name = 'Moderator'
+    moderator.last_name = 'User'
+    moderator.save()
+    ForumProfile.objects.create(user=moderator, group='M', avatar='http://insin.woaf.net/images/dsav.png')
+
+    user = User.objects.create_user('user', 'tu@tu.com', 'user')
+    user.first_name = 'Test'
+    user.last_name = 'User'
+    user.save()
+    ForumProfile.objects.create(user=user, avatar='http://insin.woaf.net/images/widget.gif')
+
+    users = [admin, moderator, user]
 
     # Forums
     discussion = Forum.objects.create(name='Discussion', order=1, description='Blah-de-blah about this, that and the other.')
@@ -80,27 +90,30 @@ def create_initial_data():
 
     # Topics + Posts
     for i in xrange(1, 401):
-        topic = Topic.objects.create(user=testuser, title='Test Topic %s' % i,
+        poster = random.choice(users)
+        topic = Topic.objects.create(user=poster, title='Test Topic %s' % i,
                                      description='Test Description %s' % i,
                                      forum=test_pagination)
-        topic.posts.create(user=testuser, body='Test Topic %s' % i)
-    topic = Topic.objects.create(user=testuser, title='Test Post Pagination',
+        topic.posts.create(user=poster, body='Test Topic %s' % i)
+    poster = random.choice(users)
+    topic = Topic.objects.create(user=poster, title='Test Post Pagination',
                                  description='Contains 400 Posts',
                                  forum=test_pagination)
-    for i in xrange(1, 401):
-        topic.posts.create(user=testuser, body='Post %s' % i)
+    topic.posts.create(user=poster, body='Post 1')
+    for i in xrange(2, 401):
+        topic.posts.create(user=random.choice(users), body='Post %s' % i)
 
-    re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=testuser)
-    re4_wii.posts.create(user=testuser, body=POST_TEXT)
-    re4_wii.metaposts.create(user=testuser, body='I hate topics like this one.')
+    re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=user)
+    re4_wii.posts.create(user=user, body=POST_TEXT)
+    re4_wii.metaposts.create(user=user, body='I hate topics like this one.')
 
     sales = Topic.objects.create(title='Official Sales Figures', description='Snorefax.', forum=discussion, user=admin, pinned=True)
     sales.posts.create(user=admin, body=POST_TEXT)
-    sales.metaposts.create(user=testuser, body='I hate topics like this one.')
+    sales.metaposts.create(user=user, body='I hate topics like this one.')
 
     testing = Topic.objects.create(title='Testing', forum=off_topic, user=admin)
     testing.posts.create(user=admin, body=POST_TEXT)
-    testing.metaposts.create(user=testuser, body='I hate topics like this one.')
+    testing.metaposts.create(user=user, body='I hate topics like this one.')
 
 if __name__ == '__main__':
     create_initial_data()
