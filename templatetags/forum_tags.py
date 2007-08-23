@@ -3,6 +3,8 @@ import datetime
 from django import template
 from django.utils import dateformat
 
+from forum.auth import user_can_edit_post
+
 register = template.Library()
 
 ##################
@@ -42,6 +44,10 @@ def paginator(context, what, adjacent_pages=3):
 ###########
 # Filters #
 ###########
+
+@register.filter
+def can_edit_post(user, post):
+    return user_can_edit_post(user, post)
 
 @register.filter
 def post_time(posted_at):

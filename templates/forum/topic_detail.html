@@ -1,4 +1,4 @@
-{% extends "forum/base.html" %}{% load forum %}
+{% extends "forum/base.html" %}{% load forum_tags %}
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block content %}
 <h2><a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a></h2>
@@ -14,12 +14,12 @@
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
     {% if user.is_authenticated %}
-    <ul class="actions">
+    <ul class="post-actions">
       <li class="quote"><a href="{% url forum_quote_post post.id %}">Reply with quote</a></li>
-      {% ifequal user.id post.user_id %}
-      <li class="quote"><a href="{% url forum_edit_post post.id %}">Edit post</a></li>
-      <li class="quote"><a href="{% url forum_delete_post post.id %}">Delete post</a></li>
-      {% endifequal %}
+      {% if user|can_edit_post:post %}
+      <li class="edit"><a href="{% url forum_edit_post post.id %}">Edit post</a></li>
+      <li class="delete"><a href="{% url forum_delete_post post.id %}">Delete post</a></li>
+      {% endif %}
     </ul>
     {% endif %}
     <div class="body">

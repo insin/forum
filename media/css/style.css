@@ -15,8 +15,8 @@ div.topic-actions { float: right; }
 
 div.post { overflow: hidden; padding: 0 10px; }
   div.postbody { float: left; width: 76%; clear: both; }
-    div.postbody ul.actions { float: right; margin: 0; }
-    div.postbody ul.actions li { list-style-type: none; float: left; margin-left: 10px; }
+    div.postbody ul.post-actions { float: right; margin: 0; }
+    div.postbody ul.post-actions li { list-style-type: none; float: left; margin-left: 10px; }
     p.author { margin: 0 0 .5em 0; }
   div.profile { border-left: 1px solid #fff; float: right; width: 22%; margin: 5px 0 10px 0; }
     div.profile dt { display: none; }
