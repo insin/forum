@@ -169,12 +169,12 @@ class Topic(models.Model):
     def __unicode__(self):
         return self.title
 
-    def save(self):
+    def save(self, **kwargs):
         is_new = False
         if not self.id:
             self.started_at = datetime.datetime.now()
             is_new = True
-        super(Topic, self).save()
+        super(Topic, self).save(**kwargs)
         if is_new:
             self.forum.topic_count = self.forum.topics.count()
             self.forum.save()
@@ -260,7 +260,7 @@ class Post(models.Model):
     def __unicode__(self):
         return truncate_words(self.body, 25)
 
-    def save(self):
+    def save(self, **kwargs):
         self.body = self.body.strip()
         self.body_html = post_formatter.format_post_body(self.body)
         is_new = False
@@ -269,7 +269,7 @@ class Post(models.Model):
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
-        super(Post, self).save()
+        super(Post, self).save(**kwargs)
         if is_new:
             self.topic.post_count = self.topic.posts.count()
             self.topic.last_post_at = self.posted_at
@@ -325,7 +325,7 @@ class Metapost(models.Model):
     def __unicode__(self):
         return truncate_words(self.body, 25)
 
-    def save(self):
+    def save(self, **kwargs):
         self.body = self.body.strip()
         self.body_html = post_formatter.format_post_body(self.body)
         is_new = False
@@ -334,7 +334,7 @@ class Metapost(models.Model):
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
-        super(Metapost, self).save()
+        super(Metapost, self).save(**kwargs)
         if is_new:
             self.topic.metapost_count = self.topic.metaposts.count()
             self.topic.save()
