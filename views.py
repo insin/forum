@@ -1,13 +1,15 @@
 from django import newforms as forms
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import connection
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
+from forum.auth import user_can_edit_post
 from forum.formatters import post_formatter
 from forum.models import Forum, ForumProfile, Metapost, Post, Topic
 
@@ -38,6 +40,7 @@ def forum_detail(request, forum_id):
         template_name='forum/forum_detail.html', extra_context=extra_context,
         template_object_name='topic')
 
+@login_required
 def add_topic(request, forum_id):
     """
     Adds a Topic to a Forum.
@@ -85,6 +88,7 @@ def topic_detail(request, topic_id):
         extra_context={'topic': topic, 'forum': topic.forum},
         template_object_name='post')
 
+@login_required
 def add_reply(request, topic_id, quote_post=None):
     """
     Adds a Post to a Topic.
@@ -118,6 +122,7 @@ def add_reply(request, topic_id, quote_post=None):
         'preview': preview,
     }, context_instance=RequestContext(request))
 
+@login_required
 def quote_post(request, post_id):
     """
     Adds a Post to a Topic, prepopulating the form with a quoted Post.
@@ -169,11 +174,14 @@ def redirect_to_last_post(request, topic_id):
         raise Http404
     return redirect_to_post(request, post.id, post)
 
+@login_required
 def edit_post(request, post_id):
     """
     Edits the given Post.
     """
     post = get_object_or_404(Post, pk=post_id)
+    if not user_can_edit_post(request.user, post):
+        return HttpResponseForbidden()
     EditPostForm = forms.form_for_instance(post, fields=('body',))
     preview = None
     if request.method == 'POST':
@@ -195,11 +203,14 @@ def edit_post(request, post_id):
         'preview': preview,
     }, context_instance=RequestContext(request))
 
+@login_required
 def delete_post(request, post_id):
     """
     Deletes a Post after deletion is confirmed via POST.
     """
     post = get_object_or_404(Post.objects.with_user_details(), pk=post_id)
+    if not user_can_edit_post(request.user, post):
+        return HttpResponseForbidden()
     topic = post.topic
     if request.method == 'POST':
         post.delete()

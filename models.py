@@ -62,6 +62,13 @@ class ForumProfile(models.Model):
             }),
         )
 
+    def can_edit_any_post(self):
+        """
+        Returns ``True`` if the User represented by this profile has
+        permission to edit any post in the Forum.
+        """
+        return self.group in ('M', 'A')
+
 class Forum(models.Model):
     """
     Provides categorisation for discussion topics.

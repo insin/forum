@@ -69,17 +69,17 @@ def create_initial_data():
     admin.save()
     ForumProfile.objects.create(user=admin, group='A', avatar='http://www.jonathanbuchanan.plus.com/images/stipeav.png')
 
-    moderator = User.objects.create_user('testmoderator', 'm@m.com', 'testmoderator')
+    moderator = User.objects.create_user('moderator', 'm@m.com', 'moderator')
     moderator.first_name = 'Moderator'
     moderator.last_name = 'User'
     moderator.save()
     ForumProfile.objects.create(user=moderator, group='M', avatar='http://insin.woaf.net/images/dsav.png')
 
-    user = User.objects.create_user('user', 'tu@tu.com', 'user')
+    user = User.objects.create_user('user', 'u@u.com', 'user')
     user.first_name = 'Test'
     user.last_name = 'User'
     user.save()
-    ForumProfile.objects.create(user=user, avatar='http://insin.woaf.net/images/widget.gif')
+    ForumProfile.objects.create(user=user, group='U', avatar='http://insin.woaf.net/images/widget.gif')
 
     users = [admin, moderator, user]
 
@@ -105,7 +105,7 @@ def create_initial_data():
 
     re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=user)
     re4_wii.posts.create(user=user, body=POST_TEXT)
-    re4_wii.metaposts.create(user=user, body='I hate topics like this one.')
+    re4_wii.metaposts.create(user=moderator, body='I hate topics like this one.')
 
     sales = Topic.objects.create(title='Official Sales Figures', description='Snorefax.', forum=discussion, user=admin, pinned=True)
     sales.posts.create(user=admin, body=POST_TEXT)
@@ -113,7 +113,7 @@ def create_initial_data():
 
     testing = Topic.objects.create(title='Testing', forum=off_topic, user=admin)
     testing.posts.create(user=admin, body=POST_TEXT)
-    testing.metaposts.create(user=user, body='I hate topics like this one.')
+    testing.metaposts.create(user=moderator, body='I hate topics like this one.')
 
 if __name__ == '__main__':
     create_initial_data()
