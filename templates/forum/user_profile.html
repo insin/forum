@@ -21,4 +21,30 @@
   <dt class="website">Website:</dt>
   <dd class="website">{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</dd>
 </dl>
+
+{% if recent_topics %}
+<h3>Last {{ recent_topics|length }} Topic{{ recent_topics|length|pluralize }} Started</h3>
+<table>
+<thead>
+  <tr>
+    <th>Topic</th>
+    <th>Posts</th>
+    <th>Views</th>
+    <th>Last Post</th>
+  </tr>
+</thead>
+<tbody>
+{% for topic in recent_topics %}
+  <tr class="topic {% cycle odd,even %}">
+    <td>
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+    </td>
+    <td>{{ topic.post_count }}</td>
+    <td>{{ topic.view_count }}</td>
+    <td>{{ topic.last_post_at|post_time }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+  </tr>{% endfor %}
+</tbody>
+</table>
+{% endif %}
 {% endblock %}
