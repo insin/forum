@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('forum.views',
     url(r'^$',                                  'forum_index',           name='forum_index'),
+    url(r'^newposts/$',                         'new_posts',             name='forum_new_posts'),
     url(r'^forum/(?P<forum_id>\d+)/$',          'forum_detail',          name='forum_detail'),
     url(r'^forum/(?P<forum_id>\d+)/newtopic/$', 'add_topic',             name='forum_add_topic'),
     url(r'^topic/(?P<topic_id>\d+)/$',          'topic_detail',          name='forum_topic_detail'),

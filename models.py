@@ -152,6 +152,30 @@ class TopicManager(models.Manager):
             ]
         )
 
+    def with_forum_and_user_details(self):
+        """
+        Creates a ``QuerySet`` containing Topics which have
+        additional information about the User who created them and the
+        Forum they belong to.
+        """
+        opts = self.model._meta
+        forum_opts = Forum._meta
+        forum_table = qn(forum_opts.db_table)
+        return self.with_user_details().extra(
+            select={
+                'forum_name': '%s.%s' % (forum_table, qn(forum_opts.get_field('name').column)),
+            },
+            tables=[forum_table],
+            where=[
+                '%s.%s=%s.%s' % (
+                    qn(opts.db_table),
+                    qn(opts.get_field('forum').column),
+                    forum_table,
+                    qn(forum_opts.pk.column),
+                ),
+            ]
+        )
+
 class Topic(models.Model):
     """
     A discussion topic.

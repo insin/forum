@@ -41,6 +41,19 @@ def forum_detail(request, forum_id):
         template_object_name='topic')
 
 @login_required
+def new_posts(request):
+    """
+    Displays Topics containing new posts since the current User's last
+    login.
+    """
+    queryset = Topic.objects.with_forum_and_user_details().filter(
+        last_post_at__gte=request.user.last_login).order_by('-last_post_at')
+    return object_list(request, queryset,
+        paginate_by=20, allow_empty=True,
+        template_name='forum/new_posts.html',
+        template_object_name='topic')
+
+@login_required
 def add_topic(request, forum_id):
     """
     Adds a Topic to a Forum.
