@@ -12,6 +12,7 @@ urlpatterns = patterns('forum.views',
     url(r'^post/(?P<post_id>\d+)/quote/$',      'quote_post',            name='forum_quote_post'),
     url(r'^post/(?P<post_id>\d+)/delete/$',     'delete_post',           name='forum_delete_post'),
     url(r'^user/(?P<user_id>\d+)/$',            'user_profile',          name='forum_user_profile'),
+    url(r'^user/(?P<user_id>\d+)/edit/$',       'edit_user_profile',     name='forum_edit_user_profile'),
 )
 
 urlpatterns += patterns('',

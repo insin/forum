@@ -9,7 +9,7 @@ from django.template import RequestContext
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
-from forum.auth import user_can_edit_post
+from forum import auth
 from forum.formatters import post_formatter
 from forum.models import Forum, ForumProfile, Metapost, Post, Topic
 
@@ -180,7 +180,7 @@ def edit_post(request, post_id):
     Edits the given Post.
     """
     post = get_object_or_404(Post, pk=post_id)
-    if not user_can_edit_post(request.user, post):
+    if not auth.user_can_edit_post(request.user, post):
         return HttpResponseForbidden()
     EditPostForm = forms.form_for_instance(post, fields=('body',))
     preview = None
@@ -209,7 +209,7 @@ def delete_post(request, post_id):
     Deletes a Post after deletion is confirmed via POST.
     """
     post = get_object_or_404(Post.objects.with_user_details(), pk=post_id)
-    if not user_can_edit_post(request.user, post):
+    if not auth.user_can_edit_post(request.user, post):
         return HttpResponseForbidden()
     topic = post.topic
     if request.method == 'POST':
@@ -230,4 +230,27 @@ def user_profile(request, user_id):
     return render_to_response('forum/user_profile.html', {
         'forum_user': forum_user,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
+    }, context_instance=RequestContext(request))
+
+def edit_user_profile(request, user_id):
+    """
+    Edits a given User's Forum Profile.
+    """
+    user = get_object_or_404(User, pk=user_id)
+    if not auth.user_can_edit_user_profile(request.user, user):
+        return HttpResponseForbidden()
+    user_profile = ForumProfile.objects.get_for_user(user)
+    UserProfileForm = forms.form_for_instance(user_profile, fields=('location',
+        'avatar', 'website'))
+    if request.method == 'POST':
+        form = UserProfileForm(data=request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+            return HttpResponseRedirect(user_profile.get_absolute_url())
+    else:
+        form = UserProfileForm()
+    return render_to_response('forum/edit_user_profile.html', {
+        'forum_user': user,
+        'forum_profile': user_profile,
+        'form': form,
     }, context_instance=RequestContext(request))

@@ -1,0 +1,14 @@
+{% extends "forum/base.html" %}
+{% block content %}
+<form name="editUserProfileForm" id="editUserProfileForm" action="." method="POST">
+<table>
+<tbody>
+{{ form }}
+</tbody>
+</table>
+<div class="buttons">
+  <input type="submit" value="Edit User Profile">
+  <a href="{{ forum_profile.get_absolute_url }}">Cancel</a>
+</div>
+</form>
+{% endblock %}

@@ -23,7 +23,7 @@
       <dd class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dd>
       {% if post.user_title %}
       <dt class="title">Title:</dt>
-      <dd class="title"><img src="{{ post.user_title|escape }}" alt=""></dt>
+      <dd class="title">{{ post.user_title|escape }}</dt>
       {% endif %}
       <dt class="postcount">Posts:</dt>
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>

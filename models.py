@@ -62,12 +62,23 @@ class ForumProfile(models.Model):
             }),
         )
 
-    def can_edit_any_post(self):
+    @models.permalink
+    def get_absolute_url(self):
+        return ('forum_user_profile', (smart_unicode(self.user_id),))
+
+    def is_moderator(self):
         """
         Returns ``True`` if the User represented by this profile has
-        permission to edit any post in the Forum.
+        moderation privileges, ``False`` otherwise.
         """
         return self.group in ('M', 'A')
+
+    def is_admin(self):
+        """
+        Returns ``True`` if the User represented by this profile has
+        administrative privileges, ``False`` otherwise.
+        """
+        return self.group == 'A'
 
 class Forum(models.Model):
     """

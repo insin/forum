@@ -1,1 +1,24 @@
-IOU 1 User Profile Screen for {{ forum_user.username|escape }}
+{% extends "forum/base.html" %}{% load forum_tags %}
+{% block content %}
+<h2>User Profile for {{ forum_user.username|escape }}</h2>
+{% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
+<div class="user-actions">
+  <a href="{% url forum_edit_user_profile forum_user.id %}">Edit Profile</a>
+</div>
+<div class="clear"></div>
+{% endif %}
+<dl>
+  <dt class="avatar">Avatar:</dt>
+  <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt="">{% else %}None{% endif %}</dt>
+  <dt class="title">Title:</dt>
+  <dd class="title">{% if forum_profile.title %}{{ forum_profile.title|escape }}{% else %}None{% endif %}</dt>
+  <dt class="postcount">Posts:</dt>
+  <dd class="postcount">{{ forum_profile.post_count }}</dd>
+  <dt class="joined">Joined:</dt>
+  <dd class="joined">{{ forum_user.date_joined|joined_date }}</dd>
+  <dt class="location">Location:</dt>
+  <dd class="location">{% if forum_profile.location %}{{ forum_profile.location|escape }}{% else %}None{% endif %}</dd>
+  <dt class="website">Website:</dt>
+  <dd class="website">{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</dd>
+</dl>
+{% endblock %}
