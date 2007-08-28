@@ -3,9 +3,11 @@
 {% block content %}
 <h2>{{ forum.name|escape }}</h2>
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
+{% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
+{% endif %}
 <div class="clear"></div>
 <table>
 <thead>
@@ -52,8 +54,10 @@
 </tbody>
 </table>
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
+{% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
+{% endif %}
 <div class="clear"></div>
 {% endblock %}

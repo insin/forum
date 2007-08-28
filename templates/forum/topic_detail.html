@@ -5,10 +5,12 @@
 <h3>{{ topic.title|escape }}</h3>
 {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+{% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_reply topic.id %}">Add Reply</a>
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
+{% endif %}
 <div class="clear"></div>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
@@ -54,9 +56,11 @@
 </div>
 {% endfor %}
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+{% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_reply topic.id %}">Add Reply</a>
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
+{% endif %}
 <div class="clear"></div>
 {% endblock %}
