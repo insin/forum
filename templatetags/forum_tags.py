@@ -4,6 +4,7 @@ from django import template
 from django.utils import dateformat
 
 from forum import auth
+from forum.models import ForumProfile
 
 register = template.Library()
 
@@ -52,6 +53,10 @@ def can_edit_post(user, post):
 @register.filter
 def can_edit_user_profile(user, user_to_edit):
     return auth.user_can_edit_user_profile(user, user_to_edit)
+
+@register.filter
+def is_moderator(user):
+    return ForumProfile.objects.get_for_user(user).is_moderator()
 
 @register.filter
 def post_time(posted_at):

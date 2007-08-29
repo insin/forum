@@ -74,8 +74,9 @@ def add_topic(request, forum_id):
                 topic.forum = forum
                 topic.save()
                 post = post_form.save(commit=False)
-                post.user = request.user
                 post.topic = topic
+                post.user = request.user
+                post.user_ip = request.META['REMOTE_ADDR']
                 post.save()
                 return HttpResponseRedirect(topic.get_absolute_url())
     else:
@@ -121,6 +122,7 @@ def add_reply(request, topic_id, quote_post=None):
                 post = form.save(commit=False)
                 post.topic = topic
                 post.user = request.user
+                post.user_ip = request.META['REMOTE_ADDR']
                 post.save()
                 return redirect_to_post(request, post.id, post)
     else:

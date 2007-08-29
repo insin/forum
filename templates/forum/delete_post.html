@@ -4,7 +4,7 @@
 <h3><a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a></h3>
 <p>Are you sure you want to delete the following post?</p>
 
-<div class="post">
+<div class="post odd">
   <div class="postbody">
     <div class="body">
       <p class="author"><a href="{{ post.get_absolute_url }}">#</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time }}</p>
@@ -31,7 +31,11 @@
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
       <dt class="location">Location:</dt>
-      <dd class="location">{{ post.user_location|escape }}</dd>
+      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      {% endif %}
+      {% if post.user_ip %}
+      <dt class="ip">Post IP:</dt>
+      <dd class="ip"><strong>Post IP: </strong>{{ post.user_ip|escape }}</dd>
       {% endif %}
     </dl>
   </div>

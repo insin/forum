@@ -49,7 +49,11 @@
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
       <dt class="location">Location:</dt>
-      <dd class="location">{{ post.user_location|escape }}</dd>
+      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      {% endif %}
+      {% if user|is_moderator and post.user_ip %}
+      <dt class="ip">Post IP:</dt>
+      <dd class="ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
       {% endif %}
     </dl>
   </div>

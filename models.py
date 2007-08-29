@@ -289,6 +289,7 @@ class Post(models.Model):
     body_html = models.TextField(editable=False)
     posted_at = models.DateTimeField(editable=False)
     edited_at = models.DateTimeField(editable=False, null=True, blank=True)
+    user_ip   = models.IPAddressField(editable=False, null=True, blank=True)
 
     objects = PostManager()
 
@@ -334,7 +335,7 @@ class Post(models.Model):
 
     class Admin:
         list_display = ('__unicode__', 'user', 'topic', 'posted_at',
-                        'edited_at')
+                        'edited_at', 'user_ip')
         search_fields = ('body',)
 
     @models.permalink
