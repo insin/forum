@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import User
-from django.db import connection, models
+from django.db import connection, models, transaction
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
@@ -80,6 +80,19 @@ class ForumProfile(models.Model):
         """
         return self.group == 'A'
 
+    def update_post_count(self):
+        """
+        Executes a simple SQL ``UPDATE`` to update this profile's
+        ``post_count``.
+        """
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('post_count').column),
+            qn(opts.pk.column)), [self.user.posts.count(), self._get_pk_val()])
+
+    update_post_count.alters_data = True
+
 class Forum(models.Model):
     """
     Provides categorisation for discussion topics.
@@ -127,6 +140,43 @@ class Forum(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_detail', (smart_unicode(self.id),))
+
+    def update_topic_count(self):
+        """
+        Executes a simple SQL ``UPDATE`` to increment this forum's
+        ``topic_count``.
+        """
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('topic_count').column),
+            qn(opts.pk.column)), [self.topics.count(), self._get_pk_val()])
+
+    update_topic_count.alters_data = True
+
+    def set_last_post(self, post=None):
+        """
+        Executes a simple SQL ``UPDATE`` to set details about this
+        forum's last post.
+
+        If the last post is not given, it will be looked up.
+        """
+        if post is None:
+            post = Post.objects.filter(topic__forum=self) \
+                                .order_by('-posted_at', '-id')[0]
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('last_post_at').column),
+            qn(opts.get_field('last_topic_id').column),
+            qn(opts.get_field('last_topic_title').column),
+            qn(opts.get_field('last_user_id').column),
+            qn(opts.get_field('last_username').column),
+            qn(opts.pk.column)), [post.posted_at, post.topic._get_pk_val(),
+                                  post.topic.title, post.user._get_pk_val(),
+                                  post.user.username, self._get_pk_val()])
+
+    set_last_post.alters_data = True
 
 class TopicManager(models.Manager):
     def with_user_details(self):
@@ -193,7 +243,6 @@ class Topic(models.Model):
 
     # Denormalised data
     post_count     = models.PositiveIntegerField(default=0)
-    metapost_count = models.PositiveIntegerField(default=0)
     view_count     = models.PositiveIntegerField(default=0)
     last_post_at   = models.DateTimeField(null=True, blank=True)
     last_user_id   = models.PositiveIntegerField(null=True, blank=True)
@@ -211,16 +260,15 @@ class Topic(models.Model):
             is_new = True
         super(Topic, self).save(**kwargs)
         if is_new:
-            self.forum.topic_count = self.forum.topics.count()
-            self.forum.save()
+            self.forum.update_topic_count()
+            transaction.commit_unless_managed()
 
     class Meta:
         ordering = ('-last_post_at', '-started_at')
 
     class Admin:
         list_display = ('title', 'forum', 'user', 'started_at', 'post_count',
-                        'metapost_count', 'view_count', 'last_post_at',
-                        'locked', 'pinned')
+                        'view_count', 'last_post_at', 'locked', 'pinned')
         fields = (
             (None, {
                 'fields': ('title', 'forum', 'user', 'description'),
@@ -231,7 +279,7 @@ class Topic(models.Model):
             (u'Denormalised data', {
                 'classes': 'collapse',
                 'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('post_count', 'metapost_count', 'view_count',
+                'fields': ('post_count', 'view_count',
                            'last_post_at', 'last_user_id', 'last_username'),
             }),
         )
@@ -240,6 +288,56 @@ class Topic(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_topic_detail', (smart_unicode(self.id),))
+
+    def update_post_count(self):
+        """
+        Executes a simple SQL ``UPDATE`` to update this topic's
+        ``post_count``.
+        """
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('post_count').column),
+            qn(opts.pk.column)), [self.posts.count(), self._get_pk_val()])
+
+    update_post_count.alters_data = True
+
+    def set_last_post(self, post=None):
+        """
+        Executes a simple SQL ``UPDATE`` to set details about this
+        topic's last post and update its ``post_count``.
+
+        If the last post is not given, it will be looked up.
+        """
+        if post is None:
+            post = self.posts.order_by('-posted_at')[0]
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('post_count').column),
+            qn(opts.get_field('last_post_at').column),
+            qn(opts.get_field('last_user_id').column),
+            qn(opts.get_field('last_username').column),
+            qn(opts.pk.column)), [self.posts.count(), post.posted_at,
+                                  post.user._get_pk_val(), post.user.username,
+                                  self._get_pk_val()])
+
+    set_last_post.alters_data = True
+
+    def increment_view_count(self):
+        """
+        Executes a simple SQL ``UPDATE`` to increment this Topic's
+        ``view_count``.
+        """
+        self.view_count += 1
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('view_count').column),
+            qn(opts.pk.column)), [self.view_count, self._get_pk_val()])
+        transaction.commit_unless_managed()
+
+    increment_view_count.alters_data = True
 
 class PostManager(models.Manager):
     def with_user_details(self):
@@ -307,31 +405,21 @@ class Post(models.Model):
             self.edited_at = datetime.datetime.now()
         super(Post, self).save(**kwargs)
         if is_new:
-            self.topic.post_count = self.topic.posts.count()
-            self.topic.last_post_at = self.posted_at
-            self.topic.last_user_id = self.user.id
-            self.topic.last_username = self.user.username
-            self.topic.save()
-            forum = self.topic.forum
-            forum.last_post_at = self.posted_at
-            forum.last_topic_id = self.topic.id
-            forum.last_topic_title = self.topic.title
-            forum.last_user_id = self.user.id
-            forum.last_username = self.user.username
-            forum.save()
-            forum_profile = ForumProfile.objects.get_for_user(self.user)
-            forum_profile.post_count = self.user.posts.count()
-            forum_profile.save()
+            self.topic.set_last_post(self)
+            self.topic.forum.set_last_post(self)
+            ForumProfile.objects.get_for_user(self.user).update_post_count()
+            transaction.commit_unless_managed()
 
     def delete(self):
         topic = self.topic
-        user = self.user
+        forum = topic.forum
         forum_profile = ForumProfile.objects.get_for_user(self.user)
         super(Post, self).delete()
-        topic.post_count = topic.posts.count()
-        topic.save()
-        forum_profile.post_count = user.posts.count()
-        forum_profile.save()
+        forum_profile.update_post_count()
+        self.topic.set_last_post()
+        if self.posted_at == forum.last_post_at:
+            forum.set_last_post()
+        transaction.commit_unless_managed()
 
     class Admin:
         list_display = ('__unicode__', 'user', 'topic', 'posted_at',
@@ -341,47 +429,3 @@ class Post(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_redirect_to_post', (smart_unicode(self.id),))
-
-class Metapost(models.Model):
-    """
-    A post which forms part of a discussion *about* a discussion.
-
-    For example, posts which are about how a discussion is going could
-    be considered metaposts.
-    """
-    user      = models.ForeignKey(User, related_name='metaposts')
-    topic     = models.ForeignKey(Topic, related_name='metaposts')
-    body      = models.TextField()
-    body_html = models.TextField(editable=False)
-    posted_at = models.DateTimeField(editable=False)
-    edited_at = models.DateTimeField(editable=False, null=True, blank=True)
-
-    objects = PostManager()
-
-    def __unicode__(self):
-        return truncate_words(self.body, 25)
-
-    def save(self, **kwargs):
-        self.body = self.body.strip()
-        self.body_html = post_formatter.format_post_body(self.body)
-        is_new = False
-        if not self.id:
-            self.posted_at = datetime.datetime.now()
-            is_new = True
-        else:
-            self.edited_at = datetime.datetime.now()
-        super(Metapost, self).save(**kwargs)
-        if is_new:
-            self.topic.metapost_count = self.topic.metaposts.count()
-            self.topic.save()
-
-    def delete(self):
-        topic = self.topic
-        super(Metapost, self).delete()
-        topic.metapost_count = topic.metaposts.count()
-        topic.save()
-
-    class Admin:
-        list_display = ('__unicode__', 'user', 'topic', 'posted_at',
-                        'edited_at')
-        search_fields = ('body',)

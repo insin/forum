@@ -11,7 +11,7 @@ from django.views.generic.list_detail import object_list
 
 from forum import auth
 from forum.formatters import post_formatter
-from forum.models import Forum, ForumProfile, Metapost, Post, Topic
+from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
 
@@ -94,8 +94,7 @@ def topic_detail(request, topic_id):
     Displays a Topic's Posts.
     """
     topic = get_object_or_404(Topic, pk=topic_id)
-    topic.view_count += 1
-    topic.save()
+    topic.increment_view_count()
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic), paginate_by=20,
         allow_empty=True, template_name='forum/topic_detail.html',

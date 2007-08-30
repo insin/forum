@@ -7,7 +7,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from forum.models import Forum, ForumProfile, Metapost, Post, Topic
+from forum.models import Forum, ForumProfile, Post, Topic
 
 POST_TEXT = """
 Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer facilisis
@@ -105,15 +105,12 @@ def create_initial_data():
 
     re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=user)
     re4_wii.posts.create(user=user, body=POST_TEXT)
-    re4_wii.metaposts.create(user=moderator, body='I hate topics like this one.')
 
     sales = Topic.objects.create(title='Official Sales Figures', description='Snorefax.', forum=discussion, user=admin, pinned=True)
     sales.posts.create(user=admin, body=POST_TEXT)
-    sales.metaposts.create(user=user, body='I hate topics like this one.')
 
     testing = Topic.objects.create(title='Testing', forum=off_topic, user=admin)
     testing.posts.create(user=admin, body=POST_TEXT)
-    testing.metaposts.create(user=moderator, body='I hate topics like this one.')
 
 if __name__ == '__main__':
     create_initial_data()
