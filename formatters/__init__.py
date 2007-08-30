@@ -1,12 +1,9 @@
-def get_formatter():
-    from django.conf import settings
-    try:
-        formatter_module = settings.FORUM_POST_FORMATTER
-    except AttributeError:
-        formatter_module = 'forum.formatters.markdown_formatter'
-    try:
-        return __import__(formatter_module, {}, {}, [''])
-    except ImportError, e:
-        raise EnvironmentError("Could not import post formatter '%s' (Is it on sys.path? Does it have syntax errors?): %s" % (formatter_module, e))
+from forum import app_settings
 
-post_formatter = get_formatter()
+def get_post_formatter():
+    try:
+        return __import__(app_settings.POST_FORMATTING_MODULE, {}, {}, [''])
+    except ImportError, e:
+        raise EnvironmentError('Could not import post formatting module "%s" (Is it on sys.path? Does it have syntax errors?): %s' % (app_settings.POST_FORMATTING_MODULE, e))
+
+post_formatter = get_post_formatter()

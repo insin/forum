@@ -14,3 +14,8 @@ try:
     DEFAULT_TOPICS_PER_PAGE = settings.FORUM_DEFAULT_TOPICS_PER_PAGE
 except AttributeError:
     DEFAULT_TOPICS_PER_PAGE = 20
+
+try:
+    POST_FORMATTING_MODULE = settings.FORUM_POST_FORMATTING_MODULE
+except AttributeError:
+    POST_FORMATTING_MODULE = 'forum.formatters.basic_formatter'
