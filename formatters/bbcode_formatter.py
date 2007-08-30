@@ -16,4 +16,4 @@ def quote_post(post):
     """
     Returns a raw post body which quotes the given Post.
     """
-    return u'[quote]%s[/quote]' % escape(post.body)
+    return u'[quote]%s[/quote]' % post.body

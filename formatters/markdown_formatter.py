@@ -21,5 +21,5 @@ def quote_post(post):
     return u'**%s** [wrote](%s "View quoted post"):\n\n%s\n\n' % (
         escape(post.user.username),
         post.get_absolute_url(),
-        quote_post_re.sub('> ', escape(post.body)),
+        quote_post_re.sub('> ', post.body),
     )
