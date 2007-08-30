@@ -28,6 +28,20 @@ USER_GROUP_CHOICES = (
     ('A', 'Admins'),
 )
 
+TOPICS_PER_PAGE_CHOICES = (
+    (10,   '10'),
+    (20,   '20'),
+    (30,   '30'),
+    (40,   '40'),
+)
+
+POSTS_PER_PAGE_CHOICES = (
+    (10,   '10'),
+    (20,   '20'),
+    (30,   '30'),
+    (40,   '40'),
+)
+
 class ForumProfile(models.Model):
     """
     A user's forum profile.
@@ -38,6 +52,10 @@ class ForumProfile(models.Model):
     location = models.CharField(max_length=100, blank=True)
     avatar   = models.URLField(verify_exists=False, blank=True)
     website  = models.URLField(verify_exists=False, blank=True)
+
+    # Board settings
+    topics_per_page = models.PositiveIntegerField(choices=TOPICS_PER_PAGE_CHOICES, null=True, blank=True)
+    posts_per_page  = models.PositiveIntegerField(choices=POSTS_PER_PAGE_CHOICES, null=True, blank=True)
 
     # Denormalised data
     post_count = models.PositiveIntegerField(default=0)
@@ -54,6 +72,9 @@ class ForumProfile(models.Model):
             (None, {
                 'fields': ('user', 'group', 'title', 'location', 'avatar',
                            'website'),
+            }),
+            (u'Board settings', {
+                'fields': ('topics_per_page', 'posts_per_page'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',

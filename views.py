@@ -9,11 +9,44 @@ from django.template import RequestContext
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
+from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
 from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
+
+#####################
+# Utility Functions #
+#####################
+
+def get_topics_per_page(user):
+    """
+    Gets the number of Topics which should be displayed per page, based
+    on the given user.
+    """
+    if user.is_authenticated():
+        forum_profile = ForumProfile.objects.get_for_user(user)
+        return forum_profile.topics_per_page or \
+               app_settings.DEFAULT_TOPICS_PER_PAGE
+    else:
+        return app_settings.DEFAULT_TOPICS_PER_PAGE
+
+def get_posts_per_page(user):
+    """
+    Gets the number of Posts which should be displayed per page, based
+    on the given user.
+    """
+    if user.is_authenticated():
+        forum_profile = ForumProfile.objects.get_for_user(user)
+        return forum_profile.posts_per_page or \
+               app_settings.DEFAULT_POSTS_PER_PAGE
+    else:
+        return app_settings.DEFAULT_POSTS_PER_PAGE
+
+##################
+# View Functions #
+##################
 
 def forum_index(request):
     """
@@ -36,7 +69,7 @@ def forum_detail(request, forum_id):
     return object_list(request,
         Topic.objects.with_user_details() \
                       .filter(forum=forum, pinned=False, hidden=False),
-        paginate_by=20, allow_empty=True,
+        paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/forum_detail.html', extra_context=extra_context,
         template_object_name='topic')
 
@@ -49,9 +82,8 @@ def new_posts(request):
     queryset = Topic.objects.with_forum_and_user_details().filter(
         last_post_at__gte=request.user.last_login).order_by('-last_post_at')
     return object_list(request, queryset,
-        paginate_by=20, allow_empty=True,
-        template_name='forum/new_posts.html',
-        template_object_name='topic')
+        paginate_by=get_topics_per_page(request.user), allow_empty=True,
+        template_name='forum/new_posts.html', template_object_name='topic')
 
 @login_required
 def add_topic(request, forum_id):
@@ -96,8 +128,9 @@ def topic_detail(request, topic_id):
     topic = get_object_or_404(Topic, pk=topic_id)
     topic.increment_view_count()
     return object_list(request,
-        Post.objects.with_user_details().filter(topic=topic), paginate_by=20,
-        allow_empty=True, template_name='forum/topic_detail.html',
+        Post.objects.with_user_details().filter(topic=topic),
+        paginate_by=get_posts_per_page(request.user), allow_empty=True,
+        template_name='forum/topic_detail.html',
         extra_context={'topic': topic, 'forum': topic.forum},
         template_object_name='post')
 
@@ -171,8 +204,9 @@ def redirect_to_post(request, post_id, post=None):
     cursor = connection.cursor()
     cursor.execute(query, [post.topic_id])
     post_num = [int(row[0]) for row in cursor.fetchall()].index(post.id) + 1
-    page, remainder = divmod(post_num, 20)
-    if post_num < 20 or remainder != 0:
+    posts_per_page = get_posts_per_page(request.user)
+    page, remainder = divmod(post_num, posts_per_page)
+    if post_num < posts_per_page or remainder != 0:
         page += 1
     return HttpResponseRedirect('%s?page=%s#post%s' \
         % (reverse('forum_topic_detail', args=(smart_unicode(post.topic_id),)),
@@ -259,7 +293,7 @@ def edit_user_profile(request, user_id):
     if not auth.user_can_edit_user_profile(request.user, user):
         return HttpResponseForbidden()
     user_profile = ForumProfile.objects.get_for_user(user)
-    editable_fields = ['location', 'avatar', 'website']
+    editable_fields = ['location', 'avatar', 'website', 'topics_per_page', 'posts_per_page']
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,
