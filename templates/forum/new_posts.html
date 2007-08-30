@@ -2,7 +2,7 @@
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block content %}
 <h2>New Posts</h2>
-<p>Topics with new posts since your last login at {{ user.last_login }}.</p>
+<p>Topics with new posts since your last login {{ user.last_login|post_time:user }}.</p>
 {% if topic_list %}
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 <div class="clear"></div>
@@ -28,7 +28,7 @@
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
     <td>{{ topic.post_count }}</td>
     <td>{{ topic.view_count }}</td>
-    <td>{{ topic.last_post_at|post_time }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
 </table>

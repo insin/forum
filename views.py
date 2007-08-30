@@ -293,7 +293,8 @@ def edit_user_profile(request, user_id):
     if not auth.user_can_edit_user_profile(request.user, user):
         return HttpResponseForbidden()
     user_profile = ForumProfile.objects.get_for_user(user)
-    editable_fields = ['location', 'avatar', 'website', 'topics_per_page', 'posts_per_page']
+    editable_fields = ['location', 'avatar', 'website', 'timezone',
+                       'topics_per_page', 'posts_per_page']
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,

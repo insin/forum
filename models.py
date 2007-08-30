@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import connection, models, transaction
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
+from pytz import common_timezones
 
 from forum.formatters import post_formatter
 
@@ -21,6 +22,8 @@ class ForumProfileManager(models.Manager):
             profile, created = self.get_or_create(user=user)
             user._forum_profile_cache = profile
         return user._forum_profile_cache
+
+TIMEZONE_CHOICES = tuple([(tz, tz) for tz in common_timezones])
 
 USER_GROUP_CHOICES = (
     ('U', 'Users'),
@@ -54,6 +57,7 @@ class ForumProfile(models.Model):
     website  = models.URLField(verify_exists=False, blank=True)
 
     # Board settings
+    timezone        = models.CharField(max_length=25, choices=TIMEZONE_CHOICES, blank=True)
     topics_per_page = models.PositiveIntegerField(choices=TOPICS_PER_PAGE_CHOICES, null=True, blank=True)
     posts_per_page  = models.PositiveIntegerField(choices=POSTS_PER_PAGE_CHOICES, null=True, blank=True)
 
@@ -66,7 +70,8 @@ class ForumProfile(models.Model):
         return u'Forum Profile for %s' % self.user
 
     class Admin:
-        list_display = ('user', 'group', 'title', 'location', 'post_count')
+        list_display = ('user', 'group', 'title', 'location',
+                        'post_count')
         list_filter = ('group',)
         fields = (
             (None, {
@@ -74,7 +79,7 @@ class ForumProfile(models.Model):
                            'website'),
             }),
             (u'Board settings', {
-                'fields': ('topics_per_page', 'posts_per_page'),
+                'fields': ('timezone', 'topics_per_page', 'posts_per_page'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',

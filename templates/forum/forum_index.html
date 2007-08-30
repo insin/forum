@@ -17,7 +17,7 @@
     </td>
     <td>{{ forum.topic_count }}</td>
     <td>{% if forum.last_post_at %}
-      <a href="{% url forum_redirect_to_last_post forum.last_topic_id %}">Last post</a> {{ forum.last_post_at|post_time }}<br>
+      <a href="{% url forum_redirect_to_last_post forum.last_topic_id %}">Last post</a> {{ forum.last_post_at|post_time:user }}<br>
       <strong>In:</strong> <a href="{% url forum_topic_detail forum.last_topic_id %}">{{ forum.last_topic_title|escape }}</a><br>
       <strong>By:</strong> <a href="{% url forum_user_profile forum.last_user_id %}">{{ forum.last_username|escape }}</a>
     {% else %}N/A{% endif %}</td>

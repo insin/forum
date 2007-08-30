@@ -1,6 +1,8 @@
 import datetime
 
+import pytz
 from django import template
+from django.conf import settings
 from django.utils import dateformat
 
 from forum import auth
@@ -59,8 +61,38 @@ def is_moderator(user):
     return ForumProfile.objects.get_for_user(user).is_moderator()
 
 @register.filter
-def post_time(posted_at):
-    today = datetime.date.today()
+def user_tz(dt, user):
+    """
+    Converts the given datetime to the given User's timezone, if they
+    have one set in their forum profile.
+    """
+    tz = settings.TIME_ZONE
+    if user.is_authenticated():
+        profile = ForumProfile.objects.get_for_user(user)
+        if profile.timezone:
+            tz = profile.timezone
+    try:
+        result = dt.astimezone(pytz.timezone(tz))
+    except ValueError:
+        # The datetime was stored without timezone info, so use the
+        # timezone configured in settings.
+        result = dt.replace(tzinfo=pytz.timezone(settings.TIME_ZONE)) \
+                   .astimezone(pytz.timezone(tz))
+    return result
+
+@register.filter
+def post_time(posted_at, user=None):
+    """
+    Formats a Post time.
+
+    If a User is given and they have a timezone set in their profile,
+    the time will be translated to their local time.
+    """
+    if user:
+        posted_at = user_tz(posted_at, user)
+        today = user_tz(datetime.datetime.now(), user).date()
+    else:
+        today = datetime.date.today()
     post_date = posted_at.date()
     if post_date == today:
         date = u'Today'
