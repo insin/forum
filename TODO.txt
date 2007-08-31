@@ -16,14 +16,27 @@ Dirty hacks and other broken windows.
 Implement At Will
 =================
 
-Features and fixes which are ready for implementation as and when the time can
-be found.
+Features, fixes and tasks which are ready to be implementated or performed as
+and when the time can be found.
 
 - Navigation / forum and topic breadcrumbs.
 - Tidy HTML where appropriate - for example, there are currently a lot of
   redundant ``<dt>`` elements in the user profiles displayed next to posts
   (which are being hidden using CSS), while the labels they contain are being
   doubled up in the corresponding ``<dd>`` elements - yuck!
+- Testing in non-standalone mode:
+
+  - Create a project which itself uses django-registration to ensure that the
+    forum's set of templates don't take precedence. If the order of
+    ``INSTALLED_APPS`` is important in this case, document it in the
+    installation docs.
+  - I imagine it will be likely that the forum's standalone password
+    change/reset forms will be used in favour of the admin application's any
+    time a project is using the application directory template loader (as we
+    require it to) - it might be necessary to add moving of the standalone
+    registration templates into the ``/forum/templates/`` directory as one of
+    the installation steps for using the forum in standalone mode.
+
 - Validation of avatars:
 
   - Simple URL filename check.
