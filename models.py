@@ -49,7 +49,7 @@ class ForumProfile(models.Model):
     """
     A user's forum profile.
     """
-    user     = models.OneToOneField(User, related_name='forum_profile')
+    user     = models.ForeignKey(User, unique=True, related_name='forum_profile')
     group    = models.CharField(max_length=1, choices=USER_GROUP_CHOICES, default='U')
     title    = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
