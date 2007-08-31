@@ -50,15 +50,18 @@ def paginator(context, what, adjacent_pages=3):
 
 @register.filter
 def can_edit_post(user, post):
-    return auth.user_can_edit_post(user, post)
+    return user.is_authenticated() and \
+           auth.user_can_edit_post(user, post)
 
 @register.filter
 def can_edit_user_profile(user, user_to_edit):
-    return auth.user_can_edit_user_profile(user, user_to_edit)
+    return user.is_authenticated() and
+           auth.user_can_edit_user_profile(user, user_to_edit)
 
 @register.filter
 def is_moderator(user):
-    return ForumProfile.objects.get_for_user(user).is_moderator()
+    return user.is_authenticated() and \
+           ForumProfile.objects.get_for_user(user).is_moderator()
 
 @register.filter
 def user_tz(dt, user):
@@ -77,7 +80,7 @@ def user_tz(dt, user):
         # The datetime was stored without timezone info, so use the
         # timezone configured in settings.
         result = dt.replace(tzinfo=pytz.timezone(settings.TIME_ZONE)) \
-                   .astimezone(pytz.timezone(tz))
+                    .astimezone(pytz.timezone(tz))
     return result
 
 @register.filter
