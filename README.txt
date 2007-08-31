@@ -23,7 +23,7 @@ The following must be installed before you can use the forum application:
   registered users can choose as part of their forum profile.
 
 Additionally, the following must be installed if you plan to use the
-forum as standalone project:
+forum in standalone mode:
 
 - `django-registration`_ is used to perform registration and validation of new
   users when running as a standalone project - it is assumed that when the forum
@@ -53,6 +53,15 @@ Settings
 
 The following settings may be added to your project's settings module to
 configure the forum application.
+
+FORUM_STANDALONE
+----------------
+
+Default: ``False``
+
+Whether or not the forum is being used in standalone mode. If ``True``,
+URL configurations for the django.contrib.admin and django-registration
+applications will be included in the application's main URLConf.
 
 FORUM_POST_FORMATTING_MODULE
 ----------------------------
