@@ -68,6 +68,8 @@ def user_tz(dt, user):
     """
     Converts the given datetime to the given User's timezone, if they
     have one set in their forum profile.
+
+    Adapted from http://www.djangosnippets.org/snippets/183/
     """
     tz = settings.TIME_ZONE
     if user.is_authenticated():
