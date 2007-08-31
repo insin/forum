@@ -296,6 +296,15 @@ class Topic(models.Model):
             self.forum.update_topic_count()
             transaction.commit_unless_managed()
 
+    def delete(self):
+        """
+        This method is overridden to update denormalised data in the
+        related ``Forum`` object after a topic has been deleted.
+        """
+        super(Topic, self).delete()
+        self.forum.update_topic_count()
+        transaction.commit_unless_managed()
+
     class Meta:
         ordering = ('-last_post_at', '-started_at')
 
