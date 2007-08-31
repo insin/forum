@@ -157,7 +157,7 @@ For example, given the raw post text::
 
 ...a BBCode post formatter might return something like::
 
-    <blockquote]T<br>
+    <blockquote>T<br>
     &lt;es&gt;<br>
     t!</blockquote>
 
