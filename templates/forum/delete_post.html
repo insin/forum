@@ -1,9 +1,6 @@
 {% extends "forum/base.html" %}{% load forum_tags %}
 {% block content %}
-<h2><a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a></h2>
-<h3><a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a></h3>
-<p>Are you sure you want to delete the following post?</p>
-
+<p class="description">Are you sure you want to delete the following post?</p>
 <div class="post odd">
   <div class="postbody">
     <div class="body">

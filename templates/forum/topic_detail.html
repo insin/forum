@@ -1,8 +1,6 @@
 {% extends "forum/base.html" %}{% load forum_tags %}
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block content %}
-<h2><a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a></h2>
-<h3>{{ topic.title|escape }}</h3>
 {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}

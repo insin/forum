@@ -1,6 +1,5 @@
 {% extends "forum/base.html" %}{% load forum_tags %}
 {% block content %}
-<h2>User Profile for {{ forum_user.username|escape }}</h2>
 {% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
 <div class="user-actions">
   <a href="{% url forum_edit_user_profile forum_user.id %}">Edit Profile</a>

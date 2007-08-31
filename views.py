@@ -54,6 +54,7 @@ def forum_index(request):
     """
     return render_to_response('forum/forum_index.html', {
         'forum_list': Forum.objects.all(),
+        'title': u'Forum index',
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):
@@ -61,7 +62,7 @@ def forum_detail(request, forum_id):
     Displays a Forum's Topics.
     """
     forum = get_object_or_404(Forum, pk=forum_id)
-    extra_context = {'forum': forum}
+    extra_context = {'forum': forum, 'title': u'Forum: %s' % forum}
     if request.GET.get('page', 1) in (u'1', 1):
         extra_context['pinned_topics'] = \
             Topic.objects.with_user_details() \
@@ -83,7 +84,8 @@ def new_posts(request):
         last_post_at__gte=request.user.last_login).order_by('-last_post_at')
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
-        template_name='forum/new_posts.html', template_object_name='topic')
+        template_name='forum/new_posts.html',
+        extra_context={'title': u'New posts'}, template_object_name='topic')
 
 @login_required
 def add_topic(request, forum_id):
@@ -119,6 +121,7 @@ def add_topic(request, forum_id):
         'post_form': post_form,
         'forum': forum,
         'preview': preview,
+        'title': u'Add topic',
     }, context_instance=RequestContext(request))
 
 def topic_detail(request, topic_id):
@@ -131,8 +134,11 @@ def topic_detail(request, topic_id):
         Post.objects.with_user_details().filter(topic=topic),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
         template_name='forum/topic_detail.html',
-        extra_context={'topic': topic, 'forum': topic.forum},
-        template_object_name='post')
+        extra_context={
+            'topic': topic,
+            'forum': topic.forum,
+            'title': u'Topic: %s' % topic,
+        }, template_object_name='post')
 
 @login_required
 def add_reply(request, topic_id, quote_post=None):
@@ -167,6 +173,7 @@ def add_reply(request, topic_id, quote_post=None):
         'topic': topic,
         'forum': topic.forum,
         'preview': preview,
+        'title': u'Add reply',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -249,6 +256,7 @@ def edit_post(request, post_id):
         'topic': topic,
         'forum': topic.forum,
         'preview': preview,
+        'title': u'Edit post',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -268,6 +276,7 @@ def delete_post(request, post_id):
             'post': post,
             'topic': topic,
             'forum': topic.forum,
+            'title': u'Delete post',
         }, context_instance=RequestContext(request))
 
 def user_profile(request, user_id):
@@ -283,6 +292,7 @@ def user_profile(request, user_id):
         'forum_user': forum_user,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': recent_topics,
+        'title': u'User profile: %s' % forum_user,
     }, context_instance=RequestContext(request))
 
 def edit_user_profile(request, user_id):
@@ -310,4 +320,5 @@ def edit_user_profile(request, user_id):
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
+        'title': 'Edit user profile',
     }, context_instance=RequestContext(request))
