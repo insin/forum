@@ -8,6 +8,38 @@ This is a basic forum application which should eventually be usable as a
 pluggable application in a Django project, or by itself as a standalone project.
 
 
+TODO
+====
+
+Now
+---
+
+Smaller features which can be implemented now.
+
+- Implement navigation / forum and topic breadcrumbs.
+- Add method to post formatting modules for display of help text on post forms.
+- Tidy HTML where appropriate - for example, there are currently a lot of
+  redundant ``<dt>`` elements in the user profiles displayed next to posts
+  (which are being hidden using CSS), while the labels they contain are being
+  doubled up in the corresponding ``<dd>`` elements - yuck!
+- Validation of avatars:
+
+  - Simple URL filename check.
+  - Restrict based on their dimensions (loading images with PIL) or simply force
+    them to appear at a certain size as a quick fix.
+
+Later
+-----
+
+Features which require a bit more consideration - as in does the application
+*really* need the added complexity they bring? It has a very simple structure at
+the moment.
+
+- Forum groups with ordering defined per group
+- Subforums
+- Tracking the posts a user has viewed and when they last viewed them.
+- Tracking which posts were replied to / offering a threaded view for topics.
+
 Installation
 ============
 
