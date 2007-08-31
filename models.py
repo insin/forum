@@ -468,7 +468,8 @@ class Post(models.Model):
         forum_profile = ForumProfile.objects.get_for_user(self.user)
         super(Post, self).delete()
         forum_profile.update_post_count()
-        self.topic.set_last_post()
+        if self.posted_at = topic.last_post_at:
+            topic.set_last_post()
         if self.posted_at == forum.last_post_at:
             forum.set_last_post()
         transaction.commit_unless_managed()
