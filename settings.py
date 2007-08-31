@@ -1,5 +1,5 @@
 """
-Django settings for the forum application.
+Django settings for using the forum application as a standalone project.
 """
 import os
 DIRNAME = os.path.dirname(__file__)

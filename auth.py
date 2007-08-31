@@ -1,3 +1,6 @@
+"""
+Utility functions related to forum user permissions.
+"""
 from forum.models import ForumProfile
 
 def user_can_edit_post(user, post):

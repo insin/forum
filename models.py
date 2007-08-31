@@ -280,6 +280,13 @@ class Topic(models.Model):
         return self.title
 
     def save(self, **kwargs):
+        """
+        This method is overridden to implement the following:
+
+        - Populating the non-editable ``started_at`` field.
+        - Updating denormalised data in the related ``Forum`` object
+          when creating a new topic.
+        """
         is_new = False
         if not self.id:
             self.started_at = datetime.datetime.now()
@@ -421,6 +428,15 @@ class Post(models.Model):
         return truncate_words(self.body, 25)
 
     def save(self, **kwargs):
+        """
+        This method is overridden to implement the following:
+
+        - Formatting and escaping the raw post body as HTML at save
+          time.
+        - Populating or updating non-editable post time fields.
+        - Populating denormalised data in related ``Topic``, ``Forum``
+          and ``ForumProfile`` objects when creating a new post.
+        """
         self.body = self.body.strip()
         self.body_html = post_formatter.format_post_body(self.body)
         is_new = False
@@ -437,6 +453,16 @@ class Post(models.Model):
             transaction.commit_unless_managed()
 
     def delete(self):
+        """
+        This method is overridden to update denormalised data in related
+        ``Topic``, ``Forum`` and ``ForumProfile`` objects after a post
+        has been deleted.
+
+        In the case where the post being deleted is the latest post in
+        its topic or forum, it is necessary to replace the denormalised
+        data these objects hold about the post with details of the
+        next-newest post.
+        """
         topic = self.topic
         forum = topic.forum
         forum_profile = ForumProfile.objects.get_for_user(self.user)
