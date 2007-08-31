@@ -77,11 +77,11 @@ Quick Start
 For a quick start, navigate to the ``forum`` directory from the command-line and
 execute the following commands::
 
-    manage.py syncdb --noinput
+    python manage.py syncdb --noinput
 
     python create-test-data.py
 
-    manage.py runserver
+    python manage.py runserver
 
 Ensure that the application's static media files are accessible - the default
 ``MEDIA_URL`` setting points at ``http://localhost/media/forum/``, as the
@@ -104,7 +104,7 @@ Pluggable Application Mode
 information on the testing which is yet to be performed.
 
 Add ``'forum'`` to your application's ``INSTALLED_APPS`` setting, then execute
-``manage.py syncdb`` from the command-line to install the tables it requires.
+``python manage.py syncdb`` from the command-line to install the tables it requires.
 
 Include the forum's URLConf in your project's main URLConf at whatever URL you
 like. For example::
