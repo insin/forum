@@ -1,5 +1,5 @@
 Django Forum
--------------
+------------
 
 Copyright (c) 2007, Jonathan Buchanan
 
