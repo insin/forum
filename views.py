@@ -191,9 +191,10 @@ def redirect_to_post(request, post_id, post=None):
     If the Post itself is also given it will not be looked up, saving a
     database query.
 
-    TODO This is an awful, awful hack for a feature which is really only
-         needed once users can specify the number of posts they will see
-         per page.
+    FIXME This is an awful, awful hack. Implement manual post numbering
+          per-topic instead, or figure out a database agnostic way to
+          find out which post number a given post is in its topic without
+          having to load all the topic's post ids in order.
     """
     if post is None:
         post = get_object_or_404(Post, pk=post_id)

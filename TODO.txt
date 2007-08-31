@@ -1,0 +1,49 @@
+======================
+Django Forum TODO List
+======================
+
+:author: Jonathan Buchanan
+
+Top Priority
+============
+
+Dirty hacks and other broken windows.
+
+- Fix the awful, dirty hack in ``forum.views.redirect_to_post`` - manual post
+  numbering via another denormalised field is looking like the easiest option at
+  the moment.
+
+Implement At Will
+=================
+
+Features and fixes which are ready for implementation as and when the time can
+be found.
+
+- Navigation / forum and topic breadcrumbs.
+- Tidy HTML where appropriate - for example, there are currently a lot of
+  redundant ``<dt>`` elements in the user profiles displayed next to posts
+  (which are being hidden using CSS), while the labels they contain are being
+  doubled up in the corresponding ``<dd>`` elements - yuck!
+- Validation of avatars:
+
+  - Simple URL filename check.
+  - Restrict based on their dimensions (loading images with PIL) or simply force
+    them to appear at a certain size as a quick fix.
+
+- Add a method to post formatting modules for display of help text on post
+  forms.
+- Give the BBCode formatter some love - we're currently using the default set of
+  tags it provides. Decide which we really need, which are missing and implement
+  them if need be.
+
+For Future Consideration
+========================
+
+Features which require a bit more consideration - as in does the application
+*really* need the added complexity they bring? It has a very simple structure at
+the moment.
+
+- Forum groups with ordering defined per group
+- Subforums
+- Tracking the posts a user has viewed and when they last viewed them.
+- Tracking which posts were replied to / offering a threaded view for topics.
