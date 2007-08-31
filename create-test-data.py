@@ -1,3 +1,7 @@
+"""
+Uses the Django ORM to create test data for the forum, giving custom
+save methods a workout as it does so.
+"""
 import datetime
 import os
 import random
@@ -59,7 +63,7 @@ consequat tortor venenatis est. Phasellus auctor mi in arcu.
 """
 
 @transaction.commit_on_success
-def create_initial_data():
+def create_test_data():
     # Users
     admin = User.objects.create_user('admin', 'a@a.com', 'admin')
     admin.first_name = 'Admin'
@@ -113,4 +117,4 @@ def create_initial_data():
     testing.posts.create(user=admin, body=POST_TEXT)
 
 if __name__ == '__main__':
-    create_initial_data()
+    create_test_data()
