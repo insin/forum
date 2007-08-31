@@ -5,8 +5,7 @@ Django Forum
 :author: Jonathan Buchanan
 
 This is a basic forum application which should eventually be usable as a
-standalone application in another Django project, or by itself as a standalone
-project.
+pluggable application in a Django project, or by itself as a standalone project.
 
 
 Installation
@@ -19,8 +18,8 @@ The following must be installed before you can use the forum application:
 
 - `Django`_ is obviously required, but you'll need a recent SVN checkout to use
   the forum application - it *will not* work with version 0.96, which is the
-  officially released version of Django at the time of writing.
-- `pytz`_ is used to perform timezone conversions based on the timezone
+  latest Django release at the time of writing.
+- `pytz`_ is required to perform timezone conversions based on the timezone
   registered users can choose as part of their forum profile.
 
 Additionally, the following must be installed if you plan to use the
@@ -31,7 +30,7 @@ forum as standalone project:
   is integrated into existing projects, they will already have their own
   registration mechanism in place.
 
-The following modules are only required in the following circumstances:
+The following modules are only required in certain circumstances:
 
 - `python-markdown`_ is required to use the
   ``forum.formatters.markdown_formatter`` module to to format posts using
@@ -90,7 +89,7 @@ Post formatting modules are responsible for taking raw input entered by forum
 users and transforming and escaping it for display, as well as performing any
 other operations which are dependent on the post formatting syntax being used.
 
-The following post formatting modules are provided with the forum application:
+The following post formatting modules are bundled with the forum application:
 
 - ``forum.formatters.basic_formatter``
 - ``forum.formatters.markdown_formatter``
