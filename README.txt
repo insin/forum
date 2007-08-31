@@ -47,6 +47,79 @@ The following modules are only required in certain circumstances:
 .. _`postmarkup`: http://code.google.com/p/postmarkup/
 .. _`BBCode`: http://en.wikipedia.org/wiki/BBCode
 
+Get The Code
+------------
+
+The forum application is currently available as a `darcs`_ repository. Execute
+the following command from somewhere on your Python path to grab the codebase::
+
+    darcs get http://www.jonathanbuchanan.plus.com/repos/forum/
+
+Should you wish to update the codebase at a later date with any subsequent
+patches which have added to the repository, navigate to the ``forum`` directory
+from the command-line and execute the following command::
+
+    darcs pull
+
+.. _`darcs`: http://www.darcs.net
+
+Standalone Mode
+---------------
+
+At the time of writing, the codebase comes with the standard Django
+``manage.py`` convenience module for administrating projects and a complete
+``settings.py`` module which is filesystem agnostic and uses sqlite as
+the project's database engine.
+
+Quick Start
+~~~~~~~~~~~
+
+For a quick start, navigate to the ``forum`` directory from the command-line and
+execute the following commands::
+
+    manage.py syncdb --noinput
+
+    python create-test-data.py
+
+    manage.py runserver
+
+Ensure that the application's static media files are accessible - the default
+``MEDIA_URL`` setting points at ``http://localhost/media/forum/``, as the
+default settings assume that you're going to be running a webserver locally to
+serve up static media. If you're running `Apache`_, adding the following line to
+your ``httpd.conf`` and restarting the server will ensure that the application's
+media is accessible::
+
+    Alias /media/forum /full/path/to/forum/media
+
+Don't forget to replace ``/full/path/to/`` above with the actual full path to
+your local copy of the codebase, of course.
+
+.. _`Apache`: http://httpd.apache.org
+
+Pluggable Application Mode
+--------------------------
+
+**Note: this has not yet been tested** -- See the `TODO list`_ for more
+information on the testing which is yet to be performed.
+
+Add ``'forum'`` to your application's ``INSTALLED_APPS`` setting, then execute
+``manage.py syncdb`` from the command-line to install the tables it requires.
+
+Include the forum's URLConf in your project's main URLConf at whatever URL you
+like. For example::
+
+    from django.conf.urls.defaults import *
+
+    urlpatterns = patterns(
+        (r'^forum/', include('forum.urls')),
+    )
+
+The forum application's URLs are decoupled using Django's `named URL patterns`_
+feature, so it doesn't mind which URL you choose to have it accessible at.
+
+.. _`TODO list`: http://www.jonathanbuchanan.plus.com/repos/forum/TODO.txt
+.. _`named URL patterns`: http://www.djangoproject.com/documentation/url_dispatch/#naming-url-patterns
 
 Settings
 ========
