@@ -72,5 +72,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'registration',
     'forum',
 )
+
+# Auth settings
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+
+# Forum settings
+FORUM_STANDALONE = True
+FORUM_POST_FORMATTING_MODULE = 'forum.formatters.markdown_formatter'
+
+# Registration settings
+ACCOUNT_ACTIVATION_DAYS = 10

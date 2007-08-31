@@ -1,5 +1,7 @@
 from django.conf.urls.defaults import *
 
+from forum import app_settings
+
 urlpatterns = patterns('forum.views',
     url(r'^$',                                  'forum_index',           name='forum_index'),
     url(r'^newposts/$',                         'new_posts',             name='forum_new_posts'),
@@ -16,6 +18,8 @@ urlpatterns = patterns('forum.views',
     url(r'^user/(?P<user_id>\d+)/edit/$',       'edit_user_profile',     name='forum_edit_user_profile'),
 )
 
-urlpatterns += patterns('',
-    (r'admin/', include('django.contrib.admin.urls')),
-)
+if app_settings.STANDALONE:
+    urlpatterns += patterns('',
+        (r'accounts/', include('registration.urls')),
+        (r'admin/', include('django.contrib.admin.urls')),
+    )

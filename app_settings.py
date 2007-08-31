@@ -6,6 +6,11 @@ the appropriate settings.
 from django.conf import settings
 
 try:
+    STANDALONE = settings.FORUM_STANDALONE
+except AttributeError:
+    STANDALONE = False
+
+try:
     DEFAULT_POSTS_PER_PAGE = settings.FORUM_DEFAULT_POSTS_PER_PAGE
 except AttributeError:
     DEFAULT_POSTS_PER_PAGE = 20

@@ -1,5 +1,5 @@
-{% extends "forum/base.html" %}{% load forum_tags %}
-{% block content %}
+{% extends "base_forum.html" %}{% load forum_tags %}
+{% block main_content %}
 {% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
 <div class="user-actions">
   <a href="{% url forum_edit_user_profile forum_user.id %}">Edit Profile</a>
