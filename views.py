@@ -277,6 +277,7 @@ def user_profile(request, user_id):
         'title': u'User profile: %s' % forum_user,
     }, context_instance=RequestContext(request))
 
+@login_required
 def edit_user_profile(request, user_id):
     """
     Edits a given User's Forum Profile.
