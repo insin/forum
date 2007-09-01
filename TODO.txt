@@ -7,19 +7,16 @@ Django Forum TODO List
 Top Priority
 ============
 
-Dirty hacks and other broken windows.
-
-- Fix the awful, dirty hack in ``forum.views.redirect_to_post`` - manual post
-  numbering via another denormalised field is looking like the easiest option at
-  the moment.
+*Dirty hacks and other broken windows.*
 
 Implement At Will
 =================
 
-Features, fixes and tasks which are ready to be implementated or performed as
-and when the time can be found.
+*Features, fixes and tasks which are ready to be implementated or performed as
+and when the time can be found.*
 
 - Navigation / forum and topic breadcrumbs.
+- Topic deletion.
 - Tidy HTML where appropriate - for example, there are currently a lot of
   redundant ``<dt>`` elements in the user profiles displayed next to posts
   (which are being hidden using CSS), while the labels they contain are being
@@ -52,9 +49,9 @@ and when the time can be found.
 For Future Consideration
 ========================
 
-Features which require a bit more consideration - as in does the application
-*really* need the added complexity they bring? It has a very simple structure at
-the moment.
+*Features which require a bit more consideration - as in does the application
+really need the added complexity they bring? It has a very simple structure at
+the moment.*
 
 - Forum groups with ordering defined per group
 - Subforums

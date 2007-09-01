@@ -419,6 +419,23 @@ class PostManager(models.Manager):
             ]
         )
 
+    def decrement_num_in_topic(self, topic, start_at):
+        """
+        Decrements ``num_in_topic`` for all posts in the given topic
+        which have a ``num_in_topic`` greater than ``start_at``.
+        """
+        opts = self.model._meta
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE %(post_table)s
+            SET %(num_in_topic)s=%(num_in_topic)s-1
+            WHERE %(topic_fk)s=%%s
+              AND %(num_in_topic)s>%%s""" % {
+                'post_table': qn(opts.db_table),
+                'num_in_topic': qn(opts.get_field('num_in_topic').column),
+                'topic_fk': qn(opts.get_field('topic').column),
+            }, [topic.id, start_at])
+
 class Post(models.Model):
     """
     A post which forms part of a discussion.
@@ -430,6 +447,9 @@ class Post(models.Model):
     posted_at = models.DateTimeField(editable=False)
     edited_at = models.DateTimeField(editable=False, null=True, blank=True)
     user_ip   = models.IPAddressField(editable=False, null=True, blank=True)
+
+    # Denormalised data
+    num_in_topic = models.PositiveIntegerField(default=0)
 
     objects = PostManager()
 
@@ -451,6 +471,7 @@ class Post(models.Model):
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()
+            self.num_in_topic = self.topic.post_count + 1
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
@@ -464,8 +485,8 @@ class Post(models.Model):
     def delete(self):
         """
         This method is overridden to update denormalised data in related
-        ``Topic``, ``Forum`` and ``ForumProfile`` objects after a post
-        has been deleted.
+        ``Topic``, ``Forum``, ``ForumProfile`` and other ``Post``
+        objects after the post has been deleted.
 
         In the case where the post being deleted is the latest post in
         its topic or forum, it is necessary to replace the denormalised
@@ -481,11 +502,22 @@ class Post(models.Model):
             topic.set_last_post()
         if self.posted_at == forum.last_post_at:
             forum.set_last_post()
+        self._default_manager.decrement_num_in_topic(topic, self.num_in_topic)
         transaction.commit_unless_managed()
 
     class Admin:
         list_display = ('__unicode__', 'user', 'topic', 'posted_at',
                         'edited_at', 'user_ip')
+        fields = (
+            (None, {
+                'fields': ('user', 'topic', 'body'),
+            }),
+            (u'Denormalised data', {
+                'classes': 'collapse',
+                'description': DENORMALISED_DATA_NOTICE,
+                'fields': ('num_in_topic',),
+            }),
+        )
         search_fields = ('body',)
 
     @models.permalink

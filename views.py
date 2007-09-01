@@ -190,31 +190,12 @@ def redirect_to_post(request, post_id, post=None):
 
     If the Post itself is also given it will not be looked up, saving a
     database query.
-
-    FIXME This is an awful, awful hack. Implement manual post numbering
-          per-topic instead, or figure out a database agnostic way to
-          find out which post number a given post is in its topic without
-          having to load all the topic's post ids in order.
     """
     if post is None:
         post = get_object_or_404(Post, pk=post_id)
-    opts = Post._meta
-    query = """
-    SELECT %(post_pk)s
-    FROM %(post)s
-    WHERE %(topic_fk)s = %%s
-    ORDER BY %(posted_at)s ASC""" % {
-        'post_pk': qn(opts.pk.column),
-        'post': qn(opts.db_table),
-        'topic_fk': qn(opts.get_field('topic').column),
-        'posted_at': qn(opts.get_field('posted_at').column),
-    }
-    cursor = connection.cursor()
-    cursor.execute(query, [post.topic_id])
-    post_num = [int(row[0]) for row in cursor.fetchall()].index(post.id) + 1
     posts_per_page = get_posts_per_page(request.user)
-    page, remainder = divmod(post_num, posts_per_page)
-    if post_num < posts_per_page or remainder != 0:
+    page, remainder = divmod(post.num_in_topic, posts_per_page)
+    if post.num_in_topic < posts_per_page or remainder != 0:
         page += 1
     return HttpResponseRedirect('%s?page=%s#post%s' \
         % (reverse('forum_topic_detail', args=(smart_unicode(post.topic_id),)),
