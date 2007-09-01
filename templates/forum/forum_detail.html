@@ -1,6 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block main_content %}
+{% if forum.description %}<p class="description">{{ forum.description|escape }}</p>{% endif %}
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
@@ -23,7 +24,7 @@
 {% for topic in pinned_topics %}
   <tr class="topic {% cycle odd,even %}">
     <td>
-      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+      Pinned: <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
@@ -42,7 +43,7 @@
 {% for topic in topic_list %}
   <tr class="topic {% cycle odd,even %}">
     <td>
-      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>

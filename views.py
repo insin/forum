@@ -62,7 +62,11 @@ def forum_detail(request, forum_id):
     Displays a Forum's Topics.
     """
     forum = get_object_or_404(Forum, pk=forum_id)
-    extra_context = {'forum': forum, 'title': u'Forum: %s' % forum}
+    extra_context = {
+        'forum': forum,
+        'title': forum.name,
+        'posts_per_page': get_posts_per_page(request.user),
+    }
     if request.GET.get('page', 1) in (u'1', 1):
         extra_context['pinned_topics'] = \
             Topic.objects.with_user_details() \
@@ -85,7 +89,10 @@ def new_posts(request):
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
-        extra_context={'title': u'New posts'}, template_object_name='topic')
+        extra_context={
+            'title': u'New posts',
+            'posts_per_page': get_posts_per_page(request.user),
+        }, template_object_name='topic')
 
 @login_required
 def add_topic(request, forum_id):
@@ -137,7 +144,7 @@ def topic_detail(request, topic_id):
         extra_context={
             'topic': topic,
             'forum': topic.forum,
-            'title': u'Topic: %s' % topic,
+            'title': topic.title,
         }, template_object_name='post')
 
 @login_required
@@ -173,7 +180,7 @@ def add_reply(request, topic_id, quote_post=None):
         'topic': topic,
         'forum': topic.forum,
         'preview': preview,
-        'title': u'Add reply',
+        'title': u'Add reply to %s' % topic.title,
     }, context_instance=RequestContext(request))
 
 @login_required
