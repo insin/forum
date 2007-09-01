@@ -104,10 +104,10 @@ def post_time(posted_at, user=None):
     elif post_date == today - datetime.timedelta(days=1):
         date = u'Yesterday'
     else:
-        date = u'on %s' % dateformat.format(post_date, 'M dS Y')
+        date = u'on %s' % dateformat.format(post_date, 'M jS Y')
     return u'%s at %s' % (date,
                           dateformat.time_format(posted_at.time(), 'H:i A'))
 
 @register.filter
 def joined_date(date):
-    return dateformat.format(date, 'M dS Y')
+    return dateformat.format(date, 'M jS Y')
