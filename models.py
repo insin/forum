@@ -499,7 +499,9 @@ class Post(models.Model):
         super(Post, self).delete()
         forum_profile.update_post_count()
         if self.posted_at == topic.last_post_at:
-            topic.set_last_post()
+            topic.set_last_post() # Includes a post count update
+        else:
+            topic.update_post_count()
         if self.posted_at == forum.last_post_at:
             forum.set_last_post()
         self._default_manager.decrement_num_in_topic(topic, self.num_in_topic)
