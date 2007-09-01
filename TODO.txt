@@ -17,10 +17,6 @@ and when the time can be found.*
 
 - Navigation / forum and topic breadcrumbs.
 - Topic deletion.
-- Tidy HTML where appropriate - for example, there are currently a lot of
-  redundant ``<dt>`` elements in the user profiles displayed next to posts
-  (which are being hidden using CSS), while the labels they contain are being
-  doubled up in the corresponding ``<dd>`` elements - yuck!
 - Testing in non-standalone mode:
 
   - Create a project which itself uses django-registration to ensure that the

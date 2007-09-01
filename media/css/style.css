@@ -19,8 +19,7 @@ div.post { overflow: hidden; padding: 0 10px; }
     div.postbody ul.post-actions li { list-style-type: none; float: left; margin-left: 10px; }
     p.author { margin: 0 0 .5em 0; }
   div.profile { border-left: 1px solid #fff; float: right; width: 22%; margin: 5px 0 10px 0; }
-    div.profile dt { display: none; }
-    div.profile dd { margin-left: 8px; }
-    div.profile dd.user { margin-bottom: 1em; }
+    div.profile dd, div.profile dt { margin-left: 8px; }
+    div.profile dd.postcount { margin-top: 1em; }
 
 #debug { clear: both; }

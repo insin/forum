@@ -32,26 +32,19 @@
   <div class="profile">
     <dl>
       {% if post.user_avatar %}
-      <dt class="avatar">Avatar:</dt>
-      <dd class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""></dt>
+      <dt class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""></dt>
       {% endif %}
-      <dt class="user">User:</dt>
-      <dd class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dd>
+      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
       {% if post.user_title %}
-      <dt class="title">Title:</dt>
       <dd class="title">{{ post.user_title|escape }}</dt>
       {% endif %}
-      <dt class="postcount">Posts:</dt>
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
-      <dt class="joined">Joined:</dt>
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
-      <dt class="location">Location:</dt>
       <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
       {% endif %}
       {% if user|is_moderator and post.user_ip %}
-      <dt class="ip">Post IP:</dt>
-      <dd class="ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
+      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
       {% endif %}
     </dl>
   </div>
