@@ -1,4 +1,3 @@
-import StringIO
 import urllib
 
 from django import newforms as forms
