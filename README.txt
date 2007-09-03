@@ -19,6 +19,7 @@ The following must be installed before you can use the forum application:
 - `Django`_ is obviously required, but you'll need a recent SVN checkout to use
   the forum application - it *will not* work with version 0.96, which is the
   latest Django release at the time of writing.
+- `Python Imaging Library`_ (PIL) is required for validation of user avatars.
 - `pytz`_ is required to perform timezone conversions based on the timezone
   registered users can choose as part of their forum profile.
 
@@ -39,7 +40,8 @@ The following modules are only required in certain circumstances:
   ``forum.formatters.bbcode_formatter`` module to format posts using a
   `BBCode`_-like syntax.
 
-.. _`Django`: http://www.djangoproject.com
+.. _`Django`: http://www.djangoproject.com/
+.. _`Python Imaging Library`: http://www.pythonware.com/products/pil/
 .. _`pytz`: http://pytz.sourceforge.net/
 .. _`django-registration`: http://code.google.com/p/django-registration/
 .. _`python-markdown`: http://www.freewisdom.org/projects/python-markdown/
@@ -120,6 +122,7 @@ feature, so it doesn't mind which URL you choose to have it accessible at.
 
 .. _`TODO list`: http://www.jonathanbuchanan.plus.com/repos/forum/TODO.txt
 .. _`named URL patterns`: http://www.djangoproject.com/documentation/url_dispatch/#naming-url-patterns
+
 
 Settings
 ========
