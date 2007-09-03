@@ -11,7 +11,7 @@ class ForumProfileBaseForm(forms.BaseForm):
     Implements overkill validation of user avatars.
     """
     def clean_avatar(self):
-        if 'avatar' in self.cleaned_data and \
+        if self.cleaned_data['avatar'] and \
            (app_settings.MAX_AVATAR_FILESIZE is not None or \
             app_settings.ALLOWED_AVATAR_FORMATS is not None or \
             app_settings.MAX_AVATAR_DIMENSIONS is not None):

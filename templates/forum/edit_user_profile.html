@@ -1,11 +1,64 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
 <form name="editUserProfileForm" id="editUserProfileForm" action="." method="POST">
-<table>
-<tbody>
-{{ form }}
-</tbody>
-</table>
+<fieldset class="module aligned user-profile">
+  <h2>User Profile</h2>
+  {% if form.title %}<div class="form-row">
+    {% if form.title.errors %}{{ form.title.errors.as_ul }}{% endif %}
+    {{ form.title.label_tag }}
+    <div class="form-field">
+      {{ form.title }}
+    </div>
+  </div>{% endif %}
+  <div class="form-row">
+    {% if form.location.errors %}{{ form.location.errors.as_ul }}{% endif %}
+    {{ form.location.label_tag }}
+    <div class="form-field">
+      {{ form.location }}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.avatar.errors %}{{ form.avatar.errors.as_ul }}{% endif %}
+    {{ form.avatar.label_tag }}
+    <div class="form-field{% if forum_profile.avatar %} avatar-field{% endif %}">
+      {{ form.avatar }}
+      {% if forum_profile.avatar %}
+      <img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>
+      {% endif %}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.website.errors %}{{ form.website.errors.as_ul }}{% endif %}
+    {{ form.website.label_tag }}
+    <div class="form-field">
+      {{ form.website }}
+    </div>
+  </div>
+</fieldset>
+<fieldset class="module aligned board-settings">
+  <h2>Board Settings</h2>
+  <div class="form-row">
+    {% if form.timezone.errors %}{{ form.timezone.errors.as_ul }}{% endif %}
+    {{ form.timezone.label_tag }}
+    <div class="form-field">
+      {{ form.timezone }}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.topics_per_page.errors %}{{ form.topics_per_page.errors.as_ul }}{% endif %}
+    {{ form.topics_per_page.label_tag }}
+    <div class="form-field">
+      {{ form.topics_per_page }}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.posts_per_page.errors %}{{ form.posts_per_page.errors.as_ul }}{% endif %}
+    {{ form.posts_per_page.label_tag }}
+    <div class="form-field">
+      {{ form.posts_per_page }}
+    </div>
+  </div>
+</fieldset>
 <div class="buttons">
   <input type="submit" value="Edit User Profile">
   <a href="{{ forum_profile.get_absolute_url }}">Cancel</a>

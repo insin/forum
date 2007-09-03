@@ -2,17 +2,23 @@ body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-si
 a img { border: none; }
 img { vertical-align: text-bottom; }
 
+/* Tables */
 table  { border-collapse: collapse; width: 100%; }
 td, th { padding: .2em .5em; border: 1px solid #999; }
 td p.description { margin: 0; }
 
+/* Common formatting */
 .odd { background-color: #e9e9f9; }
 .even { background-color: #e3e3f3; }
+.module { border: 1px solid #ccc; margin-bottom: 5px; background-color: #fff; }
+.module h2, .module caption { margin: 0; padding: 2px 5px 3px 5px; font-size: 11px; text-align: left; font-weight: bold; background: #595979 url("../img/module-bg.gif") top left repeat-x; color: #fff; border-bottom: 0; }
 .clear { clear: both; }
 
+/* Navigation elements */
 div.paginator { float: left; }
 div.topic-actions { float: right; }
 
+/* Posts */
 div.post { overflow: hidden; padding: 0 10px; }
   div.postbody { float: left; width: 76%; clear: both; }
     div.postbody ul.post-actions { float: right; margin: 0; }
@@ -21,5 +27,13 @@ div.post { overflow: hidden; padding: 0 10px; }
   div.profile { border-left: 1px solid #fff; float: right; width: 22%; margin: 5px 0 10px 0; }
     div.profile dd, div.profile dt { margin-left: 8px; }
     div.profile dd.postcount { margin-top: 1em; }
+
+/* Forms */
+fieldset { padding: 0; }
+.form-row { height: 100%; overflow: hidden; padding: 8px 12px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
+.form-row img, .form-row input { vertical-align: middle; }
+.aligned label { padding: 0 1em 3px 0; float: left; width: 9em; }
+.form-field { float: left; }
+.avatar-field input, .avatar-field img { vertical-align: top; }
 
 #debug { clear: both; }

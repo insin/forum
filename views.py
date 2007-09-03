@@ -297,6 +297,7 @@ def user_profile(request, user_id):
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': recent_topics,
         'title': u'User profile: %s' % forum_user,
+        'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -326,4 +327,5 @@ def edit_user_profile(request, user_id):
         'forum_profile': user_profile,
         'form': form,
         'title': 'Edit user profile',
+        'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
