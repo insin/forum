@@ -29,12 +29,13 @@ div.post { overflow: hidden; padding: 0 10px; }
     div.profile dd.postcount { margin-top: 1em; }
 
 /* Forms */
-fieldset { padding: 0; }
+fieldset { padding: 0; margin-left: 0; margin-right: 0; }
 .form-row { height: 100%; overflow: hidden; padding: 8px 12px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
 .form-row img, .form-row input { vertical-align: middle; }
 .aligned label { padding: 0 1em 3px 0; float: left; width: 9em; }
 .checkbox-row label { pading: 0 0 3px 0; float: none; width: auto; }
 .form-field { float: left; }
 .avatar-field input, .avatar-field img { vertical-align: top; }
+.post-preview .body { padding: 0 12px; }
 
 #debug { clear: both; }

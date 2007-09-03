@@ -1,23 +1,45 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
 {% if preview %}
-<div class="preview">
-<h2>Post Preview</h2>
-<div class="body">
-{{ preview }}
+<div class="module post-preview">
+  <h2>Topic Preview</h2>
+  <div class="body">
+  {{ preview }}
+  </div>
 </div>
 {% endif %}
 <form name="addTopicForm" id="addTopicForm" action="." method="POST">
-<table>
-<tbody>
-{{ topic_form }}
-{{ post_form }}
-</tbody>
-</table>
-<div class="buttons">
-  <input type="submit" name="submit" value="Add Topic">
-  <input type="submit" name="preview" value="Preview Topic">
-  <a href="{{ forum.get_absolute_url }}">Cancel</a>
-</div>
+  <fieldset class="module aligned">
+    <h2>Topic Details</h2>
+    <div class="form-row">
+      {% if topic_form.title.errors %}{{ topic_form.title.errors.as_ul }}{% endif %}
+      {{ topic_form.title.label_tag }}
+      <div class="form-field">
+        {{ topic_form.title }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if topic_form.description.errors %}{{ topic_form.description.errors.as_ul }}{% endif %}
+      {{ topic_form.description.label_tag }}
+      <div class="form-field">
+        {{ topic_form.description }}
+      </div>
+    </div>
+  </fieldset>
+  <fieldset class="module aligned">
+    <h2>Opening Post</h2>
+    <div class="form-row">
+      {% if post_form.body.errors %}{{ post_form.body.errors.as_ul }}{% endif %}
+      {{ post_form.body.label_tag }}
+      <div class="form-field">
+        {{ post_form.body }}
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" name="submit" value="Add Topic">
+    <input type="submit" name="preview" value="Preview Topic">
+    <a href="{{ forum.get_absolute_url }}">Cancel</a>
+  </div>
 </form>
 {% endblock %}

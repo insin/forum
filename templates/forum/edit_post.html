@@ -1,22 +1,27 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
 {% if preview %}
-<div class="preview">
-<h2>Post Preview</h2>
-<div class="body">
-{{ preview }}
+<div class="module post-preview">
+  <h2>Post Preview</h2>
+  <div class="body">
+  {{ preview }}
+  </div>
 </div>
 {% endif %}
 <form name="editPostForm" id="editPostForm" action="." method="POST">
-<table>
-<tbody>
-{{ form }}
-</tbody>
-</table>
-<div class="buttons">
+  <fieldset class="module aligned">
+    <div class="form-row">
+      {% if form.body.errors %}{{ form.body.errors.as_ul }}{% endif %}
+      {{ form.body.label_tag }}
+      <div class="form-field">
+        {{ form.body }}
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
   <input type="submit" name="submit" value="Edit Post">
   <input type="submit" name="preview" value="Preview Post">
-  <a href="{{ post.get_absolute_url }}">Cancel</a>
-</div>
+    <a href="{{ post.get_absolute_url }}">Cancel</a>
+  </div>
 </form>
 {% endblock %}
