@@ -163,6 +163,14 @@ The number of topics which are displayed by default on any page where topics are
 listed - this applies to registered users who do not choose to override the
 number of topics per page and to anonymous users.
 
+FORUM_MAX_AVATAR_FILESIZE
+--------------------------
+
+Default: ``512 * 1024`` (512 kB)
+
+The maximum allowable filesize for user avatars, specified in bytes. To disable
+validation of user avatar filesizes, set this setting to ``None``.
+
 FORUM_ALLOWED_AVATAR_FORMATS
 ----------------------------
 

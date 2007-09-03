@@ -26,6 +26,11 @@ except AttributeError:
     POST_FORMATTING_MODULE = 'forum.formatters.basic_formatter'
 
 try:
+    MAX_AVATAR_FILESIZE = settings.FORUM_MAX_AVATAR_FILESIZE
+except AttributeError:
+    MAX_AVATAR_FILESIZE = 512 * 1024 # 512 kB
+
+try:
     ALLOWED_AVATAR_FORMATS = settings.FORUM_ALLOWED_AVATAR_FORMATS
 except AttributeError:
     ALLOWED_AVATAR_FORMATS = ('GIF', 'JPEG', 'PNG')
