@@ -53,8 +53,8 @@ class ForumProfile(models.Model):
     group    = models.CharField(max_length=1, choices=USER_GROUP_CHOICES, default='U')
     title    = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
-    avatar   = models.URLField(verify_exists=False, blank=True)
-    website  = models.URLField(verify_exists=False, blank=True)
+    avatar   = models.URLField(max_length=200, verify_exists=False, blank=True)
+    website  = models.URLField(max_length=200, verify_exists=False, blank=True)
 
     # Board settings
     timezone        = models.CharField(max_length=25, choices=TIMEZONE_CHOICES, blank=True)

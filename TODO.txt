@@ -30,12 +30,6 @@ and when the time can be found.*
     registration templates into the ``/forum/templates/`` directory as one of
     the installation steps for using the forum in standalone mode.
 
-- Validation of avatars:
-
-  - Simple URL filename check.
-  - Restrict based on their dimensions (loading images with PIL) or simply force
-    them to appear at a certain size as a quick fix.
-
 - Add a method to post formatting modules for display of help text on post
   forms.
 - Give the BBCode formatter some love - we're currently using the default set of

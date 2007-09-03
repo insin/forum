@@ -12,6 +12,7 @@ from django.views.generic.list_detail import object_list
 from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
+from forum.forms import ForumProfileBaseForm
 from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
@@ -43,6 +44,18 @@ def get_posts_per_page(user):
                app_settings.DEFAULT_POSTS_PER_PAGE
     else:
         return app_settings.DEFAULT_POSTS_PER_PAGE
+
+def get_avatar_dimensions():
+    """
+    Creates a string specifying dimensons for user avatars. This will be
+    the empty string unless the forum is configured to force avatars to
+    display with particular dimensions.
+    """
+    if app_settings.MAX_AVATAR_DIMENSIONS is not None and \
+       app_settings.FORCE_AVATAR_DIMENSIONS:
+        return u' width="%s" height="%s"' % app_settings.MAX_AVATAR_DIMENSIONS
+    else:
+        return u''
 
 ##################
 # View Functions #
@@ -145,6 +158,7 @@ def topic_detail(request, topic_id):
             'topic': topic,
             'forum': topic.forum,
             'title': topic.title,
+            'avatar_dimensions': get_avatar_dimensions(),
         }, template_object_name='post')
 
 @login_required
@@ -266,6 +280,7 @@ def delete_post(request, post_id):
             'topic': topic,
             'forum': topic.forum,
             'title': u'Delete post',
+            'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
 def user_profile(request, user_id):
@@ -298,7 +313,7 @@ def edit_user_profile(request, user_id):
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,
-        fields=editable_fields)
+        form=ForumProfileBaseForm, fields=editable_fields)
     if request.method == 'POST':
         form = UserProfileForm(data=request.POST)
         if form.is_valid():

@@ -163,6 +163,31 @@ The number of topics which are displayed by default on any page where topics are
 listed - this applies to registered users who do not choose to override the
 number of topics per page and to anonymous users.
 
+FORUM_ALLOWED_AVATAR_FORMATS
+----------------------------
+
+Default: ``('GIF', 'JPEG', 'PNG')``
+
+A tuple of allowed image formats for user avatars. To disable validation of user
+avatar image formats, set this setting to ``None``.
+
+FORUM_MAX_AVATAR_DIMENSIONS
+---------------------------
+
+Default: ``(64, 64)``
+
+A two-tuple, (width, height), of maximum allowable dimensions for user avatars.
+To disable validation of user avatar dimensions, set this setting to ``None``.
+
+FORUM_FORCE_AVATAR_DIMENSIONS
+-----------------------------
+
+Default: ``True``
+
+Whether or not ``<img>`` tags created for user avatars should include ``width``
+and ``height`` attributes to force all avatars to be displayed with the
+dimensions specified in the ``FORUM_MAX_AVATAR_DIMENSIONS`` setting.
+
 
 Post Formatting Modules
 =======================
