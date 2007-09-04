@@ -24,7 +24,7 @@
       "website": "",
       "group": "A",
       "title": "",
-      "post_count": 2,
+      "post_count": 3,
       "posts_per_page": null,
       "avatar": "",
       "auto_fast_reply": true,
@@ -39,12 +39,12 @@
     "model": "forum.topic",
     "fields": {
       "view_count": 0,
-      "last_post_at": "2007-09-04 10:07:55",
+      "last_post_at": "2007-09-04 10:10:00",
       "locked": false,
       "description": "",
       "forum": 1,
       "title": "Test Topic 1",
-      "post_count": 2,
+      "post_count": 3,
       "pinned": false,
       "last_username": "admin",
       "user": 1,
@@ -82,6 +82,20 @@
     }
   },
   {
+    "pk": "3",
+    "model": "forum.post",
+    "fields": {
+      "body": "Test post 3.",
+      "edited_at": null,
+      "posted_at": "2007-09-04 10:10:00",
+      "body_html": "<p>Test post 3.<\/p>",
+      "user_ip": null,
+      "topic": 1,
+      "user": 1,
+      "num_in_topic": 3
+    }
+  },
+  {
     "pk": "1",
     "model": "forum.forum",
     "fields": {
@@ -93,7 +107,7 @@
       "last_topic_title": "Test Topic 1",
       "last_topic_id": 1,
       "hidden": false,
-      "last_post_at": "2007-09-04 10:07:55",
+      "last_post_at": "2007-09-04 10:10:00",
       "order": 1,
       "description": "Test description."
     }
