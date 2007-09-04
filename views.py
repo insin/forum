@@ -2,7 +2,7 @@ from django import newforms as forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.db import connection
+from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -108,6 +108,7 @@ def new_posts(request):
         }, template_object_name='topic')
 
 @login_required
+@transaction.commit_on_success
 def add_topic(request, forum_id):
     """
     Adds a Topic to a Forum.
@@ -165,6 +166,66 @@ def topic_detail(request, topic_id):
         }, template_object_name='post')
 
 @login_required
+@transaction.commit_on_success
+def edit_topic(request, topic_id):
+    """
+    Edits the given Topic and its starting Post.
+    """
+    topic = get_object_or_404(Topic, pk=topic_id)
+    post = topic.get_first_post()
+    if not auth.user_can_edit_post(request.user, post):
+        return HttpResponseForbidden()
+    EditTopicForm = forms.form_for_instance(topic, fields=('title', 'description'))
+    TopicPostForm = forms.form_for_instance(post, fields=('body',))
+    preview = None
+    if request.method == 'POST':
+        topic_form = EditTopicForm(request.POST)
+        post_form = TopicPostForm(request.POST)
+        if topic_form.is_valid() and post_form.is_valid():
+            if 'preview' in request.POST:
+                preview = post_formatter.format_post_body(post_form.cleaned_data['body'])
+            elif 'submit' in request.POST:
+                topic = topic_form.save(commit=True)
+                post = post_form.save(commit=True)
+                return HttpResponseRedirect(topic.get_absolute_url())
+    else:
+        topic_form = EditTopicForm()
+        post_form = TopicPostForm()
+    return render_to_response('forum/edit_topic.html', {
+        'topic': topic,
+        'post': post,
+        'topic_form': topic_form,
+        'post_form': post_form,
+        'forum': topic.forum,
+        'preview': preview,
+        'title': u'Edit topic',
+    }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
+def delete_topic(request, topic_id):
+    """
+    Deletes a Topic after confirmation is made via POST.
+    """
+    topic = get_object_or_404(Topic, pk=topic_id)
+    post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
+    if not auth.user_can_edit_post(request.user, post):
+        return HttpResponseForbidden()
+    forum = topic.forum
+    if request.method == 'POST':
+        topic.delete()
+        return HttpResponseRedirect(forum.get_absolute_url())
+    else:
+        return render_to_response('forum/delete_topic.html', {
+            'post': post,
+            'topic': topic,
+            'forum': forum,
+            'title': u'Delete topic',
+            'avatar_dimensions': get_avatar_dimensions(),
+        }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
 def add_reply(request, topic_id, quote_post=None):
     """
     Adds a Post to a Topic.
@@ -239,10 +300,15 @@ def redirect_to_last_post(request, topic_id):
 def edit_post(request, post_id):
     """
     Edits the given Post.
+
+    A request to edit the first post in a Topic is interpreted as a
+    request to edit the Topic itself.
     """
     post = get_object_or_404(Post, pk=post_id)
     if not auth.user_can_edit_post(request.user, post):
         return HttpResponseForbidden()
+    if post.num_in_topic == 1:
+        return edit_topic(request, post.topic_id)
     EditPostForm = forms.form_for_instance(post, fields=('body',))
     preview = None
     if request.method == 'POST':
@@ -266,14 +332,20 @@ def edit_post(request, post_id):
     }, context_instance=RequestContext(request))
 
 @login_required
+@transaction.commit_on_success
 def delete_post(request, post_id):
     """
     Deletes a Post after deletion is confirmed via POST.
+
+    A request to delete the first post in a Topic is interpreted
+    a request to delete the topic itself.
     """
     post = get_object_or_404(Post.objects.with_user_details(), pk=post_id)
     if not auth.user_can_edit_post(request.user, post):
         return HttpResponseForbidden()
     topic = post.topic
+    if post.num_in_topic == 1:
+        return delete_topic(request, post.topic_id)
     if request.method == 'POST':
         post.delete()
         return HttpResponseRedirect(topic.get_absolute_url())

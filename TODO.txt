@@ -16,7 +16,6 @@ Implement At Will
 and when the time can be found.*
 
 - Navigation / forum and topic breadcrumbs.
-- Topic deletion.
 - Testing in non-standalone mode:
 
   - Create a project which itself uses django-registration to ensure that the
@@ -35,7 +34,7 @@ and when the time can be found.*
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
-  
+
 *Testing.*
 
 - Write model tests to validate that overridden ``save`` and ``delete`` methods

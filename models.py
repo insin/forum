@@ -25,6 +25,30 @@ class ForumProfileManager(models.Manager):
             user._forum_profile_cache = profile
         return user._forum_profile_cache
 
+    def update_post_counts_in_bulk(self, users):
+        """
+        Updates the post counts of all given users.
+        """
+        opts = self.model._meta
+        post_opts = Post._meta
+        query = """
+        UPDATE %(forum_profile)s
+        SET %(post_count)s = (
+            SELECT COUNT(*)
+            FROM %(post)s
+            WHERE %(post)s.%(post_user_fk)s = %(forum_profile)s.%(user_fk)s
+        )
+        WHERE %(user_fk)s IN (%(user_pks)s)""" % {
+            'forum_profile': qn(opts.db_table),
+            'post_count': qn(opts.get_field('post_count').column),
+            'post': qn(post_opts.db_table),
+            'post_user_fk': qn(post_opts.get_field('user').column),
+            'user_fk': qn(opts.get_field('user').column),
+            'user_pks': ','.join(['%s'] * len(users)),
+        }
+        cursor = connection.cursor()
+        cursor.execute(query, [user._get_pk_val() for user in users])
+
 TIMEZONE_CHOICES = tuple([(tz, tz) for tz in common_timezones])
 
 USER_GROUP_CHOICES = (
@@ -173,7 +197,7 @@ class Forum(models.Model):
 
     def update_topic_count(self):
         """
-        Executes a simple SQL ``UPDATE`` to increment this forum's
+        Executes a simple SQL ``UPDATE`` to update this forum's
         ``topic_count``.
         """
         opts = self._meta
@@ -191,9 +215,17 @@ class Forum(models.Model):
 
         If the last post is not given, it will be looked up.
         """
-        if post is None:
-            post = Post.objects.filter(topic__forum=self) \
-                                .order_by('-posted_at', '-id')[0]
+        try:
+            if post is None:
+                post = Post.objects.filter(topic__forum=self) \
+                                    .order_by('-posted_at', '-id')[0]
+            params = [post.posted_at, post.topic._get_pk_val(),
+                      post.topic.title, post.user._get_pk_val(),
+                      post.user.username, self._get_pk_val()]
+        except IndexError:
+            # No post was given and there was no latest Post, so there
+            # must not be any Topics currently in the Forum.
+            params = [None, None, '', None, '', self._get_pk_val()]
         opts = self._meta
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
@@ -202,9 +234,7 @@ class Forum(models.Model):
             qn(opts.get_field('last_topic_title').column),
             qn(opts.get_field('last_user_id').column),
             qn(opts.get_field('last_username').column),
-            qn(opts.pk.column)), [post.posted_at, post.topic._get_pk_val(),
-                                  post.topic.title, post.user._get_pk_val(),
-                                  post.user.username, self._get_pk_val()])
+            qn(opts.pk.column)), params)
 
     set_last_post.alters_data = True
 
@@ -290,6 +320,9 @@ class Topic(models.Model):
         - Populating the non-editable ``started_at`` field.
         - Updating denormalised data in the related ``Forum`` object
           when creating a new topic.
+        - If ``title`` has been updated and this Topic was set in its
+          Forum's last post details, it needs to be updated in the
+          Forum as well.
         """
         is_new = False
         if not self.id:
@@ -299,14 +332,31 @@ class Topic(models.Model):
         if is_new:
             self.forum.update_topic_count()
             transaction.commit_unless_managed()
+        elif self.id == self.forum.last_topic_id and \
+             self.title != self.forum.last_topic_title:
+            self.forum.set_last_post()
+            transaction.commit_unless_managed()
 
     def delete(self):
         """
-        This method is overridden to update denormalised data in the
-        related ``Forum`` object after a topic has been deleted.
+        This method is overridden to update denormalised data in
+        related ``Forum`` and ``ForumProfile`` objects after a topic
+        has been deleted:
+
+        - The forum's topic count always has to be updated.
+        - The post counts of profiles of any users who posted in the
+          topic always have to be updated.
+        - If it was set as the topic in the forum's last post details,
+          these need to be updated.
         """
+        forum = self.forum
+        was_last_topic = self.id == forum.last_topic_id
+        affected_users = list(User.objects.filter(posts__topic=self).distinct())
         super(Topic, self).delete()
-        self.forum.update_topic_count()
+        forum.update_topic_count()
+        if was_last_topic:
+            forum.set_last_post()
+        ForumProfile.objects.update_post_counts_in_bulk(affected_users)
         transaction.commit_unless_managed()
 
     class Meta:
@@ -334,6 +384,12 @@ class Topic(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_topic_detail', (smart_unicode(self.id),))
+
+    def get_first_post(self):
+        """
+        Gets the first Post in this Topic.
+        """
+        return self.posts.order_by('num_in_topic')[0]
 
     def update_post_count(self):
         """
@@ -490,12 +546,18 @@ class Post(models.Model):
         """
         This method is overridden to update denormalised data in related
         ``Topic``, ``Forum``, ``ForumProfile`` and other ``Post``
-        objects after the post has been deleted.
+        objects after the post has been deleted:
 
-        In the case where the post being deleted is the latest post in
-        its topic or forum, it is necessary to replace the denormalised
-        data these objects hold about the post with details of the
-        next-newest post.
+        - The ``post_count`` of the ForumProfile for the User who made
+          the post always needs to be updated.
+        - The ``post_count`` of the post's Topic always needs to be
+          updated.
+        - If this was the last post in its Topic, its last post details
+          need to be updated to the new last post.
+        - If this was the last post in its Topic's Forum, its last post
+          details need to be updated to the new last post.
+        - If this was not the last post in its Topic, the
+          ``num_in topic`` of all later posts need to be decremented.
         """
         topic = self.topic
         forum = topic.forum
@@ -508,7 +570,7 @@ class Post(models.Model):
             topic.update_post_count()
         if self.posted_at == forum.last_post_at:
             forum.set_last_post()
-        self._default_manager.decrement_num_in_topic(topic, self.num_in_topic)
+        Post.objects.decrement_num_in_topic(topic, self.num_in_topic)
         transaction.commit_unless_managed()
 
     class Admin:

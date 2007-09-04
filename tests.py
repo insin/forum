@@ -21,7 +21,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.posts.count(), 1)
         self.assertEquals(topic.post_count, 1)
         self.assertEquals(topic.last_post_at, post.posted_at)
-        self.assertEquals(topic.last_user_id, post.user.id)
+        self.assertEquals(topic.last_user_id, post.user_id)
         self.assertEquals(topic.last_username, post.user.username)
 
         forum = Forum.objects.get(pk=1)
@@ -30,12 +30,45 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_post_at, post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, post.user.id)
+        self.assertEquals(forum.last_user_id, post.user_id)
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
         self.assertEquals(user.posts.count(), 4)
         self.assertEquals(forum_profile.post_count, 4)
+
+    def test_edit_last_topic(self):
+        topic = Topic.objects.get(pk=1)
+        topic.title = 'New title'
+        topic.save()
+
+        last_post = topic.posts.order_by('-posted_at')[0]
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 1)
+        self.assertEquals(forum.topic_count, 1)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, topic.id)
+        self.assertEquals(forum.last_topic_title, topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user.id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
+    def test_delete_last_topic(self):
+        topic = Topic.objects.get(pk=1)
+        topic.delete()
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 0)
+        self.assertEquals(forum.topic_count, 0)
+        self.assertEquals(forum.last_post_at, None)
+        self.assertEquals(forum.last_topic_id, None)
+        self.assertEquals(forum.last_topic_title, '')
+        self.assertEquals(forum.last_user_id, None)
+        self.assertEquals(forum.last_username, '')
+
+        user = User.objects.get(pk=1)
+        forum_profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(user.posts.count(), 0)
+        self.assertEquals(forum_profile.post_count, 0)
 
     def test_add_post(self):
         user = User.objects.get(pk=1)
@@ -51,7 +84,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.posts.count(), 4)
         self.assertEquals(topic.post_count, 4)
         self.assertEquals(topic.last_post_at, post.posted_at)
-        self.assertEquals(topic.last_user_id, post.user.id)
+        self.assertEquals(topic.last_user_id, post.user_id)
         self.assertEquals(topic.last_username, post.user.username)
 
         forum = Forum.objects.get(pk=1)
@@ -60,7 +93,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_post_at, post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, post.user.id)
+        self.assertEquals(forum.last_user_id, post.user_id)
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
@@ -85,7 +118,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.posts.count(), 3)
         self.assertEquals(topic.post_count, 3)
         self.assertEquals(topic.last_post_at, last_post.posted_at)
-        self.assertEquals(topic.last_user_id, last_post.user.id)
+        self.assertEquals(topic.last_user_id, last_post.user_id)
         self.assertEquals(topic.last_username, last_post.user.username)
 
         forum = Forum.objects.get(pk=1)
@@ -94,7 +127,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_post_at, last_post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, last_post.user.id)
+        self.assertEquals(forum.last_user_id, last_post.user_id)
         self.assertEquals(forum.last_username, last_post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
@@ -112,7 +145,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.posts.count(), 2)
         self.assertEquals(topic.post_count, 2)
         self.assertEquals(topic.last_post_at, previous_post.posted_at)
-        self.assertEquals(topic.last_user_id, previous_post.user.id)
+        self.assertEquals(topic.last_user_id, previous_post.user_id)
         self.assertEquals(topic.last_username, previous_post.user.username)
 
         forum = Forum.objects.get(pk=1)
@@ -121,7 +154,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_post_at, previous_post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, previous_post.user.id)
+        self.assertEquals(forum.last_user_id, previous_post.user_id)
         self.assertEquals(forum.last_username, previous_post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
@@ -140,7 +173,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.posts.count(), 2)
         self.assertEquals(topic.post_count, 2)
         self.assertEquals(topic.last_post_at, new_last_post.posted_at)
-        self.assertEquals(topic.last_user_id, new_last_post.user.id)
+        self.assertEquals(topic.last_user_id, new_last_post.user_id)
         self.assertEquals(topic.last_username, new_last_post.user.username)
 
         forum = Forum.objects.get(pk=1)
@@ -149,7 +182,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_post_at, new_last_post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, new_last_post.user.id)
+        self.assertEquals(forum.last_user_id, new_last_post.user_id)
         self.assertEquals(forum.last_username, new_last_post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
