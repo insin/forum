@@ -8,7 +8,7 @@
 {% endif %}
 <dl>
   <dt class="avatar">Avatar:</dt>
-  <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt="">{% else %}None{% endif %}</dt>
+  <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>{% else %}None{% endif %}</dt>
   <dt class="title">Title:</dt>
   <dd class="title">{% if forum_profile.title %}{{ forum_profile.title|escape }}{% else %}None{% endif %}</dt>
   <dt class="postcount">Posts:</dt>

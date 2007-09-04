@@ -12,7 +12,7 @@ from django.views.generic.list_detail import object_list
 from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
-from forum.forms import ForumProfileBaseForm
+from forum.forms import forum_profile_formfield_callback
 from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
@@ -314,7 +314,8 @@ def edit_user_profile(request, user_id):
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,
-        form=ForumProfileBaseForm, fields=editable_fields)
+        formfield_callback=forum_profile_formfield_callback,
+        fields=editable_fields)
     if request.method == 'POST':
         form = UserProfileForm(data=request.POST)
         if form.is_valid():
