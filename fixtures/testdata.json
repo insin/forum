@@ -1,0 +1,101 @@
+[
+  {
+    "pk": "1",
+    "model": "auth.user",
+    "fields": {
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "is_active": true,
+      "is_superuser": true,
+      "is_staff": true,
+      "last_login": "2007-09-04 10:12:52",
+      "groups": [],
+      "user_permissions": [],
+      "password": "sha1$29ca0$9e8a05b10b18ca829c543c9a4ecc538f4fd296f4",
+      "email": "a@a.com",
+      "date_joined": "2007-09-04 10:06:53"
+    }
+  },
+  {
+    "pk": "1",
+    "model": "forum.forumprofile",
+    "fields": {
+      "website": "",
+      "group": "A",
+      "title": "",
+      "post_count": 2,
+      "posts_per_page": null,
+      "avatar": "",
+      "auto_fast_reply": true,
+      "topics_per_page": null,
+      "location": "",
+      "timezone": "",
+      "user": 1
+    }
+  },
+  {
+    "pk": "1",
+    "model": "forum.topic",
+    "fields": {
+      "view_count": 0,
+      "last_post_at": "2007-09-04 10:07:55",
+      "locked": false,
+      "description": "",
+      "forum": 1,
+      "title": "Test Topic 1",
+      "post_count": 2,
+      "pinned": false,
+      "last_username": "admin",
+      "user": 1,
+      "hidden": false,
+      "started_at": "2007-09-04 10:06:57",
+      "last_user_id": 1
+    }
+  },
+  {
+    "pk": "1",
+    "model": "forum.post",
+    "fields": {
+      "body": "Test post 1.",
+      "edited_at": null,
+      "posted_at": "2007-09-04 10:06:57",
+      "body_html": "<p>Test post 1.<\/p>",
+      "user_ip": null,
+      "topic": 1,
+      "user": 1,
+      "num_in_topic": 1
+    }
+  },
+  {
+    "pk": "2",
+    "model": "forum.post",
+    "fields": {
+      "body": "Test post 2.",
+      "edited_at": null,
+      "posted_at": "2007-09-04 10:07:55",
+      "body_html": "<p>Test post 2.<\/p>",
+      "user_ip": null,
+      "topic": 1,
+      "user": 1,
+      "num_in_topic": 2
+    }
+  },
+  {
+    "pk": "1",
+    "model": "forum.forum",
+    "fields": {
+      "locked": false,
+      "name": "Test Forum",
+      "last_username": "admin",
+      "topic_count": 1,
+      "last_user_id": 1,
+      "last_topic_title": "Test Topic 1",
+      "last_topic_id": 1,
+      "hidden": false,
+      "last_post_at": "2007-09-04 10:07:55",
+      "order": 1,
+      "description": "Test description."
+    }
+  }
+]

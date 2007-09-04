@@ -8,6 +8,8 @@ from pytz import common_timezones
 
 from forum.formatters import post_formatter
 
+__all__ = ['ForumProfile', 'Forum', 'Topic', 'Post']
+
 DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
 qn = connection.ops.quote_name
