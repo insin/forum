@@ -100,7 +100,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(user.posts.count(), 2)
         self.assertEquals(forum_profile.post_count, 2)
 
-    def test_delete_post(self):
+    def test_delete_last_post_in_topic(self):
         user = User.objects.get(pk=1)
         topic = Topic.objects.get(pk=1)
         post = Post.objects.get(pk=2)
@@ -126,3 +126,26 @@ class ModelTestCase(TestCase):
         forum_profile = ForumProfile.objects.get(pk=1)
         self.assertEquals(user.posts.count(), 1)
         self.assertEquals(forum_profile.post_count, 1)
+
+class ManagerTestCase(TestCase):
+    fixtures = ['testdata.json']
+
+    def test_post_manager_with_user_details(self):
+        post = Post.objects.with_user_details().get(pk=1)
+        forum_profile = ForumProfile.objects.get_for_user(post.user)
+        self.assertEquals(post.user_username, post.user.username)
+        self.assertEquals(post.user_date_joined, post.user.date_joined)
+        self.assertEquals(post.user_title, forum_profile.title)
+        self.assertEquals(post.user_avatar, forum_profile.avatar)
+        self.assertEquals(post.user_post_count, forum_profile.post_count)
+        self.assertEquals(post.user_location, forum_profile.location)
+        self.assertEquals(post.user_website, forum_profile.website)
+
+    def test_topic_manager_with_user_details(self):
+        topic = Topic.objects.with_user_details().get(pk=1)
+        self.assertEquals(topic.user_username, topic.user.username)
+
+    def test_topic_manager_with_forum_and_user_details(self):
+        topic = Topic.objects.with_forum_and_user_details().get(pk=1)
+        self.assertEquals(topic.user_username, topic.user.username)
+        self.assertEquals(topic.forum_name, topic.forum.name)
