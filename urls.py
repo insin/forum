@@ -16,6 +16,7 @@ urlpatterns = patterns('forum.views',
     url(r'^post/(?P<post_id>\d+)/delete/$',     'delete_post',           name='forum_delete_post'),
     url(r'^user/(?P<user_id>\d+)/$',            'user_profile',          name='forum_user_profile'),
     url(r'^user/(?P<user_id>\d+)/edit/$',       'edit_user_profile',     name='forum_edit_user_profile'),
+    url(r'^terms_of_service/$',                 'terms_of_service',      name='forum_terms_of_service'),
 )
 
 if app_settings.STANDALONE:

@@ -333,3 +333,11 @@ def edit_user_profile(request, user_id):
         'title': 'Edit user profile',
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
+
+def terms_of_service(request):
+    """
+    Displays the Terms of Service for the forum.
+    """
+    return render_to_response('forum/terms_of_service.html', {
+        'title': 'Terms of Service',
+    }, context_instance=RequestContext(request))

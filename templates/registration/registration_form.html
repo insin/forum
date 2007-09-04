@@ -35,7 +35,7 @@
     </div>
     <div class="form-row checkbox-row">
       {% if form.tos.errors %}{{ form.tos.errors.as_ul }}{% endif %}
-      <label for="id_tos">{{ form.tos }} I have read and agree to the <a href="/about/tos/">Terms of Service</a></label>
+      <label for="id_tos">{{ form.tos }} I have read and agree to the <a href="{% url forum_terms_of_service %}">Terms of Service</a></label>
     </div>
   </div>
   <div class="buttons"><input type="submit" value="Register"></div>
