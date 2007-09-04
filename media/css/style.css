@@ -37,5 +37,9 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
 .form-field { float: left; }
 .avatar-field input, .avatar-field img { vertical-align: top; }
 .post-preview .body { padding: 0 12px; }
+#fast-reply { width: 70%; margin: 1em auto 0 auto; }
+  .fast-reply-field { padding: 8px 12px; }
+  .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
+  #fast-reply .buttons { text-align: center; }
 
 #debug { clear: both; }

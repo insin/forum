@@ -10,6 +10,8 @@
 </div>
 {% endif %}
 <div class="clear"></div>
+<div class="module">
+<h2>{{ topic.title|escape }}</h2>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
@@ -36,7 +38,7 @@
       {% endif %}
       <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
       {% if post.user_title %}
-      <dd class="title">{{ post.user_title|escape }}</dt>
+      <dd class="title">{{ post.user_title|escape }}</dd>
       {% endif %}
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
@@ -50,12 +52,28 @@
   </div>
 </div>
 {% endfor %}
+</div>
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
-<div class="topic-actions">
+<div id="topic-actions-bottom" class="topic-actions">
   <a href="{% url forum_add_reply topic.id %}">Add Reply</a>
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
 <div class="clear"></div>
+
+<div id="fast-reply">
+  <form name="fastReplyForm" id="fastReplyForm" action="{% url forum_add_reply topic.id %}" method="POST">
+    <fieldset class="module">
+      <h2>Fast Reply</h2>
+      <div class="fast-reply-field">
+        <textarea name="body" rows="10"></textarea>
+      </div>
+    </fieldset>
+    <div id="fast-reply-buttons" class="buttons">
+      <input type="submit" name="submit" value="Add Reply">
+      <input type="submit" name="preview" value="Preview Post">
+    </div>
+  </form>
+</div>
 {% endblock %}
