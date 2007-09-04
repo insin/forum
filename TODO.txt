@@ -35,6 +35,11 @@ and when the time can be found.*
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
+  
+*Testing.*
+
+- Write model tests to validate that overridden ``save`` and ``delete`` methods
+  make the expected changes to the object graph.
 
 For Future Consideration
 ========================
@@ -43,7 +48,8 @@ For Future Consideration
 really need the added complexity they bring? It has a very simple structure at
 the moment.*
 
-- Forum groups with ordering defined per group
-- Subforums
-- Tracking the posts a user has viewed and when they last viewed them.
-- Tracking which posts were replied to / offering a threaded view for topics.
+- Top-level forum groups, with ordering defined per group.
+- Subforums.
+- Tracking the topics a user has viewed and when they last viewed them.
+- Tracking which posts were replied to / using this information to offer a
+  threaded topic view.
