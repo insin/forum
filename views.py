@@ -159,6 +159,9 @@ def topic_detail(request, topic_id):
             'forum': topic.forum,
             'title': topic.title,
             'avatar_dimensions': get_avatar_dimensions(),
+            'show_fast_reply': request.user.is_authenticated() and \
+                ForumProfile.objects.get_for_user(request.user).auto_fast_reply \
+                or False,
         }, template_object_name='post')
 
 @login_required
@@ -310,7 +313,7 @@ def edit_user_profile(request, user_id):
         return HttpResponseForbidden()
     user_profile = ForumProfile.objects.get_for_user(user)
     editable_fields = ['location', 'avatar', 'website', 'timezone',
-                       'topics_per_page', 'posts_per_page']
+                       'topics_per_page', 'posts_per_page', 'auto_fast_reply']
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,

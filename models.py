@@ -60,6 +60,7 @@ class ForumProfile(models.Model):
     timezone        = models.CharField(max_length=25, choices=TIMEZONE_CHOICES, blank=True)
     topics_per_page = models.PositiveIntegerField(choices=TOPICS_PER_PAGE_CHOICES, null=True, blank=True)
     posts_per_page  = models.PositiveIntegerField(choices=POSTS_PER_PAGE_CHOICES, null=True, blank=True)
+    auto_fast_reply = models.BooleanField(default=False)
 
     # Denormalised data
     post_count = models.PositiveIntegerField(default=0)
@@ -79,7 +80,8 @@ class ForumProfile(models.Model):
                            'website'),
             }),
             (u'Board settings', {
-                'fields': ('timezone', 'topics_per_page', 'posts_per_page'),
+                'fields': ('timezone', 'topics_per_page', 'posts_per_page',
+                           'auto_fast_reply'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',

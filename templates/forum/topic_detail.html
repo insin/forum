@@ -1,5 +1,8 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
-{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
+{% block extrahead %}
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/Topic.js"></script>
+  {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}
+{% endblock %}
 {% block main_content %}
 {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
@@ -62,7 +65,8 @@
 {% endif %}
 <div class="clear"></div>
 
-<div id="fast-reply">
+{% if user.is_authenticated %}
+<div id="fast-reply"{% if not show_fast_reply %} style="display: none;"{% endif %}>
   <form name="fastReplyForm" id="fastReplyForm" action="{% url forum_add_reply topic.id %}" method="POST">
     <fieldset class="module">
       <h2>Fast Reply</h2>
@@ -76,4 +80,5 @@
     </div>
   </form>
 </div>
+{% endif %}
 {% endblock %}

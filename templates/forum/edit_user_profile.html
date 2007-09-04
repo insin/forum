@@ -58,6 +58,10 @@
       {{ form.posts_per_page }}
     </div>
   </div>
+  <div class="form-row checkbox-row">
+    {% if form.auto_fast_reply.errors %}{{ form.auto_fast_reply.errors.as_ul }}{% endif %}
+    <label for="id_auto_fast_reply">{{ form.auto_fast_reply }} Automatically open Fast Reply when it's available</label>
+  </div>
 </fieldset>
 <div class="buttons">
   <input type="submit" value="Edit User Profile">
