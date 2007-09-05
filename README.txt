@@ -233,7 +233,19 @@ The following post formatting modules are bundled with the forum application:
 Post Formatting Module Structure
 --------------------------------
 
-Post formatting modules must provide the following functions:
+Post formatting modules must provide the following:
+
+QUICK_HELP_TEMPLATE
+~~~~~~~~~~~~~~~~~~~
+
+This variable should specify the location of a template providing quick help,
+suitable for embedding into posting pages.
+
+FULL_HELP_TEMPLATE
+~~~~~~~~~~~~~~~~~~
+
+This variable should specify the location of a template file providing detailed
+help, suitable for embedding in a standalone page.
 
 ``format_post_body(body)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

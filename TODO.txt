@@ -35,8 +35,9 @@ and when the time can be found.*
     registration templates into the ``/forum/templates/`` directory as one of
     the installation steps for using the forum in standalone mode.
 
-- Add a method to post formatting modules for display of help text on post
-  forms.
+- Verify that the post formatting module specified looks like it contains
+  everything a post formatting module should provide.
+- Create quick and full help templates for the provided post formatters.
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
