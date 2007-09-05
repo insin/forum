@@ -46,4 +46,6 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
   .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
   #fast-reply .buttons { text-align: center; }
 
+#footer { clear: both; margin-top: 1.5em; padding: .5em 0; }
+
 #debug { clear: both; }
