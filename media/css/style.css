@@ -15,6 +15,10 @@ td p.description { margin: 0; }
 .clear { clear: both; }
 
 /* Navigation elements */
+#userbar { padding: 8px 0; overflow: hidden; }
+#authenticated { float: left; }
+  #authenticated a.user { font-weight: bold; }
+#user-tools { float: right; }
 div.paginator { float: left; }
 div.topic-actions { float: right; }
 

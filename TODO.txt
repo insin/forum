@@ -15,8 +15,6 @@ Implement At Will
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
-- Navigation / user toolbar - new posts, login and logout are not currently
-  accessible.
 - Testing in non-standalone mode:
 
   - Create a project which itself uses django-registration to ensure that the
