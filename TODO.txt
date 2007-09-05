@@ -15,19 +15,12 @@ Implement At Will
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
-- Standalone mode issues which will need to be resolved:
+- Non-standalone mode issues which will need to be resolved:
 
   - Provide a means of performing certain URL lookups based on whether we're in
     standalone mode or not. There's already a ``LOGIN_URL`` setting which we
     could use instead of django-registration's ``auth_login`` named URL, but
     what about the logout and register URLs?
-    
-- Testing in non-standalone mode:
-
-  - Create a project which itself uses django-registration to ensure that the
-    forum's set of templates don't take precedence. If the order of
-    ``INSTALLED_APPS`` is important in this case, document it in the
-    installation docs.
   - I imagine it will be likely that the forum's standalone password
     change/reset forms will be used in favour of the admin application's any
     time a project is using the application directory template loader (as we
@@ -43,6 +36,10 @@ and when the time can be found.*
 *Testing.*
 
 - Write test client tests.
+- Testing in non-standalone mode - create a project which itself uses
+  django-registration to ensure that the forum's set of templates don't take
+  precedence. If the order of ``INSTALLED_APPS`` is important in this case,
+  document it in the installation docs.
 
 For Future Consideration
 ========================

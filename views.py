@@ -67,7 +67,7 @@ def forum_index(request):
     """
     return render_to_response('forum/forum_index.html', {
         'forum_list': Forum.objects.all(),
-        'title': u'Forum index',
+        'title': u'Forum Index',
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):
@@ -103,7 +103,7 @@ def new_posts(request):
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
         extra_context={
-            'title': u'New posts',
+            'title': u'New Posts',
             'posts_per_page': get_posts_per_page(request.user),
         }, template_object_name='topic')
 
@@ -142,7 +142,7 @@ def add_topic(request, forum_id):
         'post_form': post_form,
         'forum': forum,
         'preview': preview,
-        'title': u'Add topic',
+        'title': u'Add Topic',
     }, context_instance=RequestContext(request))
 
 def topic_detail(request, topic_id):
@@ -198,7 +198,7 @@ def edit_topic(request, topic_id):
         'post_form': post_form,
         'forum': topic.forum,
         'preview': preview,
-        'title': u'Edit topic',
+        'title': u'Edit Topic',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -220,7 +220,7 @@ def delete_topic(request, topic_id):
             'post': post,
             'topic': topic,
             'forum': forum,
-            'title': u'Delete topic',
+            'title': u'Delete Topic',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
@@ -258,7 +258,7 @@ def add_reply(request, topic_id, quote_post=None):
         'topic': topic,
         'forum': topic.forum,
         'preview': preview,
-        'title': u'Add reply to %s' % topic.title,
+        'title': u'Add Reply to %s' % topic.title,
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -328,7 +328,7 @@ def edit_post(request, post_id):
         'topic': topic,
         'forum': topic.forum,
         'preview': preview,
-        'title': u'Edit post',
+        'title': u'Edit Post',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -354,7 +354,7 @@ def delete_post(request, post_id):
             'post': post,
             'topic': topic,
             'forum': topic.forum,
-            'title': u'Delete post',
+            'title': u'Delete Post',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
@@ -371,7 +371,7 @@ def user_profile(request, user_id):
         'forum_user': forum_user,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': recent_topics,
-        'title': u'User profile: %s' % forum_user,
+        'title': u'Forum Profile for %s' % forum_user,
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
@@ -402,7 +402,7 @@ def edit_user_profile(request, user_id):
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
-        'title': 'Edit user profile',
+        'title': 'Edit Forum Profile',
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 

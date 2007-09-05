@@ -9,8 +9,10 @@
 <dl>
   <dt class="avatar">Avatar:</dt>
   <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>{% else %}None{% endif %}</dt>
+  {% if forum_profile.title %}
   <dt class="title">Title:</dt>
-  <dd class="title">{% if forum_profile.title %}{{ forum_profile.title|escape }}{% else %}None{% endif %}</dt>
+  <dd class="title">{{ forum_profile.title|escape }}</dt>
+  {% endif %}
   <dt class="postcount">Posts:</dt>
   <dd class="postcount">{{ forum_profile.post_count }}</dd>
   <dt class="joined">Joined:</dt>
