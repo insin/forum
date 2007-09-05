@@ -126,6 +126,23 @@ feature, so it doesn't mind which URL you choose to have it accessible at.
 .. _`TODO list`: http://www.jonathanbuchanan.plus.com/repos/forum/TODO.txt
 .. _`named URL patterns`: http://www.djangoproject.com/documentation/url_dispatch/#naming-url-patterns
 
+Additional Configuration
+------------------------
+
+If the server you're running the forum application on is sitting behind a
+reverse proxy, add ``'django.middleware.http.SetRemoteAddrFromForwardedFor'`` to
+the list of ``MIDDLEWARE_CLASSES`` in your settings module, to ensure that the
+IP address each post was made from is recorded accurately.
+
+In this situation, without this middleware in place all posts would appear to be
+made from the server's local IP. The forum application does not attempt to use
+the contents of the ``HTTP_X_FORWARDED_FOR`` header manually in this situation
+due to the ease with which this could be exploited to "fake" post IP addresses
+when not sitting behind a trusted reverse proxy, as discussed in the
+`SetRemoteAddrFromForwardedFor documentation`_.
+
+.. _`SetRemoteAddrFromForwardedFor documentation`: http://www.djangoproject.com/documentation/middleware/#django-middleware-http-setremoteaddrfromforwardedfor
+
 
 Settings
 ========
