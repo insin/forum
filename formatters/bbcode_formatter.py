@@ -3,14 +3,20 @@ Post formatting module which uses BBCode syntax to format posts.
 """
 import re
 
+from django.conf import settings
 from django.utils.html import escape
+
+from forum.formatters import emoticons
 from postmarkup import render_bbcode
+
+emoticon_processor = emoticons.Emoticons(
+    base_url='%simg/emoticons/' % settings.MEDIA_URL)
 
 def format_post_body(body):
     """
     Formats the given raw post body as HTML.
     """
-    return render_bbcode(body).strip()
+    return emoticon_processor.replace(render_bbcode(body).strip())
 
 def quote_post(post):
     """

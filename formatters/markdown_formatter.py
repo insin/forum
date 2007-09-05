@@ -6,17 +6,18 @@ import re
 from django.conf import settings
 from django.utils.html import escape
 
-from markdown import Markdown
+from forum.formatters import emoticons
+from markdown import markdown
 
+emoticon_processor = emoticons.Emoticons(
+    base_url='%simg/emoticons/' % settings.MEDIA_URL)
 quote_post_re = re.compile(r'^', re.MULTILINE)
 
 def format_post_body(body):
     """
     Formats the given raw post body as HTML.
     """
-    return Markdown(body, extensions=['emoticons'], extension_configs={
-        'emoticons': [('BASE_URL', '%simg/emoticons/' % settings.MEDIA_URL)],
-    }, safe_mode=True).toString().strip()
+    return emoticon_processor.replace(markdown(body, safe_mode=True).strip())
 
 def quote_post(post):
     """
