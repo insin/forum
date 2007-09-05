@@ -10,6 +10,15 @@
 </head>
 <body>
 
+<div id="breadcrumbs">
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+{% if forum %}{% ifnotequal forum.name title %}&raquo; <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>{% endifnotequal %}{% endif %}
+{% if topic %}{% ifnotequal topic.title title %}&raquo; <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>{% endifnotequal %}{% endif %}
+{% if title %}&raquo; <strong>{{ title|escape }}</strong>{% endif %}
+{% endblock %}
+</div>
+
 <div id="content">
 {% block content_title %}{% if title %}<h1>{{ title|escape }}</h1>{% endif %}{% endblock %}
 {% block main_content %}{% endblock %}
