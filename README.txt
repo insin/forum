@@ -35,10 +35,7 @@ The following modules are only required in certain circumstances:
 
 - `python-markdown`_ is required to use the
   ``forum.formatters.markdown_formatter`` module to to format posts using
-  `Markdown`_ syntax. Additionally, if you wish to use the Markdown emoticon
-  extension provided, you must copy ``/forum/formatters/mdx_emoticons.py`` to
-  somewhere on your Python path - this is due to the inflexibile way in which
-  python-markdown attempts to import extension modules.
+  `Markdown`_ syntax.
 - `postmarkup`_ is required to use the
   ``forum.formatters.bbcode_formatter`` module to format posts using a
   `BBCode`_-like syntax.
