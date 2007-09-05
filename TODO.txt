@@ -15,6 +15,13 @@ Implement At Will
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
+- Standalone mode issues which will need to be resolved:
+
+  - Provide a means of performing certain URL lookups based on whether we're in
+    standalone mode or not. There's already a ``LOGIN_URL`` setting which we
+    could use instead of django-registration's ``auth_login`` named URL, but
+    what about the logout and register URLs?
+    
 - Testing in non-standalone mode:
 
   - Create a project which itself uses django-registration to ensure that the
