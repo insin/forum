@@ -15,7 +15,8 @@ Implement At Will
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
-- Navigation / forum and topic breadcrumbs.
+- Navigation / user toolbar - new posts, login and logout are not currently
+  accessible.
 - Testing in non-standalone mode:
 
   - Create a project which itself uses django-registration to ensure that the
@@ -37,8 +38,7 @@ and when the time can be found.*
 
 *Testing.*
 
-- Write model tests to validate that overridden ``save`` and ``delete`` methods
-  make the expected changes to the object graph.
+- Write test client tests.
 
 For Future Consideration
 ========================
