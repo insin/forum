@@ -2,8 +2,8 @@
 Emoticon Replacement
 ====================
 
-Converts defined emoticon symbols to images, with the symbols as their ``alt``
-text.
+Converts emoticon symbols to images, with the symbols set as their
+``alt`` text.
 
 Basic usage::
 
@@ -13,8 +13,9 @@ Basic usage::
 
 Example showing usage of all arguments::
 
-   >>> em = Emoticons(emoticons={':p': 'cheeky'}, base_url='http://localhost/',
-   ...     file_extension='png', xhtml=True)
+   >>> em = Emoticons(emoticons={':p': 'cheeky'},
+   ...     base_url='http://localhost/', file_extension='png',
+   ...     xhtml=True)
    >>> em.replace(u'Cheeky :p')
    u'Cheeky <img src="http://localhost/cheeky.png" alt=":p" />'
 
