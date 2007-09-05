@@ -38,9 +38,6 @@ import re
 import markdown
 
 class EmoticonExtension(markdown.Extension):
-
-    RE_ESCAPE_RE = re.compile(r'([\(\)])')
-
     def __init__ (self, configs):
         self.config = {
             'EMOTICONS': [{
@@ -70,7 +67,7 @@ class EmoticonExtension(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         self.md = md
         EMOTICON_RE = '(?P<emoticon>%s)' % '|'.join(
-            [self.RE_ESCAPE_RE.sub(r'\\\1', emoticon) \
+            [re.escape(emoticon) \
              for emoticon in self.getConfig('EMOTICONS').keys()])
         md.inlinePatterns.append(EmoticonPattern(EMOTICON_RE, self))
 
