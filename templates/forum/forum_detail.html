@@ -2,13 +2,16 @@
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block main_content %}
 {% if forum.description %}<p class="description">{{ forum.description|escape }}</p>{% endif %}
+<div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
-<div class="clear"></div>
+</div>
+<div class="module">
+<h2>{{ forum.name|escape }}</h2>
 <table>
 <thead>
   <tr>
@@ -53,11 +56,13 @@
   </tr>{% endfor %}
 </tbody>
 </table>
+</div>
+<div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
-<div class="clear"></div>
+</div>
 {% endblock %}

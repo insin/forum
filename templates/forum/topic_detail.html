@@ -5,6 +5,7 @@
 {% endblock %}
 {% block main_content %}
 {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+<div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
@@ -12,7 +13,7 @@
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
-<div class="clear"></div>
+</div>
 <div class="module">
 <h2>{{ topic.title|escape }}</h2>
 {% for post in post_list %}
@@ -56,6 +57,7 @@
 </div>
 {% endfor %}
 </div>
+<div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div id="topic-actions-bottom" class="topic-actions">
@@ -63,7 +65,7 @@
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
-<div class="clear"></div>
+</div>
 
 {% if user.is_authenticated %}
 <div id="fast-reply"{% if not show_fast_reply %} style="display: none;"{% endif %}>
