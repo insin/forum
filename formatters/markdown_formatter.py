@@ -7,11 +7,12 @@ from django.conf import settings
 from django.utils.html import escape
 
 from forum.formatters import emoticons
-from markdown import markdown
+from markdown import Markdown
 
 QUICK_HELP_TEMPLATE = 'forum/help/markdown_formatting_quick.html'
 FULL_HELP_TEMPLATE = 'forum/help/markdown_formatting.html'
 
+md = Markdown(safe_mode=True)
 emoticon_processor = emoticons.Emoticons(
     base_url='%simg/emoticons/' % settings.MEDIA_URL)
 quote_post_re = re.compile(r'^', re.MULTILINE)
@@ -20,7 +21,8 @@ def format_post_body(body):
     """
     Formats the given raw post body as HTML.
     """
-    return emoticon_processor.replace(markdown(body, safe_mode=True).strip())
+    md.reset()
+    return emoticon_processor.replace(md.toString(body).strip())
 
 def quote_post(post):
     """
