@@ -81,3 +81,10 @@ the moment.*
        profiles, and they would actually *mean* something.
     2. An option to view only the starting post and posts which got kudos points
        if you just want to see what the useful answers were.
+
+- Progressive enhancement with JavaScript:
+
+  - Hijack topic and forum pagination.
+  - Hijack posting of new replies to work on the same page.
+  - Periodic fetching of new posts when on the last page of a topic.
+  - Adding a new control to edit replies in place, with preview.
