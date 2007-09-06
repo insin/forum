@@ -9,8 +9,8 @@ Top Priority
 
 *Dirty hacks and other broken windows.*
 
-Implement At Will
-=================
+Make It So, Number One
+======================
 
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
@@ -32,6 +32,10 @@ and when the time can be found.*
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
+- Topic control for moderators - pin, lock or hide.
+- Post control for moderators - move posts, merge posts from one topic into
+  another.
+- User control for moderators.
 
 *Testing.*
 
@@ -48,8 +52,32 @@ For Future Consideration
 really need the added complexity they bring? It has a very simple structure at
 the moment.*
 
+*Boring stuff which most forums have:*
+
 - Top-level forum groups, with ordering defined per group.
 - Subforums.
 - Tracking the topics a user has viewed and when they last viewed them.
 - Tracking which posts were replied to / using this information to offer a
   threaded topic view.
+- Poll topics.
+
+*Possibly less boring stuff:*
+
+- Up/down voting *everywhere*, starting with users, topics and posts, each of
+  which should have a configurable lower boundary in user profiles, scores under
+  which would result in topics, posts or everything from given users being
+  hidden. Let consensus be your ignore list, if you're mad enough.
+- Metaposts, a place to talk about a topic without participating in it, which
+  should help with a particular kind of topic derailment and give mods somewhere
+  to move those types of posts without being moaned at (as much).
+- Forum Types, which could affect how everything in a particular forum works.
+  Examples:
+
+  - Help Forums could have the initial post in each topic displayed on every
+    page, with some kind of kudos point system in place, where topic starters
+    can award points for useful answers. Uses of kudos points:
+
+    1. Total points earned could be displayed in place of Postcounts in user
+       profiles, and they would actually *mean* something.
+    2. An option to view only the starting post and posts which got kudos points
+       if you just want to see what the useful answers were.
