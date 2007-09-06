@@ -142,7 +142,7 @@ def add_topic(request, forum_id):
         'post_form': post_form,
         'forum': forum,
         'preview': preview,
-        'title': u'Add Topic',
+        'title': u'Add Topic in %s' % forum.name,
     }, context_instance=RequestContext(request))
 
 def topic_detail(request, topic_id):

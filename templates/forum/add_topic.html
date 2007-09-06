@@ -1,4 +1,9 @@
 {% extends "base_forum.html" %}
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>
+&raquo; <strong>Add Topic</strong>
+{% endblock %}
 {% block main_content %}
 {% if preview %}
 <div class="module post-preview">

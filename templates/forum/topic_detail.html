@@ -22,8 +22,8 @@
     <ul class="post-actions">
       <li class="quote"><a href="{% url forum_quote_post post.id %}">Reply with quote</a></li>
       {% if user|can_edit_post:post %}
-      <li class="edit"><a href="{% url forum_edit_post post.id %}">Edit post</a></li>
-      <li class="delete"><a href="{% url forum_delete_post post.id %}">Delete post</a></li>
+      <li class="edit"><a href="{% url forum_edit_post post.id %}">Edit {{ post.num_in_topic|pluralize:"topic,post" }}</a></li>
+      <li class="delete"><a href="{% url forum_delete_post post.id %}">Delete {{ post.num_in_topic|pluralize:"topic,post" }}</a></li>
       {% endif %}
     </ul>
     {% endif %}
