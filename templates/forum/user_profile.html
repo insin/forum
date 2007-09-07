@@ -8,28 +8,42 @@
 </div>
 {% endif %}
 
-<div class="module">
-<h2>{{ title|escape }}</h2>
-<dl>
-  <dt class="avatar">Avatar:</dt>
-  <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>{% else %}None{% endif %}</dt>
-  {% if forum_profile.title %}
-  <dt class="title">Title:</dt>
-  <dd class="title">{{ forum_profile.title|escape }}</dt>
-  {% endif %}
-  <dt class="postcount">Posts:</dt>
-  <dd class="postcount">{{ forum_profile.post_count }}</dd>
-  <dt class="joined">Joined:</dt>
-  <dd class="joined">{{ forum_user.date_joined|joined_date }}</dd>
-  <dt class="location">Location:</dt>
-  <dd class="location">{% if forum_profile.location %}{{ forum_profile.location|escape }}{% else %}None{% endif %}</dd>
-  <dt class="website">Website:</dt>
-  <dd class="website">{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</dd>
-</dl>
+<div class="col-l">
+  <div class="module user-profile">
+  <h2>{{ title|escape }}</h2>
+  <table>
+  <tbody>
+    <tr>
+      <th>Avatar</th>
+      <td>{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>{% else %}None{% endif %}</td>
+    </tr>
+    <tr>
+      <th>Group</th>
+      <td>{{ forum_profile.get_group_display }}</td>
+    <tr>
+      <th>Title</th>
+      <td>{{ forum_profile.title|escape|default:"None" }}</td>
+    <tr>
+      <th>Posts</th>
+      <td>{{ forum_profile.post_count }}</td>
+    <tr>
+      <th>Joined</th>
+      <td>{{ forum_user.date_joined|joined_date }}</td>
+    <tr>
+      <th>Location</th>
+      <td>{% if forum_profile.location %}{{ forum_profile.location|escape }}{% else %}None{% endif %}</td>
+    <tr>
+      <th>Website</th>
+      <td>{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</td>
+    </tr>
+  </tbody>
+  </table>
+  </div>
 </div>
 
 {% if recent_topics %}
-<div class="module no-margin">
+<div class="col-r">
+<div class="module last-topics-started">
 <h2>Last {{ recent_topics|length }} Topic{{ recent_topics|length|pluralize }} Started</h2>
 <table>
 <thead>
@@ -54,5 +68,6 @@
 </tbody>
 </table>
 {% endif %}
+</div>
 </div>
 {% endblock %}

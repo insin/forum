@@ -60,6 +60,12 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
 ul.errorlist { margin: 0; padding: 0; }
   ul.errorlist li { padding: 4px 8px 4px 25px; margin: 0 0 8px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/icon_alert.gif") 5px .3em no-repeat; }
 
+.col-l { float: left; width: 23%; }
+  .user-profile dl { margin: 1em; }
+  .user-profile dt { float: left; width: 6em; font-weight: bold; }
+.col-r { float: right; width: 77%; }
+  .col-r .last-topics-started { margin-left: 1em; }
+
 #footer { clear: both; margin-top: 1em; padding: 4px 0; }
 
 #debug { clear: both; }
