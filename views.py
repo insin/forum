@@ -143,6 +143,7 @@ def add_topic(request, forum_id):
         'forum': forum,
         'preview': preview,
         'title': u'Add Topic in %s' % forum.name,
+        'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
 def topic_detail(request, topic_id):
@@ -199,6 +200,7 @@ def edit_topic(request, topic_id):
         'forum': topic.forum,
         'preview': preview,
         'title': u'Edit Topic',
+        'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -259,6 +261,7 @@ def add_reply(request, topic_id, quote_post=None):
         'forum': topic.forum,
         'preview': preview,
         'title': u'Add Reply to %s' % topic.title,
+        'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -329,6 +332,7 @@ def edit_post(request, post_id):
         'forum': topic.forum,
         'preview': preview,
         'title': u'Edit Post',
+        'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
 @login_required

@@ -53,6 +53,10 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
   .fast-reply-field { padding: 8px 12px; }
   .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
   #fast-reply .buttons { text-align: center; }
+.quick-help { float: right; margin-left: 1em; }
+  .quick-help table { width: auto; }
+  .quick-help ul, .quick-help li { margin: 0 0 0 1em; padding: 0; }
+  .quick-help blockquote { margin: 0 0 0 2em; }
 
 #footer { clear: both; margin-top: 1.5em; padding: .5em 0; }
 

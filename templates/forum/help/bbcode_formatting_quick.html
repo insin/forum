@@ -1,0 +1,33 @@
+<div class="module quick-help">
+  <h2>BBCode Formatting Quick Help</h2>
+  <table>
+  <thead>
+    <tr>
+      <th>You Type</th>
+      <th>You See</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="{% cycle odd,even as rows %}">
+      <td>[i]italics[/i]</td>
+      <td><em>italics</em></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>[b]bold[/b]</td>
+      <td><strong>bold</strong></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>[url=http://google.com]Google[/url]</td>
+      <td><a href="http://google.com">Google</a> [google.com]</td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>[list][*]item 1[*]item 2[/list]</td>
+      <td><ul><li>item 1</li><li>item 2</li></ul></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>[quote]Quoted[/quote]</td>
+      <td><blockquote>Quoted.</blockquote></td>
+    </tr>
+  </tbody>
+  </table>
+</div>

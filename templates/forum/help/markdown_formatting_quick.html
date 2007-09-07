@@ -1,0 +1,33 @@
+<div class="module quick-help">
+  <h2>Markdown Formatting Quick Help</h2>
+  <table>
+  <thead>
+    <tr>
+      <th>You Type</th>
+      <th>You See</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="{% cycle odd,even as rows %}">
+      <td>*italics*</td>
+      <td><em>italics</em></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>**bold**</td>
+      <td><strong>bold</strong></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>[Google](http://google.com)</td>
+      <td><a href="http://google.com">Google</a></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>* item 1<br>* item 2</td>
+      <td><ul><li>item 1</li><li>item 2</li></ul></td>
+    </tr>
+    <tr class="{% cycle rows %}">
+      <td>> Quoted.</td>
+      <td><blockquote>Quoted.</blockquote></td>
+    </tr>
+  </tbody>
+  </table>
+</div>
