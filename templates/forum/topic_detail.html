@@ -4,7 +4,6 @@
   {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}
 {% endblock %}
 {% block main_content %}
-{% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
@@ -15,7 +14,7 @@
 {% endif %}
 </div>
 <div class="module no-margin">
-<h2>{{ topic.title|escape }}</h2>
+<h2>{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</h2>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
