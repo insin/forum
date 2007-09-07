@@ -57,6 +57,8 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
   .quick-help table { width: auto; }
   .quick-help ul, .quick-help li { margin: 0 0 0 1em; padding: 0; }
   .quick-help blockquote { margin: 0 0 0 2em; }
+ul.errorlist { margin: 0; padding: 0; }
+  ul.errorlist li { padding: 4px 8px 4px 25px; margin: 0 0 8px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/icon_alert.gif") 5px .3em no-repeat; }
 
 #footer { clear: both; margin-top: 1em; padding: 4px 0; }
 
