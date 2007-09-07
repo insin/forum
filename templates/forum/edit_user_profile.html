@@ -9,7 +9,7 @@
 {% block main_content %}
 <form name="editUserProfileForm" id="editUserProfileForm" action="." method="POST">
 <fieldset class="module aligned user-profile">
-  <h2>User Profile</h2>
+  <h2>Forum Profile</h2>
   {% if form.title %}<div class="form-row">
     {% if form.title.errors %}{{ form.title.errors.as_ul }}{% endif %}
     {{ form.title.label_tag }}
@@ -71,7 +71,7 @@
   </div>
 </fieldset>
 <div class="buttons">
-  <input type="submit" value="Edit User Profile">
+  <input type="submit" value="Edit Forum Profile">
   <a href="{{ forum_profile.get_absolute_url }}">Cancel</a>
 </div>
 </form>

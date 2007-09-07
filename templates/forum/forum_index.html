@@ -1,5 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
+<div class="module no-margin">
+<h2>{{ title|escape }}</h2>
 <table>
 <thead>
   <tr>
@@ -24,4 +26,5 @@
   </tr>{% endfor %}
 </tbody>
 </table>
+</div>
 {% endblock %}

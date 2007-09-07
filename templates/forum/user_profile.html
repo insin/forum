@@ -1,11 +1,15 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 {% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
+<div class="tools">
 <div class="user-actions">
   <a href="{% url forum_edit_user_profile forum_user.id %}">Edit Profile</a>
 </div>
-<div class="clear"></div>
+</div>
 {% endif %}
+
+<div class="module">
+<h2>{{ title|escape }}</h2>
 <dl>
   <dt class="avatar">Avatar:</dt>
   <dd class="avatar">{% if forum_profile.avatar %}<img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>{% else %}None{% endif %}</dt>
@@ -22,9 +26,11 @@
   <dt class="website">Website:</dt>
   <dd class="website">{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</dd>
 </dl>
+</div>
 
 {% if recent_topics %}
-<h3>Last {{ recent_topics|length }} Topic{{ recent_topics|length|pluralize }} Started</h3>
+<div class="module no-margin">
+<h2>Last {{ recent_topics|length }} Topic{{ recent_topics|length|pluralize }} Started</h2>
 <table>
 <thead>
   <tr>
@@ -48,4 +54,5 @@
 </tbody>
 </table>
 {% endif %}
+</div>
 {% endblock %}
