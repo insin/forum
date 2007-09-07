@@ -22,8 +22,8 @@
     <th>Last Post</th>
   </tr>
 </thead>
-{% if pinned_topics %}
 <tbody>
+{% if pinned_topics %}
 {% for topic in pinned_topics %}
   <tr class="topic {% cycle odd,even %}">
     <td>
@@ -35,14 +35,10 @@
     <td>{{ topic.view_count }}</td>
     <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
-</tbody>
-<thead>
   <tr>
     <th colspan="5">Forum Topics</th>
   </tr>
-</thead>
 {% endif %}
-<tbody>
 {% for topic in topic_list %}
   <tr class="topic {% cycle odd,even %}">
     <td>
