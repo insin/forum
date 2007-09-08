@@ -1,10 +1,10 @@
 import datetime
 
-import pytz
 from django import template
 from django.conf import settings
 from django.utils import dateformat
 
+import pytz
 from forum import auth
 from forum.models import ForumProfile
 
@@ -65,8 +65,27 @@ def can_edit_user_profile(user, user_to_edit):
 
 @register.filter
 def is_moderator(user):
+    """
+    Returns ``True`` if the given user has moderation permissions,
+    ``False`` otherwise.
+    """
     return user.is_authenticated() and \
            ForumProfile.objects.get_for_user(user).is_moderator()
+
+@register.filter
+def can_see_post_actions(user, topic):
+    """
+    Returns ``True`` if the given User should be able to see the post
+    action list for posts in the given topic, ``False`` otherwise.
+
+    This function is used as part of ensuring that moderators have
+    unrestricted access to locked Topics.
+    """
+    if user.is_authenticated():
+        return not topic.locked or \
+            ForumProfile.objects.get_for_user(user).is_moderator()
+    else:
+        return False
 
 @register.filter
 def user_tz(dt, user):
@@ -130,6 +149,9 @@ def post_time(posted_at, user=None):
 
 @register.filter
 def joined_date(date):
+    """
+    Formats a joined date.
+    """
     return dateformat.format(date, 'M jS Y')
 
 @register.filter

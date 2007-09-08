@@ -201,7 +201,7 @@ def delete_topic(request, topic_id):
     """
     topic = get_object_or_404(Topic, pk=topic_id)
     post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
-    if not auth.user_can_edit_post(request.user, post):
+    if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
     forum = topic.forum
     if request.method == 'POST':
@@ -217,6 +217,18 @@ def delete_topic(request, topic_id):
         }, context_instance=RequestContext(request))
 
 @login_required
+def update_topic_lock(request, topic_id, locked):
+    """
+    Updates a Topic's ``locked`` status with the given state.
+    """
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        return HttpResponseForbidden()
+    topic = get_object_or_404(Topic, pk=topic_id)
+    topic.locked = locked
+    topic.save()
+    return HttpResponseRedirect(topic.get_absolute_url())
+
+@login_required
 @transaction.commit_on_success
 def add_reply(request, topic_id, quote_post=None):
     """
@@ -226,6 +238,9 @@ def add_reply(request, topic_id, quote_post=None):
     quoted version of the post's body.
     """
     topic = get_object_or_404(Topic, pk=topic_id)
+    if topic.locked and \
+       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        return HttpResponseForbidden()
     AddReplyForm = forms.form_for_model(Post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
@@ -296,7 +311,8 @@ def edit_post(request, post_id):
     Edits the given Post.
     """
     post = get_object_or_404(Post, pk=post_id)
-    if not auth.user_can_edit_post(request.user, post):
+    topic = post.topic
+    if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
     EditPostForm = forms.form_for_instance(post, fields=('body',),
         formfield_callback=post_formfield_callback)
@@ -311,7 +327,6 @@ def edit_post(request, post_id):
                 return redirect_to_post(request, post.id, post)
     else:
         form = EditPostForm()
-    topic = post.topic
     return render_to_response('forum/edit_post.html', {
         'form': form,
         'post': post,
@@ -332,9 +347,9 @@ def delete_post(request, post_id):
     a request to delete the topic itself.
     """
     post = get_object_or_404(Post.objects.with_user_details(), pk=post_id)
-    if not auth.user_can_edit_post(request.user, post):
-        return HttpResponseForbidden()
     topic = post.topic
+    if not auth.user_can_edit_post(request.user, post, topic):
+        return HttpResponseForbidden()
     if post.num_in_topic == 1:
         return delete_topic(request, post.topic_id)
     if request.method == 'POST':

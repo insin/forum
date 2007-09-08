@@ -27,6 +27,7 @@
 {% for topic in pinned_topics %}
   <tr class="topic {% cycle odd,even %}">
     <td>
+      {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       Pinned: <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
@@ -42,6 +43,7 @@
 {% for topic in topic_list %}
   <tr class="topic {% cycle odd,even %}">
     <td>
+      {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>

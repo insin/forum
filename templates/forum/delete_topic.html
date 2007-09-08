@@ -1,7 +1,9 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 <p class="description">Are you sure you want to delete the following topic?</p>
-
+{% if topic.locked %}
+<p class="description"><img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
+{% endif %}
 <div class="module">
 <h2>{{ topic.title|escape }}{% if topic.description %}, <span class="description">{{ topic.description|escape }}</span>{% endif %}</h2>
 <div class="post odd">

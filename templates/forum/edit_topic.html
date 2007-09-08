@@ -1,5 +1,8 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
+{% if topic.locked %}
+<p class="description"><img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
+{% endif %}
 <form name="editTopicForm" id="editTopicForm" action="." method="POST">
   <fieldset class="module aligned">
     <h2>Topic</h2>

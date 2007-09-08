@@ -1,4 +1,5 @@
 // Create Fast Reply controls
+if (createFastReplyControls)
 jQuery(function()
 {
     if (jQuery("#topic-actions-bottom").size() > 0)

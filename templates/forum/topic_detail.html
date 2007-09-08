@@ -1,24 +1,32 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block extrahead %}
+  <script type="text/javascript">var createFastReplyControls = {{ user|can_see_post_actions:topic|yesno:"true,false" }};</script>
   <script type="text/javascript" src="{{ MEDIA_URL }}js/Topic.js"></script>
   {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}
 {% endblock %}
 {% block main_content %}
+{% if topic.locked %}
+<p class="description"><img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
+{% endif %}
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
-  <a href="{% url forum_add_reply topic.id %}">Add Reply</a> |
+  {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
 <div class="module no-margin">
-<h2><span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>{% if user|can_edit_topic:topic %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a></span>{% endif %}</h2>
+<h2>
+  <span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>
+  {% if user|can_edit_topic:topic %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a>
+  {% if user|is_moderator %} - {% if topic.locked %}<a href="{% url forum_unlock_topic topic.id %}">Unlock</a>{% else %}<a href="{% url forum_lock_topic topic.id %}">Lock</a>{% endif %}{% endif %}</span>{% endif %}
+</h2>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
-    {% if user.is_authenticated %}
+    {% if user|can_see_post_actions:topic %}
     <ul class="post-actions">
       <li class="quote"><a href="{% url forum_quote_post post.id %}">Reply with quote</a></li>
       {% if user|can_edit_post:post %}
@@ -60,13 +68,13 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div id="topic-actions-bottom" class="topic-actions">
-  <a href="{% url forum_add_reply topic.id %}">Add Reply</a> |
+  {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
 
-{% if user.is_authenticated %}
+{% if user.is_authenticated and user|can_see_post_actions:topic %}
 <div id="fast-reply"{% if not show_fast_reply %} style="display: none;"{% endif %}>
   <form name="fastReplyForm" id="fastReplyForm" action="{% url forum_add_reply topic.id %}" method="POST">
     <fieldset class="module">
