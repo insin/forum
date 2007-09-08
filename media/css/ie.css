@@ -1,2 +1,2 @@
 /* Invoke the dark, proprietary art of hasLayout */
-#userbar, div.tools, div.post { zoom: 1; }
+#userbar, div.tools, div.post, .module h2 { zoom: 1; }

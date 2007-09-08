@@ -1,19 +1,8 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
-{% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
-<div class="tools">
-<div class="user-actions">
-  <a href="{% url forum_edit_user_forum_profile forum_user.id %}">Edit Profile</a>
-  {% ifequal user.id forum_user.id %}
-  <a href="{% url forum_edit_user_forum_settings forum_user.id %}">Edit Forum Settings</a>
-  {% endifequal %}
-</div>
-</div>
-{% endif %}
-
 <div class="col-l">
   <div class="module forum-profile">
-  <h2>{{ title|escape }}</h2>
+  <h2><span class="title">{{ title|escape }}></span>{% if user|can_edit_user_profile:forum_user %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_user_forum_profile forum_user.id %}">Edit</a></span>{% endif %}</h2>
   <table>
   <tbody>
     <tr>
@@ -50,7 +39,7 @@
 
   {% ifequal user.id forum_user.id %}
   <div class="module forum-settings">
-  <h2>Your Forum Settings</h2>
+  <h2><span class="title">Your Forum Settings</span><span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_user_forum_settings forum_user.id %}">Edit</a></span></h2>
   <table>
   <tbody>
     <tr>
