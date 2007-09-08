@@ -54,6 +54,11 @@ def can_edit_post(user, post):
            auth.user_can_edit_post(user, post)
 
 @register.filter
+def can_edit_topic(user, topic):
+    return user.is_authenticated() and \
+           auth.user_can_edit_topic(user, topic)
+
+@register.filter
 def can_edit_user_profile(user, user_to_edit):
     return user.is_authenticated() and \
            auth.user_can_edit_user_profile(user, user_to_edit)

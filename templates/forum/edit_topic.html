@@ -1,45 +1,25 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
-{% if preview %}
-<div class="module post-preview">
-  <h2>Topic Preview</h2>
-  <div class="body">
-  {{ preview }}
-  </div>
-</div>
-{% endif %}
 <form name="editTopicForm" id="editTopicForm" action="." method="POST">
   <fieldset class="module aligned">
-    <h2>Topic Details</h2>
+    <h2>Topic</h2>
     <div class="form-row">
-      {% if topic_form.title.errors %}{{ topic_form.title.errors.as_ul }}{% endif %}
-      {{ topic_form.title.label_tag }}
+      {% if topic_form.title.errors %}{{ form.title.errors.as_ul }}{% endif %}
+      {{ form.title.label_tag }}
       <div class="form-field">
-        {{ topic_form.title }}
+        {{ form.title }}
       </div>
     </div>
     <div class="form-row">
-      {% if topic_form.description.errors %}{{ topic_form.description.errors.as_ul }}{% endif %}
-      {{ topic_form.description.label_tag }}
+      {% if form.description.errors %}{{ form.description.errors.as_ul }}{% endif %}
+      {{ form.description.label_tag }}
       <div class="form-field">
-        {{ topic_form.description }}
+        {{ form.description }}
       </div>
-    </div>
-  </fieldset>
-  <fieldset class="module aligned">
-    <h2>Opening Post</h2>
-    <div class="form-row">
-      {% if post_form.body.errors %}{{ post_form.body.errors.as_ul }}{% endif %}
-      {{ post_form.body.label_tag }}
-      <div class="form-field">
-        {{ post_form.body }}
-      </div>
-      {% include quick_help_template %}
     </div>
   </fieldset>
   <div class="buttons">
     <input type="submit" name="submit" value="Edit Topic">
-    <input type="submit" name="preview" value="Preview Topic">
     <a href="{{ topic.get_absolute_url }}">Cancel</a>
   </div>
 </form>

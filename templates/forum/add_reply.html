@@ -8,7 +8,7 @@
 {% block main_content %}
 {% if preview %}
 <div class="module post-preview">
-  <h2>Post Preview</h2>
+  <h2>Reply Preview</h2>
   <div class="body">
   {{ preview }}
   </div>
@@ -16,11 +16,10 @@
 {% endif %}
 <form name="addReplyForm" id="addReplyForm" action="{% url forum_add_reply topic.id %}" method="POST">
   <fieldset class="module aligned">
-    <h2>Adding Reply in {{ topic.title|escape }}</h2>
+    <h2>Reply</h2>
     <div class="form-row">
       {% if form.body.errors %}{{ form.body.errors.as_ul }}{% endif %}
-      {{ form.body.label_tag }}
-      <div class="form-field">
+      <div class="form-field post-body-field">
         {{ form.body }}
       </div>
       {% include quick_help_template %}
@@ -28,7 +27,7 @@
   </fieldset>
   <div class="buttons">
     <input type="submit" name="submit" value="Add Reply">
-    <input type="submit" name="preview" value="Preview Post">
+    <input type="submit" name="preview" value="Preview Reply">
     <a href="{{ topic.get_absolute_url }}">Cancel</a>
   </div>
 </form>

@@ -7,6 +7,20 @@ from django.utils.text import capfirst, get_text_list
 from forum import app_settings
 from PIL import ImageFile
 
+def post_formfield_callback(field, **kwargs):
+    """
+    Callback for Post form field creation.
+
+    Customises the widget used to edit posts.
+    """
+    if field.name == 'body':
+        formfield = field.formfield(**kwargs)
+        formfield.widget.attrs['rows'] = 14
+        formfield.widget.attrs['cols'] = 70
+        return formfield
+    else:
+        return field.formfield(**kwargs)
+
 def forum_profile_formfield_callback(field, **kwargs):
     """
     Callback for forum profile form field creation.

@@ -15,7 +15,7 @@
 {% endif %}
 <form name="addTopicForm" id="addTopicForm" action="." method="POST">
   <fieldset class="module aligned">
-    <h2>Topic Details</h2>
+    <h2>Topic</h2>
     <div class="form-row">
       {% if topic_form.title.errors %}{{ topic_form.title.errors.as_ul }}{% endif %}
       {{ topic_form.title.label_tag }}
@@ -35,8 +35,7 @@
     <h2>Opening Post</h2>
     <div class="form-row">
       {% if post_form.body.errors %}{{ post_form.body.errors.as_ul }}{% endif %}
-      {{ post_form.body.label_tag }}
-      <div class="form-field">
+      <div class="form-field post-body-field">
         {{ post_form.body }}
       </div>
       {% include quick_help_template %}

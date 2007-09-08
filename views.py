@@ -12,7 +12,8 @@ from django.views.generic.list_detail import object_list
 from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
-from forum.forms import forum_profile_formfield_callback
+from forum.forms import (forum_profile_formfield_callback,
+    post_formfield_callback)
 from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
@@ -115,7 +116,8 @@ def add_topic(request, forum_id):
     """
     forum = get_object_or_404(Forum, pk=forum_id)
     AddTopicForm = forms.form_for_model(Topic, fields=('title', 'description'))
-    TopicPostForm = forms.form_for_model(Post, fields=('body',))
+    TopicPostForm = forms.form_for_model(Post, fields=('body',),
+        formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
         topic_form = AddTopicForm(request.POST)
@@ -170,35 +172,23 @@ def topic_detail(request, topic_id):
 @transaction.commit_on_success
 def edit_topic(request, topic_id):
     """
-    Edits the given Topic and its starting Post.
+    Edits the given Topic.
     """
     topic = get_object_or_404(Topic, pk=topic_id)
-    post = topic.get_first_post()
-    if not auth.user_can_edit_post(request.user, post):
+    if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
     EditTopicForm = forms.form_for_instance(topic, fields=('title', 'description'))
-    TopicPostForm = forms.form_for_instance(post, fields=('body',))
-    preview = None
     if request.method == 'POST':
-        topic_form = EditTopicForm(request.POST)
-        post_form = TopicPostForm(request.POST)
-        if topic_form.is_valid() and post_form.is_valid():
-            if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(post_form.cleaned_data['body'])
-            elif 'submit' in request.POST:
-                topic = topic_form.save(commit=True)
-                post = post_form.save(commit=True)
-                return HttpResponseRedirect(topic.get_absolute_url())
+        form = EditTopicForm(request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+            return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        topic_form = EditTopicForm()
-        post_form = TopicPostForm()
+        form = EditTopicForm()
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
-        'post': post,
-        'topic_form': topic_form,
-        'post_form': post_form,
+        'form': form,
         'forum': topic.forum,
-        'preview': preview,
         'title': u'Edit Topic',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
@@ -236,7 +226,8 @@ def add_reply(request, topic_id, quote_post=None):
     quoted version of the post's body.
     """
     topic = get_object_or_404(Topic, pk=topic_id)
-    AddReplyForm = forms.form_for_model(Post, fields=('body',))
+    AddReplyForm = forms.form_for_model(Post, fields=('body',),
+        formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
         form = AddReplyForm(data=request.POST)
@@ -303,16 +294,12 @@ def redirect_to_last_post(request, topic_id):
 def edit_post(request, post_id):
     """
     Edits the given Post.
-
-    A request to edit the first post in a Topic is interpreted as a
-    request to edit the Topic itself.
     """
     post = get_object_or_404(Post, pk=post_id)
     if not auth.user_can_edit_post(request.user, post):
         return HttpResponseForbidden()
-    if post.num_in_topic == 1:
-        return edit_topic(request, post.topic_id)
-    EditPostForm = forms.form_for_instance(post, fields=('body',))
+    EditPostForm = forms.form_for_instance(post, fields=('body',),
+        formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
         form = EditPostForm(data=request.POST)

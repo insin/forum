@@ -10,11 +10,10 @@
 {% endif %}
 <form name="editPostForm" id="editPostForm" action="." method="POST">
   <fieldset class="module aligned">
-    <h2>Editing Post in {{ topic.title|escape }}</h2>
+    <h2>Post</h2>
     <div class="form-row">
       {% if form.body.errors %}{{ form.body.errors.as_ul }}{% endif %}
-      {{ form.body.label_tag }}
-      <div class="form-field">
+      <div class="form-field post-body-field">
         {{ form.body }}
       </div>
       {% include quick_help_template %}

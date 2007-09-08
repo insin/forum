@@ -8,13 +8,13 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="topic-actions">
-  <a href="{% url forum_add_reply topic.id %}">Add Reply</a>
+  <a href="{% url forum_add_reply topic.id %}">Add Reply</a> |
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
 <div class="module no-margin">
-<h2>{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</h2>
+<h2><span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>{% if user|can_edit_topic:topic %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a></span>{% endif %}</h2>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
@@ -22,8 +22,8 @@
     <ul class="post-actions">
       <li class="quote"><a href="{% url forum_quote_post post.id %}">Reply with quote</a></li>
       {% if user|can_edit_post:post %}
-      <li class="edit"><a href="{% url forum_edit_post post.id %}">Edit {{ post.num_in_topic|pluralize:"topic,post" }}</a></li>
-      <li class="delete"><a href="{% url forum_delete_post post.id %}">Delete {{ post.num_in_topic|pluralize:"topic,post" }}</a></li>
+      <li class="edit"><a href="{% url forum_edit_post post.id %}">Edit Post</a></li>
+      {% ifnotequal post.num_in_topic 1 %}<li class="delete"><a href="{% url forum_delete_post post.id %}">Delete Post</a></li>{% endifnotequal %}
       {% endif %}
     </ul>
     {% endif %}
@@ -60,7 +60,7 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div id="topic-actions-bottom" class="topic-actions">
-  <a href="{% url forum_add_reply topic.id %}">Add Reply</a>
+  <a href="{% url forum_add_reply topic.id %}">Add Reply</a> |
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
