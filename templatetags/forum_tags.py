@@ -85,28 +85,43 @@ def user_tz(dt, user):
                     .astimezone(pytz.timezone(tz))
     return result
 
+def format_datetime(dt, user, date_format, time_format, separator=' '):
+    """
+    Formats a datetime, using ``'Today'`` or ``'Yesterday'`` instead of
+    the given date format when appropriate.
+
+    If a User is given and they have a timezone set in their profile,
+    the datetime will be translated to their local time.
+    """
+    if user:
+        dt = user_tz(dt, user)
+        today = user_tz(datetime.datetime.now(), user).date()
+    else:
+        today = datetime.date.today()
+    date_part = dt.date()
+    delta = date_part - today
+    if delta.days == 0:
+        date = u'Today'
+    elif delta.days == -1:
+        date = u'Yesterday'
+    else:
+        date = dateformat.format(dt, date_format)
+    return u'%s%s%s' % (date, separator,
+                        dateformat.time_format(dt.time(), time_format))
+
+@register.filter
+def forum_datetime(st, user=None):
+    """
+    Formats a general datetime.
+    """
+    return format_datetime(st, user, 'M jS Y', 'H:i A', ', ')
+
 @register.filter
 def post_time(posted_at, user=None):
     """
     Formats a Post time.
-
-    If a User is given and they have a timezone set in their profile,
-    the time will be translated to their local time.
     """
-    if user:
-        posted_at = user_tz(posted_at, user)
-        today = user_tz(datetime.datetime.now(), user).date()
-    else:
-        today = datetime.date.today()
-    post_date = posted_at.date()
-    if post_date == today:
-        date = u'Today'
-    elif post_date == today - datetime.timedelta(days=1):
-        date = u'Yesterday'
-    else:
-        date = u'on %s' % dateformat.format(post_date, 'M jS Y')
-    return u'%s at %s' % (date,
-                          dateformat.time_format(posted_at.time(), 'H:i A'))
+    return format_datetime(posted_at, user, r'\o\n M jS Y', r'\a\t H:i A')
 
 @register.filter
 def joined_date(date):
