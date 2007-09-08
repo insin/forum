@@ -472,7 +472,7 @@ class PostManager(models.Manager):
                 ),
                 '%s.%s=%s.%s' % (
                     forum_profile_table,
-                    qn(forum_profile_opts.pk.column),
+                    qn(forum_profile_opts.get_field('user').column),
                     user_table,
                     qn(user_opts.pk.column),
                 ),
