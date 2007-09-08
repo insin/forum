@@ -11,6 +11,7 @@ td p.description { margin: 0; }
 .odd { background-color: #e9e9f9; }
 .even { background-color: #e3e3f3; }
 .module { border: 1px solid #ccc; margin-bottom: 5px; background-color: #fff; }
+.module-body { padding: 4px 8px; }
 .no-margin { margin: 0; }
 .module h2, .module caption { margin: 0; padding: 2px 8px 3px 8px; font-size: 11px; text-align: left; font-weight: bold; background: #595979 url("../img/module-bg.gif") top left repeat-x; color: #fff; border-bottom: 0; }
 .clear { clear: both; }
