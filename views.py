@@ -84,7 +84,8 @@ def forum_detail(request, forum_id):
     if request.GET.get('page', 1) in (u'1', 1):
         extra_context['pinned_topics'] = \
             Topic.objects.with_user_details() \
-                          .filter(forum=forum, pinned=True, hidden=False)
+                          .filter(forum=forum, pinned=True, hidden=False) \
+                           .order_by('-started_at')
     return object_list(request,
         Topic.objects.with_user_details() \
                       .filter(forum=forum, pinned=False, hidden=False),
@@ -225,6 +226,18 @@ def update_topic_lock(request, topic_id, locked):
         return HttpResponseForbidden()
     topic = get_object_or_404(Topic, pk=topic_id)
     topic.locked = locked
+    topic.save()
+    return HttpResponseRedirect(topic.get_absolute_url())
+
+@login_required
+def update_topic_pin(request, topic_id, pinned):
+    """
+    Updates a Topic's ``pinned`` status with the given state.
+    """
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        return HttpResponseForbidden()
+    topic = get_object_or_404(Topic, pk=topic_id)
+    topic.pinned = pinned
     topic.save()
     return HttpResponseRedirect(topic.get_absolute_url())
 

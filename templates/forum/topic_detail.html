@@ -21,7 +21,11 @@
 <h2>
   <span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>
   {% if user|can_edit_topic:topic %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a>
-  {% if user|is_moderator %} - {% if topic.locked %}<a href="{% url forum_unlock_topic topic.id %}">Unlock</a>{% else %}<a href="{% url forum_lock_topic topic.id %}">Lock</a>{% endif %}{% endif %}</span>{% endif %}
+    {% if user|is_moderator %} -
+      {% if topic.pinned %}<a href="{% url forum_unpin_topic topic.id %}">Unpin</a>{% else %}<a href="{% url forum_pin_topic topic.id %}">Pin</a>{% endif %} |
+      {% if topic.locked %}<a href="{% url forum_unlock_topic topic.id %}">Unlock</a>{% else %}<a href="{% url forum_lock_topic topic.id %}">Lock</a>{% endif %}
+    {% endif %}
+  </span>{% endif %}
 </h2>
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
