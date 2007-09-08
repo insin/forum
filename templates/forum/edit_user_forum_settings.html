@@ -1,0 +1,44 @@
+{% extends "base_forum.html" %}
+<div id="breadcrumbs">
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ forum_user.username|escape }}</a>
+&raquo; <strong>{{ title|escape }}</strong>
+{% endblock %}
+</div>
+{% block main_content %}
+<form name="editUserForumSettingsForm" id="editUserForumSettingsForm" action="." method="POST">
+<fieldset class="module aligned forum-settings">
+  <h2>Forum Settings</h2>
+  <div class="form-row">
+    {% if form.timezone.errors %}{{ form.timezone.errors.as_ul }}{% endif %}
+    {{ form.timezone.label_tag }}
+    <div class="form-field">
+      {{ form.timezone }}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.topics_per_page.errors %}{{ form.topics_per_page.errors.as_ul }}{% endif %}
+    {{ form.topics_per_page.label_tag }}
+    <div class="form-field">
+      {{ form.topics_per_page }}
+    </div>
+  </div>
+  <div class="form-row">
+    {% if form.posts_per_page.errors %}{{ form.posts_per_page.errors.as_ul }}{% endif %}
+    {{ form.posts_per_page.label_tag }}
+    <div class="form-field">
+      {{ form.posts_per_page }}
+    </div>
+  </div>
+  <div class="form-row checkbox-row">
+    {% if form.auto_fast_reply.errors %}{{ form.auto_fast_reply.errors.as_ul }}{% endif %}
+    <label for="id_auto_fast_reply">{{ form.auto_fast_reply }} Automatically open Fast Reply when it's available</label>
+  </div>
+</fieldset>
+<div class="buttons">
+  <input type="submit" value="Edit Forum Settings">
+  <a href="{{ forum_profile.get_absolute_url }}">Cancel</a>
+</div>
+</form>
+{% endblock %}

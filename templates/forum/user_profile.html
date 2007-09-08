@@ -3,13 +3,16 @@
 {% if user.is_authenticated and user|can_edit_user_profile:forum_user %}
 <div class="tools">
 <div class="user-actions">
-  <a href="{% url forum_edit_user_profile forum_user.id %}">Edit Profile</a>
+  <a href="{% url forum_edit_user_forum_profile forum_user.id %}">Edit Profile</a>
+  {% ifequal user.id forum_user.id %}
+  <a href="{% url forum_edit_user_forum_settings forum_user.id %}">Edit Forum Settings</a>
+  {% endifequal %}
 </div>
 </div>
 {% endif %}
 
 <div class="col-l">
-  <div class="module user-profile">
+  <div class="module forum-profile">
   <h2>{{ title|escape }}</h2>
   <table>
   <tbody>
@@ -20,18 +23,23 @@
     <tr>
       <th>Group</th>
       <td>{{ forum_profile.get_group_display }}</td>
+    </tr>
     <tr>
       <th>Title</th>
       <td>{{ forum_profile.title|escape|default:"None" }}</td>
+    </tr>
     <tr>
       <th>Posts</th>
       <td>{{ forum_profile.post_count }}</td>
+    </tr>
     <tr>
       <th>Joined</th>
       <td>{{ forum_user.date_joined|joined_date }}</td>
+    </tr>
     <tr>
       <th>Location</th>
       <td>{% if forum_profile.location %}{{ forum_profile.location|escape }}{% else %}None{% endif %}</td>
+    </tr>
     <tr>
       <th>Website</th>
       <td>{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</td>
@@ -39,6 +47,32 @@
   </tbody>
   </table>
   </div>
+
+  {% ifequal user.id forum_user.id %}
+  <div class="module forum-settings">
+  <h2>Your Forum Settings</h2>
+  <table>
+  <tbody>
+    <tr>
+      <th>Timezone</th>
+      <td>{{ forum_profile.timezone|escape|default:"None" }}</td>
+    </tr>
+    <tr>
+      <th>Topics Per Page</th>
+      <td>{{ forum_profile.topics_per_page|escape|default:"Default" }}</td>
+    </tr>
+    <tr>
+      <th>Posts Per Page</th>
+      <td>{{ forum_profile.posts_per_page|escape|default:"Default" }}</td>
+    </tr>
+    <tr>
+      <th>Auto Fast Reply</th>
+      <td>{{ forum_profile.auto_fast_reply|yesno:"Yes,No" }}</td>
+    </tr>
+  </tbody>
+  </table>
+  </div>
+  {% endifequal %}
 </div>
 
 <div class="col-r">

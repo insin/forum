@@ -7,8 +7,8 @@
 {% endblock %}
 </div>
 {% block main_content %}
-<form name="editUserProfileForm" id="editUserProfileForm" action="." method="POST">
-<fieldset class="module aligned user-profile">
+<form name="editForumProfileForm" id="editForumProfileForm" action="." method="POST">
+<fieldset class="module aligned forum-profile">
   <h2>Forum Profile</h2>
   {% if form.title %}<div class="form-row">
     {% if form.title.errors %}{{ form.title.errors.as_ul }}{% endif %}
@@ -40,34 +40,6 @@
     <div class="form-field">
       {{ form.website }}
     </div>
-  </div>
-</fieldset>
-<fieldset class="module aligned board-settings">
-  <h2>Board Settings</h2>
-  <div class="form-row">
-    {% if form.timezone.errors %}{{ form.timezone.errors.as_ul }}{% endif %}
-    {{ form.timezone.label_tag }}
-    <div class="form-field">
-      {{ form.timezone }}
-    </div>
-  </div>
-  <div class="form-row">
-    {% if form.topics_per_page.errors %}{{ form.topics_per_page.errors.as_ul }}{% endif %}
-    {{ form.topics_per_page.label_tag }}
-    <div class="form-field">
-      {{ form.topics_per_page }}
-    </div>
-  </div>
-  <div class="form-row">
-    {% if form.posts_per_page.errors %}{{ form.posts_per_page.errors.as_ul }}{% endif %}
-    {{ form.posts_per_page.label_tag }}
-    <div class="form-field">
-      {{ form.posts_per_page }}
-    </div>
-  </div>
-  <div class="form-row checkbox-row">
-    {% if form.auto_fast_reply.errors %}{{ form.auto_fast_reply.errors.as_ul }}{% endif %}
-    <label for="id_auto_fast_reply">{{ form.auto_fast_reply }} Automatically open Fast Reply when it's available</label>
   </div>
 </fieldset>
 <div class="buttons">

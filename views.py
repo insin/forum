@@ -380,16 +380,17 @@ def user_profile(request, user_id):
     }, context_instance=RequestContext(request))
 
 @login_required
-def edit_user_profile(request, user_id):
+def edit_user_forum_profile(request, user_id):
     """
-    Edits a given User's Forum Profile.
+    Edits public information in a given User's Forum Profile.
+
+    Only moderators may edit a User's title.
     """
     user = get_object_or_404(User, pk=user_id)
     if not auth.user_can_edit_user_profile(request.user, user):
         return HttpResponseForbidden()
     user_profile = ForumProfile.objects.get_for_user(user)
-    editable_fields = ['location', 'avatar', 'website', 'timezone',
-                       'topics_per_page', 'posts_per_page', 'auto_fast_reply']
+    editable_fields = ['location', 'avatar', 'website']
     if ForumProfile.objects.get_for_user(request.user).is_moderator():
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,
@@ -402,12 +403,38 @@ def edit_user_profile(request, user_id):
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
         form = UserProfileForm()
-    return render_to_response('forum/edit_user_profile.html', {
+    return render_to_response('forum/edit_user_forum_profile.html', {
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
         'title': 'Edit Forum Profile',
         'avatar_dimensions': get_avatar_dimensions(),
+    }, context_instance=RequestContext(request))
+
+@login_required
+def edit_user_forum_settings(request, user_id):
+    """
+    Edits private forum settings in a given User's Forum Profile.
+    """
+    user = get_object_or_404(User, pk=user_id)
+    if request.user.id != user.id:
+        return HttpResponseForbidden()
+    user_profile = ForumProfile.objects.get_for_user(user)
+    ForumSettingsForm = forms.form_for_instance(user_profile,
+        fields=['timezone', 'topics_per_page', 'posts_per_page',
+                'auto_fast_reply'])
+    if request.method == 'POST':
+        form = ForumSettingsForm(data=request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+            return HttpResponseRedirect(user_profile.get_absolute_url())
+    else:
+        form = ForumSettingsForm()
+    return render_to_response('forum/edit_user_forum_settings.html', {
+        'forum_user': user,
+        'forum_profile': user_profile,
+        'form': form,
+        'title': 'Edit Forum Settings',
     }, context_instance=RequestContext(request))
 
 def terms_of_service(request):
