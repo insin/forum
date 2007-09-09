@@ -38,7 +38,7 @@
     <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
   <tr>
-    <th colspan="5">Forum Topics</th>
+    <th colspan="5" class="forum-topics">Forum Topics</th>
   </tr>
 {% endif %}
 {% for topic in topic_list %}

@@ -7,6 +7,7 @@ table  { border-collapse: collapse; width: 100%; }
 td, th { padding: 4px 6px; border: 1px solid #999; text-align: left; }
 th { font-weight: bold; }
 td p.description { margin: 0; }
+th.forum-topics { text-align: center; }
 
 /* Common formatting */
 .odd { background-color: #e9e9f9; }
