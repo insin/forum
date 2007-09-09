@@ -1,6 +1,9 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 <p class="description">Are you sure you want to delete the following topic?</p>
+{% if topic.hidden %}
+<p class="description"><img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>
+{% endif %}
 {% if topic.locked %}
 <p class="description"><img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
 {% endif %}

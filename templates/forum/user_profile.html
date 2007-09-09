@@ -80,8 +80,9 @@
 </thead>
 <tbody>
 {% for topic in recent_topics %}
-  <tr class="topic {% cycle odd,even %}">
+  <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
     <td>
+      {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}

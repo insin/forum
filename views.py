@@ -76,19 +76,27 @@ def forum_detail(request, forum_id):
     Displays a Forum's Topics.
     """
     forum = get_object_or_404(Forum, pk=forum_id)
+    filters = {
+        'forum': forum,
+    }
+    if not request.user.is_authenticated() or \
+       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
     extra_context = {
         'forum': forum,
         'title': forum.name,
         'posts_per_page': get_posts_per_page(request.user),
     }
+    # Get pinned topics too if we're on the first page
     if request.GET.get('page', 1) in (u'1', 1):
-        extra_context['pinned_topics'] = \
-            Topic.objects.with_user_details() \
-                          .filter(forum=forum, pinned=True, hidden=False) \
-                           .order_by('-started_at')
+        filters['pinned'] = True
+        extra_context['pinned_topics'] = Topic.objects.with_user_details() \
+                                                       .filter(**filters) \
+                                                        .order_by('-started_at')
+    filters['pinned'] = False
     return object_list(request,
         Topic.objects.with_user_details() \
-                      .filter(forum=forum, pinned=False, hidden=False),
+                      .filter(**filters),
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/forum_detail.html', extra_context=extra_context,
         template_object_name='topic')
@@ -99,8 +107,11 @@ def new_posts(request):
     Displays Topics containing new posts since the current User's last
     login.
     """
+    filters = {'last_post_at__gte': request.user.last_login}
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
     queryset = Topic.objects.with_forum_and_user_details().filter(
-        last_post_at__gte=request.user.last_login).order_by('-last_post_at')
+        **filters).order_by('-last_post_at')
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
@@ -153,7 +164,11 @@ def topic_detail(request, topic_id):
     """
     Displays a Topic's Posts.
     """
-    topic = get_object_or_404(Topic, pk=topic_id)
+    filters = {'pk': topic_id}
+    if not request.user.is_authenticated() or \
+       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
+    topic = get_object_or_404(Topic, **filters)
     topic.increment_view_count()
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic),
@@ -175,7 +190,10 @@ def edit_topic(request, topic_id):
     """
     Edits the given Topic.
     """
-    topic = get_object_or_404(Topic, pk=topic_id)
+    filters = {'pk': topic_id}
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
+    topic = get_object_or_404(Topic, **filters)
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
     EditTopicForm = forms.form_for_instance(topic, fields=('title', 'description'))
@@ -200,7 +218,10 @@ def delete_topic(request, topic_id):
     """
     Deletes a Topic after confirmation is made via POST.
     """
-    topic = get_object_or_404(Topic, pk=topic_id)
+    filters = {'pk': topic_id}
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
+    topic = get_object_or_404(Topic, **filters)
     post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
@@ -243,6 +264,35 @@ def update_topic_pin(request, topic_id, pinned):
 
 @login_required
 @transaction.commit_on_success
+def update_topic_hide(request, topic_id, hidden):
+    """
+    Updates a Topic's ``hidden`` status with the given state.
+
+    To avoid regular users from being shown non-working links, the
+    Topic's Forum's denormalised last post data is also updated when
+    necessary.
+
+    Post counts and topic counts will not be affected by hiding a Topic
+    - it is assumed that this is a temporary measure which will either
+    lead to a Topic being cleaned up or removed altogether.
+    """
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        return HttpResponseForbidden()
+    topic = get_object_or_404(Topic, pk=topic_id)
+    forum = topic.forum
+    topic.hidden = hidden
+    topic.save()
+    if hidden:
+        if forum.last_topic_id == topic.id:
+            # Set the forum's last post to the latest non-hidden post
+            forum.set_last_post()
+    else:
+        # Just in case this topic still holds the last post
+        forum.set_last_post()
+    return HttpResponseRedirect(topic.get_absolute_url())
+
+@login_required
+@transaction.commit_on_success
 def add_reply(request, topic_id, quote_post=None):
     """
     Adds a Post to a Topic.
@@ -250,7 +300,10 @@ def add_reply(request, topic_id, quote_post=None):
     If ``quote_post`` is given, the form will be prepopulated with a
     quoted version of the post's body.
     """
-    topic = get_object_or_404(Topic, pk=topic_id)
+    filters = {'pk': topic_id}
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
+    topic = get_object_or_404(Topic, **filters)
     if topic.locked and \
        not ForumProfile.objects.get_for_user(request.user).is_moderator():
         return HttpResponseForbidden()
@@ -299,7 +352,11 @@ def redirect_to_post(request, post_id, post=None):
     database query.
     """
     if post is None:
-        post = get_object_or_404(Post, pk=post_id)
+        filters = {'pk': post_id}
+        if not request.user.is_authenticated() or \
+           not ForumProfile.objects.get_for_user(request.user).is_moderator():
+            filters['topic__hidden'] = False
+        post = get_object_or_404(Post, **filters)
     posts_per_page = get_posts_per_page(request.user)
     page, remainder = divmod(post.num_in_topic, posts_per_page)
     if post.num_in_topic < posts_per_page or remainder != 0:
@@ -323,7 +380,10 @@ def edit_post(request, post_id):
     """
     Edits the given Post.
     """
-    post = get_object_or_404(Post, pk=post_id)
+    filters = {'pk': post_id}
+    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['topic__hidden'] = False
+    post = get_object_or_404(Post, **filters)
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
@@ -357,9 +417,13 @@ def delete_post(request, post_id):
     Deletes a Post after deletion is confirmed via POST.
 
     A request to delete the first post in a Topic is interpreted
-    a request to delete the topic itself.
+    as a request to delete the topic itself.
     """
-    post = get_object_or_404(Post.objects.with_user_details(), pk=post_id)
+    filters = {'pk': post_id}
+    if not request.user.is_authenticated() or \
+       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['topic__hidden'] = False
+    post = get_object_or_404(Post.objects.with_user_details(), **filters)
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
@@ -383,7 +447,12 @@ def user_profile(request, user_id):
     """
     forum_user = get_object_or_404(User, pk=user_id)
     try:
-        recent_topics = forum_user.topics.order_by('-started_at')[:5]
+        filters = {'user': forum_user}
+        if not request.user.is_authenticated() or \
+           not ForumProfile.objects.get_for_user(request.user).is_moderator():
+            filters['hidden'] = False
+        recent_topics = Topic.objects.filter(**filters) \
+                                      .order_by('-started_at')[:5]
     except IndexError:
         recent_topics = []
     return render_to_response('forum/user_profile.html', {

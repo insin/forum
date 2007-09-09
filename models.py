@@ -213,18 +213,25 @@ class Forum(models.Model):
         Executes a simple SQL ``UPDATE`` to set details about this
         forum's last post.
 
-        If the last post is not given, it will be looked up.
+        It is assumed that any post given is not in a hidden topic. If
+        the last post is not given, the last non-hidden post will be
+        looked up. This method should never set the details of a post in
+        a hidden topic as the last post, as this would result in the
+        display of latest post links which do not work for regular and
+        anonymous users.
         """
         try:
             if post is None:
-                post = Post.objects.filter(topic__forum=self) \
+                post = Post.objects.filter(topic__forum=self,
+                                           topic__hidden=False) \
                                     .order_by('-posted_at', '-id')[0]
             params = [post.posted_at, post.topic._get_pk_val(),
                       post.topic.title, post.user._get_pk_val(),
                       post.user.username, self._get_pk_val()]
         except IndexError:
-            # No post was given and there was no latest Post, so there
-            # must not be any Topics currently in the Forum.
+            # No post was given and there was no latest, non-hidden
+            # Post, so there must not be any eligible Topics in the
+            # Forum at the moment.
             params = [None, None, '', None, '', self._get_pk_val()]
         opts = self._meta
         cursor = connection.cursor()
@@ -333,7 +340,8 @@ class Topic(models.Model):
             self.forum.update_topic_count()
             transaction.commit_unless_managed()
         elif self.id == self.forum.last_topic_id and \
-             self.title != self.forum.last_topic_title:
+             self.title != self.forum.last_topic_title and \
+             not self.hidden:
             self.forum.set_last_post()
             transaction.commit_unless_managed()
 
@@ -538,7 +546,11 @@ class Post(models.Model):
         super(Post, self).save(**kwargs)
         if is_new:
             self.topic.set_last_post(self)
-            self.topic.forum.set_last_post(self)
+            # Don't update the forum's last post if the topic is hidden
+            # - this allows moderators to add posts to hidden topics
+            # without them becoming visible on forum listing pages.
+            if not self.topic.hidden:
+                self.topic.forum.set_last_post(self)
             ForumProfile.objects.get_for_user(self.user).update_post_count()
             transaction.commit_unless_managed()
 
