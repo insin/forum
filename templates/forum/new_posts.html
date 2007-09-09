@@ -2,9 +2,14 @@
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block main_content %}
 <p class="description">Topics with new posts since your last login, {{ user.last_login|post_time:user }}.</p>
+{% if is_paginated %}
+<div class="tools">
+<div class="paginator">{% paginator "Topic" %}</div>
+</div>
+{% endif %}
+<div class="module no-margin">
+<h2>{{ title|escape }}</h2>
 {% if topic_list %}
-{% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
-<div class="clear"></div>
 <table>
 <thead>
   <tr>
@@ -33,9 +38,15 @@
   </tr>{% endfor %}
 </tbody>
 </table>
-{% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
-<div class="clear"></div>
 {% else %}
-<p>No posts found.</p>
+<div class="module-body">
+No posts found.
+</div>
+{% endif %}
+</div>
+{% if is_paginated %}
+<div class="tools">
+<div class="paginator">{% paginator "Topic" %}</div>
+</div>
 {% endif %}
 {% endblock %}
