@@ -7,6 +7,19 @@ from django.utils.text import capfirst, get_text_list
 from forum import app_settings
 from PIL import ImageFile
 
+def topic_formfield_callback(field, **kwargs):
+    """
+    Callback for Post form field creation.
+
+    Customises the size of the widgets used to edit topic details.
+    """
+    if field.name in ['title', 'description']:
+        formfield = field.formfield(**kwargs)
+        formfield.widget.attrs['size'] = 50
+        return formfield
+    else:
+        return field.formfield(**kwargs)
+
 def post_formfield_callback(field, **kwargs):
     """
     Callback for Post form field creation.

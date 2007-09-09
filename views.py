@@ -13,7 +13,7 @@ from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
 from forum.forms import (forum_profile_formfield_callback,
-    post_formfield_callback)
+    post_formfield_callback, topic_formfield_callback)
 from forum.models import Forum, ForumProfile, Post, Topic
 
 qn = connection.ops.quote_name
@@ -127,13 +127,14 @@ def add_topic(request, forum_id):
     Adds a Topic to a Forum.
     """
     forum = get_object_or_404(Forum, pk=forum_id)
-    AddTopicForm = forms.form_for_model(Topic, fields=('title', 'description'))
-    TopicPostForm = forms.form_for_model(Post, fields=('body',),
+    TopicForm = forms.form_for_model(Topic, fields=('title', 'description'),
+        formfield_callback=topic_formfield_callback)
+    PostForm = forms.form_for_model(Post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        topic_form = AddTopicForm(request.POST)
-        post_form = TopicPostForm(request.POST)
+        topic_form = TopicForm(data=request.POST)
+        post_form = PostForm(data=request.POST)
         if topic_form.is_valid() and post_form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post_body(post_form.cleaned_data['body'])
@@ -149,8 +150,8 @@ def add_topic(request, forum_id):
                 post.save()
                 return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        topic_form = AddTopicForm()
-        post_form = TopicPostForm()
+        topic_form = TopicForm()
+        post_form = PostForm()
     return render_to_response('forum/add_topic.html', {
         'topic_form': topic_form,
         'post_form': post_form,
@@ -209,9 +210,10 @@ def edit_topic(request, topic_id):
     if auth.is_moderator(request.user):
         editable_fields += ['pinned', 'locked', 'hidden']
         was_hidden = topic.hidden
-    EditTopicForm = forms.form_for_instance(topic, fields=editable_fields)
+    TopicForm = forms.form_for_instance(topic, fields=editable_fields,
+        formfield_callback=topic_formfield_callback)
     if request.method == 'POST':
-        form = EditTopicForm(request.POST)
+        form = TopicForm(data=request.POST)
         if form.is_valid():
             topic = form.save(commit=True)
             if auth.is_moderator(request.user):
@@ -225,7 +227,7 @@ def edit_topic(request, topic_id):
                     forum.set_last_post()
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        form = EditTopicForm()
+        form = TopicForm()
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
@@ -276,11 +278,11 @@ def add_reply(request, topic_id, quote_post=None):
     if topic.locked and \
        not auth.is_moderator(request.user):
         return HttpResponseForbidden()
-    AddReplyForm = forms.form_for_model(Post, fields=('body',),
+    PostForm = forms.form_for_model(Post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        form = AddReplyForm(data=request.POST)
+        form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post_body(form.cleaned_data['body'])
@@ -295,7 +297,7 @@ def add_reply(request, topic_id, quote_post=None):
         initial = {}
         if quote_post is not None:
             initial['body'] = post_formatter.quote_post(quote_post)
-        form = AddReplyForm(initial=initial)
+        form = PostForm(initial=initial)
     return render_to_response('forum/add_reply.html', {
         'form': form,
         'topic': topic,
@@ -356,11 +358,11 @@ def edit_post(request, post_id):
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
-    EditPostForm = forms.form_for_instance(post, fields=('body',),
+    PostForm = forms.form_for_instance(post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        form = EditPostForm(data=request.POST)
+        form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post_body(form.cleaned_data['body'])
@@ -368,7 +370,7 @@ def edit_post(request, post_id):
                 post = form.save(commit=True)
                 return redirect_to_post(request, post.id, post)
     else:
-        form = EditPostForm()
+        form = PostForm()
     return render_to_response('forum/edit_post.html', {
         'form': form,
         'post': post,
@@ -465,16 +467,16 @@ def edit_user_forum_profile(request, user_id):
     editable_fields = ['location', 'avatar', 'website']
     if auth.is_moderator(request.user):
         editable_fields.insert(0, 'title')
-    UserProfileForm = forms.form_for_instance(user_profile,
+    ForumProfileForm = forms.form_for_instance(user_profile,
         formfield_callback=forum_profile_formfield_callback,
         fields=editable_fields)
     if request.method == 'POST':
-        form = UserProfileForm(data=request.POST)
+        form = ForumProfileForm(data=request.POST)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
-        form = UserProfileForm()
+        form = ForumProfileForm()
     return render_to_response('forum/edit_user_forum_profile.html', {
         'forum_user': user,
         'forum_profile': user_profile,
