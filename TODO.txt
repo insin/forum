@@ -28,12 +28,12 @@ and when the time can be found.*
     registration templates into the ``/forum/templates/`` directory as one of
     the installation steps for using the forum in standalone mode.
 
-- Create quick and full help templates for the provided post formatters.
+- Create full help templates for the provided post formatters.
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
-- Post control for moderators - move posts, merge posts from one topic into
-  another.
+- Post control for moderators - move post to another topic, merge all posts from
+  one topic into another.
 - User control for moderators.
 
 *Testing.*

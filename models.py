@@ -372,7 +372,9 @@ class Topic(models.Model):
 
     class Admin:
         list_display = ('title', 'forum', 'user', 'started_at', 'post_count',
-                        'view_count', 'last_post_at', 'locked', 'pinned')
+                        'view_count', 'last_post_at', 'locked', 'pinned',
+                        'hidden')
+        list_filter = ('forum', 'locked', 'pinned', 'hidden')
         fields = (
             (None, {
                 'fields': ('title', 'forum', 'user', 'description'),
