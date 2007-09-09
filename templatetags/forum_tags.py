@@ -70,7 +70,7 @@ def is_moderator(user):
     ``False`` otherwise.
     """
     return user.is_authenticated() and \
-           ForumProfile.objects.get_for_user(user).is_moderator()
+           auth.is_moderator(user)
 
 @register.filter
 def can_see_post_actions(user, topic):
@@ -82,8 +82,7 @@ def can_see_post_actions(user, topic):
     unrestricted access to locked Topics.
     """
     if user.is_authenticated():
-        return not topic.locked or \
-            ForumProfile.objects.get_for_user(user).is_moderator()
+        return not topic.locked or auth.is_moderator(user)
     else:
         return False
 

@@ -80,7 +80,7 @@ def forum_detail(request, forum_id):
         'forum': forum,
     }
     if not request.user.is_authenticated() or \
-       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+       not auth.is_moderator(request.user):
         filters['hidden'] = False
     extra_context = {
         'forum': forum,
@@ -108,7 +108,7 @@ def new_posts(request):
     login.
     """
     filters = {'last_post_at__gte': request.user.last_login}
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if not auth.is_moderator(request.user):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_and_user_details().filter(
         **filters).order_by('-last_post_at')
@@ -166,7 +166,7 @@ def topic_detail(request, topic_id):
     """
     filters = {'pk': topic_id}
     if not request.user.is_authenticated() or \
-       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+       not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
     topic.increment_view_count()
@@ -199,7 +199,7 @@ def edit_topic(request, topic_id):
     removed altogether.
     """
     filters = {'pk': topic_id}
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
     forum = topic.forum
@@ -241,7 +241,7 @@ def delete_topic(request, topic_id):
     Deletes a Topic after confirmation is made via POST.
     """
     filters = {'pk': topic_id}
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
     post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
@@ -270,11 +270,11 @@ def add_reply(request, topic_id, quote_post=None):
     quoted version of the post's body.
     """
     filters = {'pk': topic_id}
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
     if topic.locked and \
-       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+       not auth.is_moderator(request.user):
         return HttpResponseForbidden()
     AddReplyForm = forms.form_for_model(Post, fields=('body',),
         formfield_callback=post_formfield_callback)
@@ -323,7 +323,7 @@ def redirect_to_post(request, post_id, post=None):
     if post is None:
         filters = {'pk': post_id}
         if not request.user.is_authenticated() or \
-           not ForumProfile.objects.get_for_user(request.user).is_moderator():
+           not auth.is_moderator(request.user):
             filters['topic__hidden'] = False
         post = get_object_or_404(Post, **filters)
     posts_per_page = get_posts_per_page(request.user)
@@ -350,7 +350,7 @@ def edit_post(request, post_id):
     Edits the given Post.
     """
     filters = {'pk': post_id}
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if not auth.is_moderator(request.user):
         filters['topic__hidden'] = False
     post = get_object_or_404(Post, **filters)
     topic = post.topic
@@ -390,7 +390,7 @@ def delete_post(request, post_id):
     """
     filters = {'pk': post_id}
     if not request.user.is_authenticated() or \
-       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+       not auth.is_moderator(request.user):
         filters['topic__hidden'] = False
     post = get_object_or_404(Post.objects.with_user_details(), **filters)
     topic = post.topic
@@ -418,7 +418,7 @@ def user_profile(request, user_id):
     try:
         filters = {'user': forum_user}
         if not request.user.is_authenticated() or \
-           not ForumProfile.objects.get_for_user(request.user).is_moderator():
+           not auth.is_moderator(request.user):
             filters['hidden'] = False
         recent_topics = Topic.objects.filter(**filters) \
                                       .order_by('-started_at')[:5]
@@ -439,7 +439,7 @@ def user_topics(request, user_id):
     forum_user = get_object_or_404(User, pk=user_id)
     filters = {'user': forum_user}
     if not request.user.is_authenticated() or \
-       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+       not auth.is_moderator(request.user):
         filters['hidden'] = False
     queryset = Topic.objects.filter(**filters).order_by('-started_at')
     return object_list(request, queryset,
@@ -463,7 +463,7 @@ def edit_user_forum_profile(request, user_id):
         return HttpResponseForbidden()
     user_profile = ForumProfile.objects.get_for_user(user)
     editable_fields = ['location', 'avatar', 'website']
-    if ForumProfile.objects.get_for_user(request.user).is_moderator():
+    if auth.is_moderator(request.user):
         editable_fields.insert(0, 'title')
     UserProfileForm = forms.form_for_instance(user_profile,
         formfield_callback=forum_profile_formfield_callback,
