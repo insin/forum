@@ -463,6 +463,25 @@ def user_profile(request, user_id):
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
+def user_topics(request, user_id):
+    """
+    Displays topics created by a given User.
+    """
+    forum_user = get_object_or_404(User, pk=user_id)
+    filters = {'user': forum_user}
+    if not request.user.is_authenticated() or \
+       not ForumProfile.objects.get_for_user(request.user).is_moderator():
+        filters['hidden'] = False
+    queryset = Topic.objects.filter(**filters).order_by('-started_at')
+    return object_list(request, queryset,
+        paginate_by=get_topics_per_page(request.user), allow_empty=True,
+        template_name='forum/user_topics.html',
+        extra_context={
+            'forum_user': forum_user,
+            'title': u'Topics Started by %s' % forum_user.username,
+            'posts_per_page': get_posts_per_page(request.user),
+        }, template_object_name='topic')
+
 @login_required
 def edit_user_forum_profile(request, user_id):
     """

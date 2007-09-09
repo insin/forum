@@ -1,4 +1,4 @@
-body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-size: 12px; margin: 0; padding: 1em; }
+body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-size: 12px; margin: 0; padding: 1em; background-color: #fff; color: #000; }
 a img { border: none; }
 img { vertical-align: text-bottom; }
 
@@ -12,7 +12,7 @@ th.forum-topics { text-align: center; }
 /* Common formatting */
 .odd { background-color: #e9e9f9; }
 .even { background-color: #e3e3f3; }
-.module { border: 1px solid #ccc; margin-bottom: 5px; background-color: #fff; }
+.module { border: 1px solid #ccc; margin-bottom: 1em; background-color: #fff; }
 .module-body { padding: 4px 8px; }
 .no-margin { margin: 0; }
 .module h2, .module caption { overflow: hidden; margin: 0; padding: 2px 8px 3px 8px; font-size: 1em; text-align: left; font-weight: bold; background: #595979 url("../img/module-bg.gif") top left repeat-x; color: #fff; border-bottom: 0; }
@@ -69,9 +69,7 @@ ul.errorlist { margin: 0; padding: 0; }
   ul.errorlist li { padding: 4px 8px 4px 25px; margin: 0 0 8px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/icon_alert.gif") 5px .3em no-repeat; }
 
 .col-l { float: left; width: 30%; }
-
   .forum-profile th, .forum-settings th { width: 30%; }
-
 .col-r { float: right; width: 70%; }
   .col-r .last-topics-started { margin-left: 1em; }
 

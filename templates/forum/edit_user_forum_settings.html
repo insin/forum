@@ -1,11 +1,9 @@
 {% extends "base_forum.html" %}
-<div id="breadcrumbs">
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
 &raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ forum_user.username|escape }}</a>
 &raquo; <strong>{{ title|escape }}</strong>
 {% endblock %}
-</div>
 {% block main_content %}
 <form name="editUserForumSettingsForm" id="editUserForumSettingsForm" action="." method="POST">
 <fieldset class="module aligned forum-settings">

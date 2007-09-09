@@ -23,6 +23,7 @@ urlpatterns = patterns('forum.views',
     url(r'^post/(?P<post_id>\d+)/quote/$',               'quote_post',               name='forum_quote_post'),
     url(r'^post/(?P<post_id>\d+)/delete/$',              'delete_post',              name='forum_delete_post'),
     url(r'^user/(?P<user_id>\d+)/$',                     'user_profile',             name='forum_user_profile'),
+    url(r'^user/(?P<user_id>\d+)/topics/$',              'user_topics',              name='forum_user_topics'),
     url(r'^user/(?P<user_id>\d+)/edit_profile/$',        'edit_user_forum_profile',  name='forum_edit_user_forum_profile'),
     url(r'^user/(?P<user_id>\d+)/edit_forum_settings/$', 'edit_user_forum_settings', name='forum_edit_user_forum_settings'),
 )

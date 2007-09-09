@@ -66,7 +66,7 @@
 
 <div class="col-r">
 <div class="module last-topics-started">
-<h2>Most Recent Topics Started</h2>
+<h2><span class="title">Most Recent Topics Started</span>{% if recent_topics %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_user_topics forum_user.id %}">View All Topics</a></span>{% endif %}</h2>
 {% if recent_topics %}
 <table>
 <thead>

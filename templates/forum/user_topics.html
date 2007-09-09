@@ -1,0 +1,54 @@
+{% extends "base_forum.html" %}{% load forum_tags %}
+{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{% url forum_user_profile forum_user.id %}">Forum Profile for {{ forum_user.username|escape }}</a>
+&raquo; <strong>{{ title|escape }}</strong>
+{% endblock %}
+{% block main_content %}
+{% if is_paginated %}
+<div class="tools">
+<div class="paginator">{% paginator "Topic" %}</div>
+</div>
+{% endif %}
+<div class="module no-margin">
+<h2>{{ title|escape }}</h2>
+{% if topic_list %}
+<table>
+<thead>
+  <tr>
+    <th>Topic</th>
+    <th>Started</th>
+    <th>Posts</th>
+    <th>Views</th>
+    <th>Last Post</th>
+  </tr>
+</thead>
+<tbody>
+{% for topic in topic_list %}
+  <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
+    <td>
+      {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
+      {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
+      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+    </td>
+    <td>{{ topic.started_at|forum_datetime:user }}</td>
+    <td>{{ topic.post_count }}</td>
+    <td>{{ topic.view_count }}</td>
+    <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+  </tr>{% endfor %}
+</tbody>
+</table>
+{% else %}
+<div class="module-body">
+This user has not started any Topics yet.
+</div>
+{% endif %}
+</div>
+{% if is_paginated %}
+<div class="tools">
+<div class="paginator">{% paginator "Topic" %}</div>
+</div>
+{% endif %}
+{% endblock %}
