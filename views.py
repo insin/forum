@@ -189,25 +189,47 @@ def topic_detail(request, topic_id):
 def edit_topic(request, topic_id):
     """
     Edits the given Topic.
+
+    To avoid regular users from being shown non-working links, the
+    Topic's Forum's denormalised last post data is also updated when
+    necessary after the moderator has made a change to the Topic's
+    ``hidden`` status. Post counts and topic counts will not be
+    affected by hiding a Topic - it is assumed that this is a temporary
+    measure which will either lead to a Topic being cleaned up or
+    removed altogether.
     """
     filters = {'pk': topic_id}
     if not ForumProfile.objects.get_for_user(request.user).is_moderator():
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
+    forum = topic.forum
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
-    EditTopicForm = forms.form_for_instance(topic, fields=('title', 'description'))
+    editable_fields = ['title', 'description']
+    if auth.is_moderator(request.user):
+        editable_fields += ['pinned', 'locked', 'hidden']
+        was_hidden = topic.hidden
+    EditTopicForm = forms.form_for_instance(topic, fields=editable_fields)
     if request.method == 'POST':
         form = EditTopicForm(request.POST)
         if form.is_valid():
-            form.save(commit=True)
+            topic = form.save(commit=True)
+            if auth.is_moderator(request.user):
+                if topic.hidden and not was_hidden:
+                     if forum.last_topic_id == topic.id:
+                         # Set the forum's last post to the latest non-hidden
+                         # post.
+                         forum.set_last_post()
+                elif not topic.hidden and was_hidden:
+                    # Just in case this topic still holds the last post
+                    forum.set_last_post()
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
         form = EditTopicForm()
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
-        'forum': topic.forum,
+        'forum': forum,
         'title': u'Edit Topic',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
@@ -237,59 +259,6 @@ def delete_topic(request, topic_id):
             'title': u'Delete Topic',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
-
-@login_required
-def update_topic_lock(request, topic_id, locked):
-    """
-    Updates a Topic's ``locked`` status with the given state.
-    """
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
-        return HttpResponseForbidden()
-    topic = get_object_or_404(Topic, pk=topic_id)
-    topic.locked = locked
-    topic.save()
-    return HttpResponseRedirect(topic.get_absolute_url())
-
-@login_required
-def update_topic_pin(request, topic_id, pinned):
-    """
-    Updates a Topic's ``pinned`` status with the given state.
-    """
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
-        return HttpResponseForbidden()
-    topic = get_object_or_404(Topic, pk=topic_id)
-    topic.pinned = pinned
-    topic.save()
-    return HttpResponseRedirect(topic.get_absolute_url())
-
-@login_required
-@transaction.commit_on_success
-def update_topic_hide(request, topic_id, hidden):
-    """
-    Updates a Topic's ``hidden`` status with the given state.
-
-    To avoid regular users from being shown non-working links, the
-    Topic's Forum's denormalised last post data is also updated when
-    necessary.
-
-    Post counts and topic counts will not be affected by hiding a Topic
-    - it is assumed that this is a temporary measure which will either
-    lead to a Topic being cleaned up or removed altogether.
-    """
-    if not ForumProfile.objects.get_for_user(request.user).is_moderator():
-        return HttpResponseForbidden()
-    topic = get_object_or_404(Topic, pk=topic_id)
-    forum = topic.forum
-    topic.hidden = hidden
-    topic.save()
-    if hidden:
-        if forum.last_topic_id == topic.id:
-            # Set the forum's last post to the latest non-hidden post
-            forum.set_last_post()
-    else:
-        # Just in case this topic still holds the last post
-        forum.set_last_post()
-    return HttpResponseRedirect(topic.get_absolute_url())
 
 @login_required
 @transaction.commit_on_success

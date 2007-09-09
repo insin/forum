@@ -1,4 +1,4 @@
-{% extends "base_forum.html" %}
+{% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 {% if topic.hidden %}
 <p class="description"><img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>
@@ -24,6 +24,23 @@
       </div>
     </div>
   </fieldset>
+  {% if user|is_moderator %}
+  <fieldset class="module aligned">
+    <h2>Moderation</h2>
+    <div class="form-row checkbox-row">
+      {% if form.pinned.errors %}{{ form.pinned.errors.as_ul }}{% endif %}
+      <label for="id_auto_fast_reply">{{ form.pinned }} Pinned</label>
+    </div>
+    <div class="form-row checkbox-row">
+      {% if form.locked.errors %}{{ form.locked.errors.as_ul }}{% endif %}
+      <label for="id_locked">{{ form.locked }} Locked</label>
+    </div>
+    <div class="form-row checkbox-row">
+      {% if form.hidden.errors %}{{ form.hidden.errors.as_ul }}{% endif %}
+      <label for="id_hidden">{{ form.hidden }} Hidden</label>
+    </div>
+  </fieldset>
+  {% endif %}
   <div class="buttons">
     <input type="submit" name="submit" value="Edit Topic">
     <a href="{{ topic.get_absolute_url }}">Cancel</a>

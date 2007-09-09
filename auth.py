@@ -35,3 +35,9 @@ def user_can_edit_user_profile(user, user_to_edit):
     """
     return user.id == user_to_edit.id or \
            ForumProfile.objects.get_for_user(user).is_moderator()
+
+def is_moderator(user):
+    """
+    Shortcut so we don't have to paste this incantation everywhere.
+    """
+    return ForumProfile.objects.get_for_user(user).is_moderator()
