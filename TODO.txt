@@ -32,7 +32,6 @@ and when the time can be found.*
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
   them if need be.
-- Topic control for moderators - pin, lock or hide.
 - Post control for moderators - move posts, merge posts from one topic into
   another.
 - User control for moderators.
