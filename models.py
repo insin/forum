@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from django.db import connection, models, transaction
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
-from pytz import common_timezones
 
 from forum.formatters import post_formatter
+from pytz import common_timezones
 
 __all__ = ['ForumProfile', 'Forum', 'Topic', 'Post']
 
