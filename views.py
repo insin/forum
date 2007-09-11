@@ -71,7 +71,8 @@ def forum_index(request):
     for forum in Forum.objects.all():
         forums_by_section.setdefault(forum.section_id, []).append(forum)
     return render_to_response('forum/forum_index.html', {
-        'section_list': [(sections[k], v) for k, v in forums_by_section.iteritems()],
+        'section_list': [(sections[k], v) \
+                         for k, v in forums_by_section.iteritems()],
         'title': u'Forum Index',
     }, context_instance=RequestContext(request))
 
@@ -356,7 +357,7 @@ def redirect_to_post(request, post_id, post=None):
     page, remainder = divmod(post.num_in_topic, posts_per_page)
     if post.num_in_topic < posts_per_page or remainder != 0:
         page += 1
-    return HttpResponseRedirect('%s?page=%s#post%s' \
+    return HttpResponseRedirect('%s?page=%s&#post%s' \
         % (reverse('forum_topic_detail', args=(smart_unicode(post.topic_id),)),
            page, post_id))
 
