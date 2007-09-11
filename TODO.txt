@@ -53,7 +53,6 @@ the moment.*
 
 *Boring stuff which most forums have:*
 
-- Top-level forum groups, with ordering defined per group.
 - Subforums.
 - Tracking the topics a user has viewed and when they last viewed them.
 - Tracking which posts were replied to / using this information to offer a
