@@ -39,7 +39,7 @@ h1 { margin: .25em 0 .5em 0; }
 
 /* Posts */
 div.post { overflow: hidden; padding: 0 10px; }
-  div.postbody { float: left; width: 76%; clear: both; padding-top: 4px; }
+  div.postbody { float: left; width: 76%; clear: both; padding-top: 6px; }
     div.postbody ul.post-actions { float: right; margin: 0; padding: 0; }
     div.postbody ul.post-actions li { list-style-type: none; float: left; margin-left: 10px; }
     p.author { margin: 0 0 .5em 0; }

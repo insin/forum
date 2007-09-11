@@ -1,2 +1,4 @@
 /* Invoke the dark, proprietary art of hasLayout */
 #userbar, div.tools, div.post, .module h2 { zoom: 1; }
+
+div.postbody { padding-bottom: 1em; }
