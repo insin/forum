@@ -72,6 +72,7 @@
 <thead>
   <tr>
     <th>Topic</th>
+    <th>In Forum</th>
     <th>Started</th>
     <th>Posts</th>
     <th>Views</th>
@@ -87,7 +88,8 @@
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
-    <td>{{ topic.started_at|forum_datetime:user }}</td>
+    <td><a href="{% url forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
+    <td>{{ topic.started_at|timesince }} ago</td>
     <td>{{ topic.post_count }}</td>
     <td>{{ topic.view_count }}</td>
     <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>

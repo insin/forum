@@ -451,8 +451,8 @@ def user_profile(request, user_id):
         if not request.user.is_authenticated() or \
            not auth.is_moderator(request.user):
             filters['hidden'] = False
-        recent_topics = Topic.objects.filter(**filters) \
-                                      .order_by('-started_at')[:5]
+        recent_topics = Topic.objects.with_forum_details().filter(
+            **filters).order_by('-started_at')[:5]
     except IndexError:
         recent_topics = []
     return render_to_response('forum/user_profile.html', {
@@ -472,7 +472,8 @@ def user_topics(request, user_id):
     if not request.user.is_authenticated() or \
        not auth.is_moderator(request.user):
         filters['hidden'] = False
-    queryset = Topic.objects.filter(**filters).order_by('-started_at')
+    queryset = Topic.objects.with_forum_details().filter(
+        **filters).order_by('-started_at')
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/user_topics.html',

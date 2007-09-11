@@ -269,15 +269,14 @@ class Forum(models.Model):
     set_last_post.alters_data = True
 
 class TopicManager(models.Manager):
-    def with_user_details(self):
+    def _add_user_details(self, queryset):
         """
-        Creates a ``QuerySet`` containing Topics which have
-        additional information about the User who created them.
+        Uses ``extra`` to add User details to a Topic queryset.
         """
         opts = self.model._meta
         user_opts = User._meta
         user_table = qn(user_opts.db_table)
-        return super(TopicManager, self).get_query_set().extra(
+        return queryset.extra(
             select={
                 'user_username': '%s.%s' % (user_table, qn(user_opts.get_field('username').column)),
             },
@@ -292,16 +291,14 @@ class TopicManager(models.Manager):
             ]
         )
 
-    def with_forum_and_user_details(self):
+    def _add_forum_details(self, queryset):
         """
-        Creates a ``QuerySet`` containing Topics which have
-        additional information about the User who created them and the
-        Forum they belong to.
+        Uses ``extra`` to add Forum details to a Topic queryset.
         """
         opts = self.model._meta
         forum_opts = Forum._meta
         forum_table = qn(forum_opts.db_table)
-        return self.with_user_details().extra(
+        return queryset.extra(
             select={
                 'forum_name': '%s.%s' % (forum_table, qn(forum_opts.get_field('name').column)),
             },
@@ -315,6 +312,30 @@ class TopicManager(models.Manager):
                 ),
             ]
         )
+
+    def with_user_details(self):
+        """
+        Creates a ``QuerySet`` containing Topics which have
+        additional information about the User who created them.
+        """
+        return self._add_user_details(super(TopicManager, self).get_query_set())
+
+    def with_forum_details(self):
+        """
+        Creates a ``QuerySet`` containing Topics which have
+        additional information about the Forum they belong to.
+        """
+        return self._add_forum_details(super(TopicManager, self).get_query_set())
+
+    def with_forum_and_user_details(self):
+        """
+        Creates a ``QuerySet`` containing Topics which have
+        additional information about the User who created them and the
+        Forum they belong to.
+        """
+        return self._add_forum_details(
+            self._add_user_details(
+                super(TopicManager, self).get_query_set()))
 
 class Topic(models.Model):
     """
