@@ -14,7 +14,7 @@ from forum import auth
 from forum.formatters import post_formatter
 from forum.forms import (forum_profile_formfield_callback,
     post_formfield_callback, topic_formfield_callback)
-from forum.models import Forum, ForumProfile, Post, Topic
+from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 qn = connection.ops.quote_name
 
@@ -64,18 +64,33 @@ def get_avatar_dimensions():
 
 def forum_index(request):
     """
-    Displays a list of Forums.
+    Displays a list of Sections and their Forums.
     """
+    sections = dict([(s.id, s) for s in Section.objects.all()])
+    forums_by_section = {}
+    for forum in Forum.objects.all():
+        forums_by_section.setdefault(forum.section_id, []).append(forum)
     return render_to_response('forum/forum_index.html', {
-        'forum_list': Forum.objects.all(),
+        'section_list': [(sections[k], v) for k, v in forums_by_section.iteritems()],
         'title': u'Forum Index',
+    }, context_instance=RequestContext(request))
+
+def section_detail(request, section_id):
+    """
+    Displays a particular Section's Forums.
+    """
+    section = get_object_or_404(Section, pk=section_id)
+    return render_to_response('forum/section_detail.html', {
+        'section': section,
+        'forum_list': section.forums.all(),
+        'title': section.name,
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):
     """
     Displays a Forum's Topics.
     """
-    forum = get_object_or_404(Forum, pk=forum_id)
+    forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     filters = {
         'forum': forum,
     }
@@ -83,6 +98,7 @@ def forum_detail(request, forum_id):
        not auth.is_moderator(request.user):
         filters['hidden'] = False
     extra_context = {
+        'section': forum.section,
         'forum': forum,
         'title': forum.name,
         'posts_per_page': get_posts_per_page(request.user),
@@ -126,7 +142,7 @@ def add_topic(request, forum_id):
     """
     Adds a Topic to a Forum.
     """
-    forum = get_object_or_404(Forum, pk=forum_id)
+    forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     TopicForm = forms.form_for_model(Topic, fields=('title', 'description'),
         formfield_callback=topic_formfield_callback)
     PostForm = forms.form_for_model(Post, fields=('body',),
@@ -155,6 +171,7 @@ def add_topic(request, forum_id):
     return render_to_response('forum/add_topic.html', {
         'topic_form': topic_form,
         'post_form': post_form,
+        'section': forum.section,
         'forum': forum,
         'preview': preview,
         'title': u'Add Topic in %s' % forum.name,
@@ -171,13 +188,15 @@ def topic_detail(request, topic_id):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
     topic.increment_view_count()
+    forum = Forum.objects.select_related().get(pk=topic.forum_id)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
         template_name='forum/topic_detail.html',
         extra_context={
+            'section': forum.section,
+            'forum': forum,
             'topic': topic,
-            'forum': topic.forum,
             'title': topic.title,
             'avatar_dimensions': get_avatar_dimensions(),
             'show_fast_reply': request.user.is_authenticated() and \
@@ -203,7 +222,7 @@ def edit_topic(request, topic_id):
     if not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
-    forum = topic.forum
+    forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
     editable_fields = ['title', 'description']
@@ -231,6 +250,7 @@ def edit_topic(request, topic_id):
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
+        'section': forum.section,
         'forum': forum,
         'title': u'Edit Topic',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
@@ -249,7 +269,7 @@ def delete_topic(request, topic_id):
     post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
-    forum = topic.forum
+    forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if request.method == 'POST':
         topic.delete()
         return HttpResponseRedirect(forum.get_absolute_url())
@@ -258,6 +278,7 @@ def delete_topic(request, topic_id):
             'post': post,
             'topic': topic,
             'forum': forum,
+            'section': forum.section,
             'title': u'Delete Topic',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
@@ -278,6 +299,7 @@ def add_reply(request, topic_id, quote_post=None):
     if topic.locked and \
        not auth.is_moderator(request.user):
         return HttpResponseForbidden()
+    forum = Forum.objects.select_related().get(pk=topic.forum_id)
     PostForm = forms.form_for_model(Post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
@@ -301,7 +323,9 @@ def add_reply(request, topic_id, quote_post=None):
     return render_to_response('forum/add_reply.html', {
         'form': form,
         'topic': topic,
-        'forum': topic.forum,
+        'section': forum.section,
+        'forum': forum,
+        'topic': topic,
         'preview': preview,
         'title': u'Add Reply to %s' % topic.title,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
@@ -358,6 +382,7 @@ def edit_post(request, post_id):
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
+    forum = Forum.objects.select_related().get(pk=topic.forum_id)
     PostForm = forms.form_for_instance(post, fields=('body',),
         formfield_callback=post_formfield_callback)
     preview = None
@@ -375,7 +400,8 @@ def edit_post(request, post_id):
         'form': form,
         'post': post,
         'topic': topic,
-        'forum': topic.forum,
+        'forum': forum,
+        'section': forum.section,
         'preview': preview,
         'title': u'Edit Post',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
@@ -404,10 +430,12 @@ def delete_post(request, post_id):
         post.delete()
         return HttpResponseRedirect(topic.get_absolute_url())
     else:
+        forum = Forum.objects.select_related().get(pk=topic.forum_id)
         return render_to_response('forum/delete_post.html', {
             'post': post,
             'topic': topic,
-            'forum': topic.forum,
+            'forum': forum,
+            'section': forum.section,
             'title': u'Delete Post',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))

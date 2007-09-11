@@ -1,8 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
-{% for section,forum_list in section_list %}
 <div class="module">
-<h2><a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a></h2>
+<h2>{{ section.name|escape }}</h2>
 <table>
 <col width="65%">
 <col width="1%">
@@ -30,5 +29,4 @@
 </tbody>
 </table>
 </div>
-{% endfor %}
 {% endblock %}

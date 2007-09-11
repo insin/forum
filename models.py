@@ -8,7 +8,7 @@ from django.utils.text import truncate_words
 from forum.formatters import post_formatter
 from pytz import common_timezones
 
-__all__ = ['ForumProfile', 'Forum', 'Topic', 'Post']
+__all__ = ['ForumProfile', 'Section', 'Forum', 'Topic', 'Post']
 
 DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
 
@@ -147,13 +147,34 @@ class ForumProfile(models.Model):
 
     update_post_count.alters_data = True
 
+class Section(models.Model):
+    """
+    Provides categorisation for forums.
+    """
+    name  = models.CharField(max_length=100, unique=True)
+    order = models.PositiveIntegerField()
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('order',)
+
+    class Admin:
+        list_display = ('name', 'order')
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('forum_section_detail', (smart_unicode(self.id),))
+
 class Forum(models.Model):
     """
     Provides categorisation for discussion topics.
     """
     name        = models.CharField(max_length=100)
+    section     = models.ForeignKey(Section, related_name='forums')
     description = models.TextField(blank=True)
-    order       = models.PositiveIntegerField(unique=True)
+    order       = models.PositiveIntegerField()
 
     # Administration
     locked = models.BooleanField(default=False)
@@ -172,13 +193,15 @@ class Forum(models.Model):
 
     class Meta:
         ordering = ('order',)
+        unique_together = (('section', 'order'),)
 
     class Admin:
-        list_display = ('name', 'description', 'order', 'topic_count',
+        list_display = ('name', 'section', 'description', 'order', 'topic_count',
                         'locked', 'hidden')
+        list_filter = ('section',)
         fields = (
             (None, {
-                'fields': ('name', 'description', 'order'),
+                'fields': ('name', 'section', 'description', 'order'),
             }),
             (u'Administration', {
                 'fields': ('locked', 'hidden'),

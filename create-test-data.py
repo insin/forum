@@ -11,7 +11,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from forum.models import Forum, ForumProfile, Post, Topic
+from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 POST_TEXT = """
 Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer facilisis
@@ -87,10 +87,16 @@ def create_test_data():
 
     users = [admin, moderator, user]
 
+    # Sections
+    news = Section.objects.create(name='News', order=1)
+    community = Section.objects.create(name='Community', order=2)
+    testing = Section.objects.create(name='Testing', order=3)
+
     # Forums
-    discussion = Forum.objects.create(name='Discussion', order=1, description='Blah-de-blah about this, that and the other.')
-    off_topic = Forum.objects.create(name='Off Topic', order=2, description='Everything else goes here, or, like, die and stuff. (Will this do?)')
-    test_pagination = Forum.objects.create(name='Test Pagination', order=3, description='Contain lots of Topics and Posts.')
+    announcements = Forum.objects.create(name='Announcements & Feedback', section=news, order=1, description='Forum news and feedback.')
+    discussion = Forum.objects.create(name='Gaming Discussion', section=community, order=1)
+    off_topic = Forum.objects.create(name='Off Topic', section=community, order=2, description='Everything else goes here.')
+    test_pagination = Forum.objects.create(name='Test Pagination', section=testing, order=1, description='Contain lots of Topics and Posts.')
 
     # Topics + Posts
     for i in xrange(1, 401):
@@ -107,13 +113,16 @@ def create_test_data():
     for i in xrange(2, 401):
         topic.posts.create(user=random.choice(users), body='Post %s' % i)
 
+    open_testing = Topic.objects.create(title='Open for testing', forum=announcements, user=admin)
+    open_testing.posts.create(user=admin, body=POST_TEXT)
+
     re4_wii = Topic.objects.create(title='Resident Evil 4: Wii', description='Heads-a-poppin!', forum=discussion, user=user)
     re4_wii.posts.create(user=user, body=POST_TEXT)
 
     sales = Topic.objects.create(title='Official Sales Figures', description='Snorefax.', forum=discussion, user=admin, pinned=True)
     sales.posts.create(user=admin, body=POST_TEXT)
 
-    testing = Topic.objects.create(title='Testing', forum=off_topic, user=admin)
+    testing = Topic.objects.create(title='Test Topic', forum=off_topic, user=admin)
     testing.posts.create(user=admin, body=POST_TEXT)
 
 if __name__ == '__main__':
