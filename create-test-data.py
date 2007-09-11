@@ -97,6 +97,7 @@ def create_test_data():
     discussion = Forum.objects.create(name='Gaming Discussion', section=community, order=1)
     off_topic = Forum.objects.create(name='Off Topic', section=community, order=2, description='Everything else goes here.')
     test_pagination = Forum.objects.create(name='Test Pagination', section=testing, order=1, description='Contain lots of Topics and Posts.')
+    ideas = Forum.objects.create(name='Forum Feature Ideas', section=testing, order=2, description='Suggest and discuss ideas for lesser-spotted forum features.')
 
     # Topics + Posts
     for i in xrange(1, 401):
@@ -124,6 +125,14 @@ def create_test_data():
 
     testing = Topic.objects.create(title='Test Topic', forum=off_topic, user=admin)
     testing.posts.create(user=admin, body=POST_TEXT)
+
+    idea_data = (
+        ('Up/Down Voting on Content', 'Like Reddit gone mad!', "Up/down voting *everywhere*, specifically on users, topics and posts.\n\nFor each type of content voted on, have a configurable lower boundary score in user Forum Settings.\n\nScores under the boundary would result in individual topics and posts, or even *everything* from a specific user being hidden.\n\nLet consensus be your ignore list, if you're crazy enough."),
+        ('Forum Types', '', "Each forum could have a \"type\" field, which could affect how everything in that particular forum works.\n\nA \"Discussion Forum\" type would be the default and would be what we're using right now.\n\n**Example:**\n\nA \"Help Forum\" type could have the initial post in each topic displayed on every page, with some kind of kudos points system in place. Each topic would start with `settings.FORUM_INITIAL_TOPIC_KUDOS_POINTS` and the topic starter could award these points to specific posts, and thus to users, within the topic for giving useful answers.\n\nIdeas for uses of kudos points:\n\n1. Total points earned could be displayed in place of post counts in user profiles when viewing a Help Forum, and they would actually *mean* something.\n2. An option to view only the starting post and posts which got kudos points if you just want to see what the useful answers were.\n3. If some people can be convinced to *post* more simply by `post_count += 1`, perhaps they could be convinced to *help* more by `kudos += 10` ;)"),
+    )
+    for title, description, body in idea_data:
+        topic = Topic.objects.create(title=title, description=description, forum=ideas, user=admin)
+        topic.posts.create(user=admin, body=body)
 
 if __name__ == '__main__':
     create_test_data()
