@@ -122,7 +122,7 @@ def add_forum(request):
                 # Add to the end
                 order = section.forums.count() + 1
             else:
-                # Insert into the middle
+                # Insert before an existing Forum
                 forum = Forum.objects.get(pk=form.cleaned_data['forum'])
                 Forum.objects.increment_orders(section, forum.order)
                 order = forum.order

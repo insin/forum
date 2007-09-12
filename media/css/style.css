@@ -32,8 +32,8 @@ th.forum-topics { text-align: center; }
 p.description { font-style: italic; }
 
 div.tools { overflow: hidden; padding: 4px 0; }
+  div.tools .actions { float: right; }
 div.paginator { float: left; }
-div.topic-actions, div.user-actions { float: right; }
 
 h1 { margin: .25em 0 .5em 0; }
 

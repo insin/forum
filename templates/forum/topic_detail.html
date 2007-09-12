@@ -14,7 +14,7 @@
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
-<div class="topic-actions">
+<div class="actions">
   {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
@@ -69,7 +69,7 @@
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
-<div id="topic-actions-bottom" class="topic-actions">
+<div id="topic-actions-bottom" class="actions">
   {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>

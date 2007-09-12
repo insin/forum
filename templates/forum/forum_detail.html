@@ -5,13 +5,14 @@
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
-<div class="topic-actions">
+<div class="actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
 <div class="module no-margin">
 <h2>{{ forum.name|escape }}</h2>
+{% if topic_list or pinned_topics %}
 <table>
 <thead>
   <tr>
@@ -56,11 +57,16 @@
   </tr>{% endfor %}
 </tbody>
 </table>
+{% else %}
+<div class="module-body">
+This Forum does not have any Topics yet.
+</div>
+{% endif %}
 </div>
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
-<div class="topic-actions">
+<div class="actions">
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}

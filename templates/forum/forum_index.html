@@ -1,5 +1,12 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
+{% if user|is_admin %}
+<div class="tools">
+  <div class="actions">
+    <a href="{% url forum_add_forum %}">Add Forum</a>
+  </div>
+</div>
+{% endif %}
 {% for section,forum_list in section_list %}
 <div class="module">
 <h2><a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a></h2>

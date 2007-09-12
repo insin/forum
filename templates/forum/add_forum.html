@@ -1,0 +1,49 @@
+{% extends "base_forum.html" %}
+{% block extrahead %}
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectUpdater.js"></script>
+  <script type="text/javascript">jQuery(function() { var sectionUpdater = new SelectUpdater("id_section", "id_forum", {{ section_forum_json }}); });</script>
+{% endblock %}
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <strong>Add Forum</strong>
+{% endblock %}
+{% block main_content %}
+<form name="addForumForm" id="addForumForm" action="." method="POST">
+  <fieldset class="module aligned">
+    <h2>Forum</h2>
+    <div class="form-row">
+      {% if form.name.errors %}{{ form.name.errors.as_ul }}{% endif %}
+      {{ form.name.label_tag }}
+      <div class="form-field">
+        {{ form.name }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.description.errors %}{{ form.description.errors.as_ul }}{% endif %}
+      {{ form.description.label_tag }}
+      <div class="form-field">
+        {{ form.description }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.section.errors %}{{ form.section.errors.as_ul }}{% endif %}
+      {{ form.section.label_tag }}
+      <div class="form-field">
+        {{ form.section }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.forum.errors %}{{ form.forum.errors.as_ul }}{% endif %}
+      <label for="id_forum">Insert before</label>
+      <div class="form-field">
+        {{ form.forum }}
+        <p class="help">Leave this field blank to insert the new Forum at the end.</p>
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" name="submit" value="Add Forum">
+    <a href="{% url forum_index %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

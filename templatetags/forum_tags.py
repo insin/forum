@@ -64,6 +64,15 @@ def can_edit_user_profile(user, user_to_edit):
            auth.user_can_edit_user_profile(user, user_to_edit)
 
 @register.filter
+def is_admin(user):
+    """
+    Returns ``True`` if the given user has admin permissions,
+    ``False`` otherwise.
+    """
+    return user.is_authenticated() and \
+           auth.is_admin(user)
+
+@register.filter
 def is_moderator(user):
     """
     Returns ``True`` if the given user has moderation permissions,
