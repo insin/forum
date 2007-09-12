@@ -7,6 +7,29 @@ from django.utils.text import capfirst, get_text_list
 from forum import app_settings
 from PIL import ImageFile
 
+#########
+# Forms #
+#########
+
+class ForumForm(forms.Form):
+    name        = forms.CharField(max_length=100)
+    description = forms.CharField(max_length=100, required=False)
+    section     = forms.ChoiceField()
+    forum       = forms.ChoiceField(required=False)
+
+    def __init__(self, sections, forums=None, *args, **kwargs):
+        super(ForumForm, self).__init__(*args, **kwargs)
+        self.fields['section'].choices = [(u'', u'----------')] + \
+            [(section.id, section.name) for section in sections]
+        self.fields['forum'].choices = [(u'', u'----------')]
+        if forums:
+            self.fields['forum'].choices += \
+                [(forum.id, forum.name) for forum in forums]
+
+#######################
+# Formfield Callbacks #
+#######################
+
 def topic_formfield_callback(field, **kwargs):
     """
     Callback for Post form field creation.

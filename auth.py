@@ -3,6 +3,15 @@ Utility functions related to forum user permissions.
 """
 from forum.models import ForumProfile
 
+def is_admin(user):
+    """
+    Shortcut so we don't have to paste this incantation everywhere.
+
+    Also provides a single point of change should we ever modify how
+    user permissions are determined.
+    """
+    return ForumProfile.objects.get_for_user(user).is_admin()
+
 def is_moderator(user):
     """
     Shortcut so we don't have to paste this incantation everywhere.

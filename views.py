@@ -6,13 +6,14 @@ from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.utils import simplejson
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
 from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
-from forum.forms import (forum_profile_formfield_callback,
+from forum.forms import (ForumForm, forum_profile_formfield_callback,
     post_formfield_callback, topic_formfield_callback)
 from forum.models import Forum, ForumProfile, Post, Section, Topic
 
@@ -58,6 +59,17 @@ def get_avatar_dimensions():
     else:
         return u''
 
+def create_section_forum_json(forums_by_section):
+    """
+    Creates a JSON text representing an object mapping Section ids to Forum
+    ids and names.
+    """
+    json_dict = {}
+    for section, forums in forums_by_section:
+        json_dict[section.id] = [dict(value=forum.id, text=forum.name) \
+                                 for forum in forums]
+    return simplejson.dumps(json_dict)
+
 ##################
 # View Functions #
 ##################
@@ -80,6 +92,49 @@ def section_detail(request, section_id):
         'section': section,
         'forum_list': section.forums.all(),
         'title': section.name,
+    }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
+def add_forum(request):
+    """
+    Adds a Forum to a Section.
+    """
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    forums_by_section = list(Section.objects.get_forums_by_section())
+    sections = [t[0] for t in forums_by_section]
+    if request.method == 'POST':
+        forums = []
+        if 'section' in request.POST:
+            try:
+                section_id = int(request.POST['section'])
+                for section, forum_list in forums_by_section:
+                    if section.id == section_id:
+                        forums = forum_list
+                        break
+            except:
+                pass # Invalid section id given
+        form = ForumForm(sections, forums, data=request.POST)
+        if form.is_valid():
+            section = Section.objects.get(pk=form.cleaned_data['section'])
+            if not form.cleaned_data['forum']:
+                # Add to the end
+                order = section.forums.count() + 1
+            else:
+                # Insert into the middle
+                forum = Forum.objects.get(pk=form.cleaned_data['forum'])
+                Forum.objects.increment_orders(section, forum.order)
+                order = forum.order
+            forum = Forum.objects.create(name=form.cleaned_data['name'],
+                section=section, order=order,
+                description=form.cleaned_data['description'])
+            return HttpResponseRedirect(forum.get_absolute_url())
+    else:
+        form = ForumForm(sections)
+    return render_to_response('forum/add_forum.html', {
+        'form': form,
+        'section_forum_json': create_section_forum_json(forums_by_section),
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):

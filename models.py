@@ -180,6 +180,24 @@ class Section(models.Model):
     def get_absolute_url(self):
         return ('forum_section_detail', (smart_unicode(self.id),))
 
+class ForumManager(models.Manager):
+    def increment_orders(self, section, start_at):
+        """
+        Increments ``order`` for all forums in the given section which
+        have an ``order`` greater than or equal to ``start_at``.
+        """
+        opts = self.model._meta
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE %(forum_table)s
+            SET %(order)s=%(order)s+1
+            WHERE %(section_fk)s=%%s
+              AND %(order)s>=%%s""" % {
+                'forum_table': qn(opts.db_table),
+                'order': qn(opts.get_field('order').column),
+                'section_fk': qn(opts.get_field('section').column),
+            }, [section.id, start_at])
+
 class Forum(models.Model):
     """
     Provides categorisation for discussion topics.
@@ -200,6 +218,8 @@ class Forum(models.Model):
     last_topic_title = models.CharField(max_length=100, blank=True)
     last_user_id     = models.PositiveIntegerField(null=True, blank=True)
     last_username    = models.CharField(max_length=30, blank=True)
+
+    objects = ForumManager()
 
     def __unicode__(self):
         return self.name
