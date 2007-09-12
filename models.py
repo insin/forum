@@ -25,7 +25,7 @@ class ForumProfileManager(models.Manager):
             user._forum_profile_cache = profile
         return user._forum_profile_cache
 
-    def update_post_counts_in_bulk(self, users):
+    def update_post_counts_in_bulk(self, user_ids):
         """
         Updates the post counts of all given users.
         """
@@ -44,10 +44,10 @@ class ForumProfileManager(models.Manager):
             'post': qn(post_opts.db_table),
             'post_user_fk': qn(post_opts.get_field('user').column),
             'user_fk': qn(opts.get_field('user').column),
-            'user_pks': ','.join(['%s'] * len(users)),
+            'user_pks': ','.join(['%s'] * len(user_ids)),
         }
         cursor = connection.cursor()
-        cursor.execute(query, [user._get_pk_val() for user in users])
+        cursor.execute(query, user_ids)
 
 TIMEZONE_CHOICES = tuple([(tz, tz) for tz in common_timezones])
 
@@ -163,14 +163,25 @@ class SectionManager(models.Manager):
         Increments ``order`` for all sections which have an ``order``
         greater than or equal to ``start_at``.
         """
+        self._change_orders(start_at, '+1')
+
+    def decrement_orders(self, start_at):
+        """
+        Increments ``order`` for all sections which have an ``order``
+        greater than or equal to ``start_at``.
+        """
+        self._change_orders(start_at, '-1')
+
+    def _change_orders(self, start_at, change):
         opts = self.model._meta
         cursor = connection.cursor()
         cursor.execute("""
             UPDATE %(section_table)s
-            SET %(order)s=%(order)s+1
+            SET %(order)s=%(order)s%(change)s
             WHERE %(order)s>=%%s""" % {
                 'section_table': qn(opts.db_table),
                 'order': qn(opts.get_field('order').column),
+                'change': change,
             }, [start_at])
 
 class Section(models.Model):
@@ -195,21 +206,48 @@ class Section(models.Model):
     def get_absolute_url(self):
         return ('forum_section_detail', (smart_unicode(self.id),))
 
+    def delete(self):
+        """
+        This method is overridden to maintain consecutive ordering and
+        to update the post counts of any users who had posts in the
+        forums in this section.
+        """
+        affected_user_ids = [user['id'] for user in \
+            User.objects.filter(posts__topic__forum__section=self) \
+                         .distinct()\
+                          .values('id')]
+        super(Section, self).delete()
+        Section.objects.decrement_orders(self.order)
+        if len(affected_user_ids) > 0:
+            ForumProfile.objects.update_post_counts_in_bulk(affected_user_ids)
+        transaction.commit_unless_managed()
+
 class ForumManager(models.Manager):
     def increment_orders(self, section, start_at):
         """
         Increments ``order`` for all forums in the given section which
         have an ``order`` greater than or equal to ``start_at``.
         """
+        self._change_orders(section, start_at, '+1')
+
+    def decrement_orders(self, section, start_at):
+        """
+        Decrements ``order`` for all forums in the given section which
+        have an ``order`` greater than or equal to ``start_at``.
+        """
+        self._change_orders(section, start_at, '-1')
+
+    def _change_orders(self, section, start_at, change):
         opts = self.model._meta
         cursor = connection.cursor()
         cursor.execute("""
             UPDATE %(forum_table)s
-            SET %(order)s=%(order)s+1
+            SET %(order)s=%(order)s%(change)s
             WHERE %(section_fk)s=%%s
               AND %(order)s>=%%s""" % {
                 'forum_table': qn(opts.db_table),
                 'order': qn(opts.get_field('order').column),
+                'change': change,
                 'section_fk': qn(opts.get_field('section').column),
             }, [section.id, start_at])
 
@@ -264,6 +302,23 @@ class Forum(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_detail', (smart_unicode(self.id),))
+
+    def delete(self):
+        """
+        This method is overridden to maintain consecutive ordering and
+        to update the post counts of any users who had posts in this
+        forum.
+        """
+        section = self.section
+        affected_user_ids = [user['id'] for user in \
+            User.objects.filter(posts__topic__forum=self) \
+                         .distinct() \
+                          .values('id')]
+        super(Forum, self).delete()
+        Forum.objects.decrement_orders(section, self.order)
+        if len(affected_user_ids) > 0:
+            ForumProfile.objects.update_post_counts_in_bulk(affected_user_ids)
+        transaction.commit_unless_managed()
 
     def update_topic_count(self):
         """
@@ -450,12 +505,14 @@ class Topic(models.Model):
         """
         forum = self.forum
         was_last_topic = self.id == forum.last_topic_id
-        affected_users = list(User.objects.filter(posts__topic=self).distinct())
+        affected_user_ids = [user['id'] for user in \
+            User.objects.filter(posts__topic=self).distinct().values('id')]
         super(Topic, self).delete()
         forum.update_topic_count()
         if was_last_topic:
             forum.set_last_post()
-        ForumProfile.objects.update_post_counts_in_bulk(affected_users)
+        if len(affected_user_ids) > 0:
+            ForumProfile.objects.update_post_counts_in_bulk(affected_user_ids)
         transaction.commit_unless_managed()
 
     class Meta:
