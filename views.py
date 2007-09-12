@@ -96,6 +96,26 @@ def section_detail(request, section_id):
 
 @login_required
 @transaction.commit_on_success
+def edit_section(request, section_id):
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    section = Section.objects.get(pk=section_id)
+    SectionForm = forms.form_for_instance(section, fields=('name',))
+    if request.method == 'POST':
+        form = SectionForm(data=request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+            return HttpResponseRedirect(section.get_absolute_url())
+    else:
+        form = SectionForm()
+    return render_to_response('forum/edit_section.html', {
+        'form': form,
+        'section': section,
+        'title': u'Edit Section',
+    }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
 def add_forum(request):
     """
     Adds a Forum to a Section.

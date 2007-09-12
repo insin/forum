@@ -1,7 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 <div class="module">
-<h2>{{ section.name|escape }}</h2>
+<h2><span class="title">{{ section.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_section section.id %}">Edit Section</a></span>{% endif %}</h2>
 <table>
 <col width="65%">
 <col width="1%">

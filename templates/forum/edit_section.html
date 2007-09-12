@@ -1,0 +1,19 @@
+{% extends "base_forum.html" %}
+{% block main_content %}
+<form name="editSectionForm" id="editSectionForm" action="." method="POST">
+  <fieldset class="module aligned">
+    <h2>Section</h2>
+    <div class="form-row">
+      {% if form.name.errors %}{{ form.name.errors.as_ul }}{% endif %}
+      {{ form.name.label_tag }}
+      <div class="form-field">
+        {{ form.name }}
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" name="submit" value="Edit Section">
+    <a href="{{ section.get_absolute_url }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
