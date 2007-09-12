@@ -66,13 +66,8 @@ def forum_index(request):
     """
     Displays a list of Sections and their Forums.
     """
-    sections = dict([(s.id, s) for s in Section.objects.all()])
-    forums_by_section = {}
-    for forum in Forum.objects.all():
-        forums_by_section.setdefault(forum.section_id, []).append(forum)
     return render_to_response('forum/forum_index.html', {
-        'section_list': [(sections[k], v) \
-                         for k, v in forums_by_section.iteritems()],
+        'section_list': list(Section.objects.get_forums_by_section()),
         'title': u'Forum Index',
     }, context_instance=RequestContext(request))
 

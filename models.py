@@ -147,12 +147,25 @@ class ForumProfile(models.Model):
 
     update_post_count.alters_data = True
 
+class SectionManager(models.Manager):
+    def get_forums_by_section(self):
+        """
+        Yields ordered two-tuples of (section, forums).
+        """
+        section_forums = {}
+        for forum in Forum.objects.all():
+            section_forums.setdefault(forum.section_id, []).append(forum)
+        for section in super(SectionManager, self).get_query_set():
+            yield section, section_forums[section.id]
+
 class Section(models.Model):
     """
     Provides categorisation for forums.
     """
     name  = models.CharField(max_length=100, unique=True)
     order = models.PositiveIntegerField()
+
+    objects = SectionManager()
 
     def __unicode__(self):
         return self.name
