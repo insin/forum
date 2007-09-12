@@ -177,7 +177,7 @@ number of posts per page and to anonymous users.
 FORUM_DEFAULT_TOPICS_PER_PAGE
 -----------------------------
 
-Default: ``20``
+Default: ``30``
 
 The number of topics which are displayed by default on any page where topics are
 listed - this applies to registered users who do not choose to override the
