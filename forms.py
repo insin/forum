@@ -13,7 +13,7 @@ from PIL import ImageFile
 
 class ForumForm(forms.Form):
     name        = forms.CharField(max_length=100)
-    description = forms.CharField(max_length=100, required=False)
+    description = forms.CharField(max_length=100, required=False, widget=forms.Textarea())
     section     = forms.ChoiceField()
     forum       = forms.ChoiceField(required=False)
 

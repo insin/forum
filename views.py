@@ -135,6 +135,28 @@ def add_forum(request):
     return render_to_response('forum/add_forum.html', {
         'form': form,
         'section_forum_json': create_section_forum_json(forums_by_section),
+        'title': u'Add Forum',
+    }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
+def edit_forum(request, forum_id):
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    forum = Forum.objects.select_related().get(pk=forum_id)
+    ForumForm = forms.form_for_instance(forum, fields=('name', 'description'))
+    if request.method == 'POST':
+        form = ForumForm(data=request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+            return HttpResponseRedirect(forum.get_absolute_url())
+    else:
+        form = ForumForm()
+    return render_to_response('forum/edit_forum.html', {
+        'form': form,
+        'forum': forum,
+        'section': forum.section,
+        'title': u'Edit Forum',
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):

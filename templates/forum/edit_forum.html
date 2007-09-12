@@ -1,0 +1,26 @@
+{% extends "base_forum.html" %}
+{% block main_content %}
+<form name="editForumForm" id="editForumForm" action="." method="POST">
+  <fieldset class="module aligned">
+    <h2>Forum</h2>
+    <div class="form-row">
+      {% if form.name.errors %}{{ form.name.errors.as_ul }}{% endif %}
+      {{ form.name.label_tag }}
+      <div class="form-field">
+        {{ form.name }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.description.errors %}{{ form.description.errors.as_ul }}{% endif %}
+      {{ form.description.label_tag }}
+      <div class="form-field">
+        {{ form.description }}
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" name="submit" value="Edit Forum">
+    <a href="{{ forum.get_absolute_url }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
