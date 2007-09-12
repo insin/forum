@@ -1,0 +1,27 @@
+{% extends "base_forum.html" %}
+{% block main_content %}
+<form name="addSectionForm" id="addSectionForm" action="." method="POST">
+  <fieldset class="module aligned">
+    <h2>Section</h2>
+    <div class="form-row">
+      {% if form.name.errors %}{{ form.name.errors.as_ul }}{% endif %}
+      {{ form.name.label_tag }}
+      <div class="form-field">
+        {{ form.name }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.section.errors %}{{ form.section.errors.as_ul }}{% endif %}
+      <label for="id_section">Insert before</label>
+      <div class="form-field">
+        {{ form.section }}
+        <p class="help">Leave this field blank to insert the new Section at the end.</p>
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" name="submit" value="Add Section">
+    <a href="{% url forum_index %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -156,7 +156,22 @@ class SectionManager(models.Manager):
         for forum in Forum.objects.all():
             section_forums.setdefault(forum.section_id, []).append(forum)
         for section in super(SectionManager, self).get_query_set():
-            yield section, section_forums[section.id]
+            yield section, section_forums.get(section.id, [])
+
+    def increment_orders(self, start_at):
+        """
+        Increments ``order`` for all sections which have an ``order``
+        greater than or equal to ``start_at``.
+        """
+        opts = self.model._meta
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE %(section_table)s
+            SET %(order)s=%(order)s+1
+            WHERE %(order)s>=%%s""" % {
+                'section_table': qn(opts.db_table),
+                'order': qn(opts.get_field('order').column),
+            }, [start_at])
 
 class Section(models.Model):
     """

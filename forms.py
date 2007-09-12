@@ -5,11 +5,39 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.text import capfirst, get_text_list
 
 from forum import app_settings
+from forum.models import Section
 from PIL import ImageFile
 
 #########
 # Forms #
 #########
+
+class SectionForm(forms.Form):
+    name    = forms.CharField(max_length=100)
+    section = forms.ChoiceField(required=False)
+
+    def __init__(self, sections, *args, **kwargs):
+        super(SectionForm, self).__init__(*args, **kwargs)
+        self.sections = sections
+        self.fields['section'].choices = [(u'', u'----------')] + \
+            [(section.id, section.name) for section in sections]
+
+    def clean_name(self):
+        for section in self.sections:
+            if self.cleaned_data['name'] == section.name:
+                raise forms.ValidationError(
+                    u'A Section with this name already exists.')
+        return self.cleaned_data['name']
+
+class EditSectionBaseForm(forms.BaseForm):
+    def clean_name(self):
+        try:
+            Section.objects.get(name=self.cleaned_data['name'])
+            raise forms.ValidationError(
+                u'A Section with this name already exists.')
+        except Section.DoesNotExist:
+            pass
+        return self.cleaned_data['name']
 
 class ForumForm(forms.Form):
     name        = forms.CharField(max_length=100)

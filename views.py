@@ -13,8 +13,9 @@ from django.views.generic.list_detail import object_list
 from forum import app_settings
 from forum import auth
 from forum.formatters import post_formatter
-from forum.forms import (ForumForm, forum_profile_formfield_callback,
-    post_formfield_callback, topic_formfield_callback)
+from forum.forms import (EditSectionBaseForm, ForumForm, SectionForm,
+    forum_profile_formfield_callback, post_formfield_callback,
+    topic_formfield_callback)
 from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 qn = connection.ops.quote_name
@@ -83,6 +84,35 @@ def forum_index(request):
         'title': u'Forum Index',
     }, context_instance=RequestContext(request))
 
+@login_required
+@transaction.commit_on_success
+def add_section(request):
+    """
+    Adds a Section.
+    """
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    sections = Section.objects.all()
+    if request.method == 'POST':
+        form = SectionForm(sections, data=request.POST)
+        if form.is_valid():
+            if not form.cleaned_data['section']:
+                # Add to the end
+                order = sections.count() + 1
+            else:
+                # Insert before an existing Section
+                order = Section.objects.get(pk=form.cleaned_data['section']).order
+                Section.objects.increment_orders(order)
+            section = Section.objects.create(name=form.cleaned_data['name'],
+                                             order=order)
+            return HttpResponseRedirect(section.get_absolute_url())
+    else:
+        form = SectionForm(sections)
+    return render_to_response('forum/add_section.html', {
+        'form': form,
+        'title': u'Add Section',
+    }, context_instance=RequestContext(request))
+
 def section_detail(request, section_id):
     """
     Displays a particular Section's Forums.
@@ -100,7 +130,8 @@ def edit_section(request, section_id):
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
     section = Section.objects.get(pk=section_id)
-    SectionForm = forms.form_for_instance(section, fields=('name',))
+    SectionForm = forms.form_for_instance(section, fields=('name',),
+        form=EditSectionBaseForm)
     if request.method == 'POST':
         form = SectionForm(data=request.POST)
         if form.is_valid():
@@ -143,9 +174,8 @@ def add_forum(request):
                 order = section.forums.count() + 1
             else:
                 # Insert before an existing Forum
-                forum = Forum.objects.get(pk=form.cleaned_data['forum'])
-                Forum.objects.increment_orders(section, forum.order)
-                order = forum.order
+                order = Forum.objects.get(pk=form.cleaned_data['forum']).order
+                Forum.objects.increment_orders(section, order)
             forum = Forum.objects.create(name=form.cleaned_data['name'],
                 section=section, order=order,
                 description=form.cleaned_data['description'])
