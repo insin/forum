@@ -127,6 +127,9 @@ def section_detail(request, section_id):
 @login_required
 @transaction.commit_on_success
 def edit_section(request, section_id):
+    """
+    Edits a Section.
+    """
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
     section = get_object_or_404(Section, pk=section_id)
@@ -180,6 +183,9 @@ def add_forum(request, section_id):
 @login_required
 @transaction.commit_on_success
 def edit_forum(request, forum_id):
+    """
+    Edits a Forum.
+    """
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
