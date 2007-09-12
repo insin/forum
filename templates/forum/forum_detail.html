@@ -6,7 +6,7 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="actions">
-  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+  <a href="{% url forum_add_topic forum.id %}">Add Topic</a>
 </div>
 {% endif %}
 </div>
@@ -67,7 +67,7 @@ This Forum does not have any Topics yet.
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="actions">
-  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+  <a href="{% url forum_add_topic forum.id %}">Add Topic</a>
 </div>
 {% endif %}
 </div>

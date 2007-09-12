@@ -1,10 +1,7 @@
 {% extends "base_forum.html" %}
-{% block extrahead %}
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectUpdater.js"></script>
-  <script type="text/javascript">jQuery(function() { var sectionUpdater = new SelectUpdater("id_section", "id_forum", {{ section_forum_json }}); });</script>
-{% endblock %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a>
 &raquo; <strong>Add Forum</strong>
 {% endblock %}
 {% block main_content %}
@@ -23,13 +20,6 @@
       {{ form.description.label_tag }}
       <div class="form-field">
         {{ form.description }}
-      </div>
-    </div>
-    <div class="form-row">
-      {% if form.section.errors %}{{ form.section.errors.as_ul }}{% endif %}
-      {{ form.section.label_tag }}
-      <div class="form-field">
-        {{ form.section }}
       </div>
     </div>
     <div class="form-row">

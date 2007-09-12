@@ -241,7 +241,6 @@ class Forum(models.Model):
 
     class Meta:
         ordering = ('order',)
-        unique_together = (('section', 'order'),)
 
     class Admin:
         list_display = ('name', 'section', 'description', 'order', 'topic_count',

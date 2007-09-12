@@ -42,17 +42,12 @@ class EditSectionBaseForm(forms.BaseForm):
 class ForumForm(forms.Form):
     name        = forms.CharField(max_length=100)
     description = forms.CharField(max_length=100, required=False, widget=forms.Textarea())
-    section     = forms.ChoiceField()
     forum       = forms.ChoiceField(required=False)
 
-    def __init__(self, sections, forums=None, *args, **kwargs):
+    def __init__(self, forums, *args, **kwargs):
         super(ForumForm, self).__init__(*args, **kwargs)
-        self.fields['section'].choices = [(u'', u'----------')] + \
-            [(section.id, section.name) for section in sections]
-        self.fields['forum'].choices = [(u'', u'----------')]
-        if forums:
-            self.fields['forum'].choices += \
-                [(forum.id, forum.name) for forum in forums]
+        self.fields['forum'].choices = [(u'', u'----------')] + \
+            [(forum.id, forum.name) for forum in forums]
 
 #######################
 # Formfield Callbacks #

@@ -92,13 +92,13 @@ def add_section(request):
     """
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
-    sections = Section.objects.all()
+    sections = list(Section.objects.all())
     if request.method == 'POST':
         form = SectionForm(sections, data=request.POST)
         if form.is_valid():
             if not form.cleaned_data['section']:
                 # Add to the end
-                order = sections.count() + 1
+                order = len(sections) + 1
             else:
                 # Insert before an existing Section
                 order = Section.objects.get(pk=form.cleaned_data['section']).order
@@ -129,7 +129,7 @@ def section_detail(request, section_id):
 def edit_section(request, section_id):
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
-    section = Section.objects.get(pk=section_id)
+    section = get_object_or_404(Section, pk=section_id)
     SectionForm = forms.form_for_instance(section, fields=('name',),
         form=EditSectionBaseForm)
     if request.method == 'POST':
@@ -147,31 +147,20 @@ def edit_section(request, section_id):
 
 @login_required
 @transaction.commit_on_success
-def add_forum(request):
+def add_forum(request, section_id):
     """
     Adds a Forum to a Section.
     """
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
-    forums_by_section = list(Section.objects.get_forums_by_section())
-    sections = [t[0] for t in forums_by_section]
+    section = get_object_or_404(Section, pk=section_id)
+    forums = list(section.forums.all())
     if request.method == 'POST':
-        forums = []
-        if 'section' in request.POST:
-            try:
-                section_id = int(request.POST['section'])
-                for section, forum_list in forums_by_section:
-                    if section.id == section_id:
-                        forums = forum_list
-                        break
-            except:
-                pass # Invalid section id given
-        form = ForumForm(sections, forums, data=request.POST)
+        form = ForumForm(forums, data=request.POST)
         if form.is_valid():
-            section = Section.objects.get(pk=form.cleaned_data['section'])
             if not form.cleaned_data['forum']:
                 # Add to the end
-                order = section.forums.count() + 1
+                order = len(forums) + 1
             else:
                 # Insert before an existing Forum
                 order = Forum.objects.get(pk=form.cleaned_data['forum']).order
@@ -181,11 +170,11 @@ def add_forum(request):
                 description=form.cleaned_data['description'])
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
-        form = ForumForm(sections)
+        form = ForumForm(forums)
     return render_to_response('forum/add_forum.html', {
         'form': form,
-        'section_forum_json': create_section_forum_json(forums_by_section),
-        'title': u'Add Forum',
+        'section': section,
+        'title': u'Add Forum to %s' % section.name,
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -193,7 +182,7 @@ def add_forum(request):
 def edit_forum(request, forum_id):
     if not auth.is_admin(request.user):
         return HttpResponseForbidden()
-    forum = Forum.objects.select_related().get(pk=forum_id)
+    forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     ForumForm = forms.form_for_instance(forum, fields=('name', 'description'))
     if request.method == 'POST':
         form = ForumForm(data=request.POST)
