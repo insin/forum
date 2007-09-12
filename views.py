@@ -6,7 +6,6 @@ from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.utils import simplejson
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
@@ -59,17 +58,6 @@ def get_avatar_dimensions():
         return u' width="%s" height="%s"' % app_settings.MAX_AVATAR_DIMENSIONS
     else:
         return u''
-
-def create_section_forum_json(forums_by_section):
-    """
-    Creates a JSON text representing an object mapping Section ids to Forum
-    ids and names.
-    """
-    json_dict = {}
-    for section, forums in forums_by_section:
-        json_dict[section.id] = [dict(value=forum.id, text=forum.name) \
-                                 for forum in forums]
-    return simplejson.dumps(json_dict)
 
 ##################
 # View Functions #
