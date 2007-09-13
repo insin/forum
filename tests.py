@@ -1,21 +1,37 @@
+"""
+Tests for the Django Forum application.
+"""
 from django.contrib.auth.models import User
 from django.test import TestCase
 
 from forum.models import *
 
-class ModelTestCase(TestCase):
+class TopicTestCase(TestCase):
+    """
+    Tests for the Topic model:
+
+    - Add a Topic
+    - Edit a Topic
+    - Delete a Topic
+
+    The following tests are for appropriate changes to denormalised
+    data:
+
+    - Edit the last Topic in a Forum
+    - Delete the last Topic in a Forum
+    """
     fixtures = ['testdata.json']
 
     def test_add_topic(self):
         """
-        Verifies that adding a topic (and its first post) has the
+        Verifies that adding a Topic (and its opening Post) has the
         appropriate effect on denormalised data.
         """
         user = User.objects.get(pk=1)
         forum = Forum.objects.get(pk=1)
-        topic = Topic.objects.create(forum=forum, user=user, title='Test Topic 2')
+        topic = Topic.objects.create(forum=forum, user=user, title='Test Topic')
 
-        post = Post.objects.create(topic=topic, user=user, body='Test post.')
+        post = Post.objects.create(topic=topic, user=user, body='Test Post.')
         self.assertEquals(post.num_in_topic, 1)
         self.assertNotEquals(post.posted_at, None)
         self.assertNotEquals(post.body_html, '')
@@ -29,8 +45,8 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.last_username, post.user.username)
 
         forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 2)
-        self.assertEquals(forum.topic_count, 2)
+        self.assertEquals(forum.topics.count(), 4)
+        self.assertEquals(forum.topic_count, 4)
         self.assertEquals(forum.last_post_at, post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
@@ -38,36 +54,93 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 4)
-        self.assertEquals(forum_profile.post_count, 4)
+        self.assertEquals(user.posts.count(), 28)
+        self.assertEquals(forum_profile.post_count, 28)
+
+    def test_edit_topic(self):
+        """
+        Verifies that editing the title of a Topic which does *not*
+        contain the last Post in its Forum does not affect anything but
+        the Topic.
+        """
+        topic = Topic.objects.get(pk=1)
+        topic.title = 'Updated Title'
+        topic.save()
+
+        last_post = Post.objects.get(pk=9)
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, last_post.topic.id)
+        self.assertEquals(forum.last_topic_title, last_post.topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user.id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
+    def test_delete_topic(self):
+        """
+        Verifies that deleting a Topic has the appropriate effect on
+        denormalised data.
+        """
+        Topic.objects.get(pk=1).delete()
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 2)
+        self.assertEquals(forum.topic_count, 2)
+
+        user = User.objects.get(pk=1)
+        forum_profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(user.posts.count(), 24)
+        self.assertEquals(forum_profile.post_count, 24)
 
     def test_edit_last_topic(self):
         """
-        Verifies that adding the title of the topic which contains the
-        last post in a forum results in the forum's denormalised data
+        Verifies that editing the title of the Topic which contains the
+        last post in a Forum results in the Forum's denormalised data
         being updated appropriately.
         """
-        topic = Topic.objects.get(pk=1)
-        topic.title = 'New title'
+        topic = Topic.objects.get(pk=3)
+        topic.title = 'Updated Title'
         topic.save()
 
-        last_post = topic.posts.order_by('-posted_at')[0]
+        last_post = Post.objects.get(pk=9)
         forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 1)
-        self.assertEquals(forum.topic_count, 1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
         self.assertEquals(forum.last_post_at, last_post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
         self.assertEquals(forum.last_user_id, last_post.user.id)
         self.assertEquals(forum.last_username, last_post.user.username)
 
+    def test_delete_last_post_topic(self):
+        """
+        Verifies that deleting the Topic which contains the last Post
+        in a Forum results in the forum's denormalised last post data
+        being updated appropriately.
+        """
+        topic = Topic.objects.get(pk=3)
+        topic.delete()
+
+        last_post = Post.objects.get(pk=6)
+        last_topic = Topic.objects.get(pk=2)
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 2)
+        self.assertEquals(forum.topic_count, 2)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, last_topic.id)
+        self.assertEquals(forum.last_topic_title, last_topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user.id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
     def test_delete_last_topic(self):
         """
-        Verifies that deleting the last topic in a forum results in the
-        forum's denormalised last post data being reset.
+        Verifies that deleting the last Topic in a Forum results in the
+        forum's denormalised last Post data being cleared.
         """
-        topic = Topic.objects.get(pk=1)
-        topic.delete()
+        topics = Topic.objects.filter(pk__in=[1,2,3])
+        for topic in topics:
+            topic.delete()
 
         forum = Forum.objects.get(pk=1)
         self.assertEquals(forum.topics.count(), 0)
@@ -78,20 +151,37 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_user_id, None)
         self.assertEquals(forum.last_username, '')
 
-        user = User.objects.get(pk=1)
-        forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 0)
-        self.assertEquals(forum_profile.post_count, 0)
+        users = User.objects.filter(pk__in=[1,2,3])
+        for user in users:
+            forum_profile = ForumProfile.objects.get_for_user(user)
+            self.assertEquals(user.posts.count(), 24)
+            self.assertEquals(forum_profile.post_count, 24)
+
+class PostTestCase(TestCase):
+    """
+    Tests for the Post model:
+
+    - Add a Post
+    - Edit a Post
+    - Delete a Post
+
+    The following tests are for appropriate changes to denormalised
+    data:
+
+    - Delete the last Post in a Topic
+    - Delete the last Post in a Forum
+    """
+    fixtures = ['testdata.json']
 
     def test_add_post(self):
         """
-        Verifies that adding a post to a topic has the appropriate
+        Verifies that adding a Post to a Topic has the appropriate
         effect on denormalised data.
         """
         user = User.objects.get(pk=1)
         topic = Topic.objects.get(pk=1)
 
-        post = Post.objects.create(topic=topic, user=user, body='Test post 4.')
+        post = Post.objects.create(topic=topic, user=user, body='Test Post.')
         self.assertEquals(post.num_in_topic, 4)
         self.assertNotEquals(post.posted_at, None)
         self.assertNotEquals(post.body_html, '')
@@ -105,8 +195,8 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.last_username, post.user.username)
 
         forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 1)
-        self.assertEquals(forum.topic_count, 1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
         self.assertEquals(forum.last_post_at, post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
@@ -114,60 +204,113 @@ class ModelTestCase(TestCase):
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 4)
-        self.assertEquals(forum_profile.post_count, 4)
+        self.assertEquals(user.posts.count(), 28)
+        self.assertEquals(forum_profile.post_count, 28)
 
     def test_edit_post(self):
         """
-        Verifies that editing a post results in appropriate post fields
+        Verifies that editing a Post results in appropriate Post fields
         being updated and doesn't have any effect on denormalised data.
         """
-        user = User.objects.get(pk=1)
-        topic = Topic.objects.get(pk=1)
-
-        post = Post.objects.get(pk=2)
-        post.body = 'Test editing post 2.'
+        post = Post.objects.get(pk=9)
+        post.body = 'Test Post.'
         post.save()
-        self.assertEquals(post.num_in_topic, 2)
+        self.assertEquals(post.num_in_topic, 3)
         self.assertNotEquals(post.posted_at, None)
         self.assertNotEquals(post.edited_at, None)
         self.assertTrue(post.edited_at > post.posted_at)
         self.assertNotEquals(post.body_html, '')
 
-        last_post = Post.objects.get(pk=3)
-        topic = Topic.objects.get(pk=1)
+        topic = Topic.objects.get(pk=3)
         self.assertEquals(topic.posts.count(), 3)
         self.assertEquals(topic.post_count, 3)
+        self.assertEquals(topic.last_post_at, post.posted_at)
+        self.assertEquals(topic.last_user_id, post.user_id)
+        self.assertEquals(topic.last_username, post.user.username)
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
+        self.assertEquals(forum.last_post_at, post.posted_at)
+        self.assertEquals(forum.last_topic_id, topic.id)
+        self.assertEquals(forum.last_topic_title, topic.title)
+        self.assertEquals(forum.last_user_id, post.user_id)
+        self.assertEquals(forum.last_username, post.user.username)
+
+        user = post.user
+        forum_profile = ForumProfile.objects.get(pk=3)
+        self.assertEquals(user.posts.count(), 27)
+        self.assertEquals(forum_profile.post_count, 27)
+
+    def test_delete_post(self):
+        """
+        Verifies that deleting a Post which is *not* the last Post in
+        its topic results in following Posts' position counters being
+        decremented appropriately, and that last Post denormalised data
+        is unaffected.
+        """
+        post = Post.objects.get(pk=1)
+        post.delete()
+
+        self.assertEquals(Post.objects.get(pk=2).num_in_topic, 1)
+        last_post = Post.objects.get(pk=3)
+        self.assertEquals(last_post.num_in_topic, 2)
+
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.posts.count(), 2)
+        self.assertEquals(topic.post_count, 2)
         self.assertEquals(topic.last_post_at, last_post.posted_at)
         self.assertEquals(topic.last_user_id, last_post.user_id)
         self.assertEquals(topic.last_username, last_post.user.username)
 
-        forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 1)
-        self.assertEquals(forum.topic_count, 1)
-        self.assertEquals(forum.last_post_at, last_post.posted_at)
-        self.assertEquals(forum.last_topic_id, topic.id)
-        self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, last_post.user_id)
-        self.assertEquals(forum.last_username, last_post.user.username)
-
+        user = post.user
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 3)
-        self.assertEquals(forum_profile.post_count, 3)
+        self.assertEquals(user.posts.count(), 26)
+        self.assertEquals(forum_profile.post_count, 26)
 
     def test_delete_last_post_in_topic(self):
         """
-        Verifies that deleting the last post in a topic has the
-        appropriate effect on denormalised data, including forum and
-        topic last post data being re-set appropriately.
+        Verifies that deleting the last Post in a Topic has the
+        appropriate effect on its denormalised data.
         """
-        user = User.objects.get(pk=1)
-        topic = Topic.objects.get(pk=1)
         post = Post.objects.get(pk=3)
         post.delete()
-        previous_post = Post.objects.get(pk=2)
 
+        previous_post_in_topic = Post.objects.get(pk=2)
         topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.posts.count(), 2)
+        self.assertEquals(topic.post_count, 2)
+        self.assertEquals(topic.last_post_at, previous_post_in_topic.posted_at)
+        self.assertEquals(topic.last_user_id, previous_post_in_topic.user_id)
+        self.assertEquals(topic.last_username, previous_post_in_topic.user.username)
+
+        last_post_in_forum = Post.objects.get(pk=9)
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
+        self.assertEquals(forum.last_post_at, last_post_in_forum.posted_at)
+        self.assertEquals(forum.last_topic_id, last_post_in_forum.topic.id)
+        self.assertEquals(forum.last_topic_title, last_post_in_forum.topic.title)
+        self.assertEquals(forum.last_user_id, last_post_in_forum.user_id)
+        self.assertEquals(forum.last_username, last_post_in_forum.user.username)
+
+        user = User.objects.get(pk=1)
+        forum_profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(user.posts.count(), 26)
+        self.assertEquals(forum_profile.post_count, 26)
+
+    def test_delete_last_post_in_forum(self):
+        """
+        Verifies that deleting the last Post in a Forum has the
+        appropriate effect on denormalised data, including Forum and
+        Topic last post data being reset appropriately.
+        """
+        post = Post.objects.get(pk=9)
+        post.delete()
+
+        previous_post = Post.objects.get(pk=8)
+
+        topic = Topic.objects.get(pk=3)
         self.assertEquals(topic.posts.count(), 2)
         self.assertEquals(topic.post_count, 2)
         self.assertEquals(topic.last_post_at, previous_post.posted_at)
@@ -175,53 +318,24 @@ class ModelTestCase(TestCase):
         self.assertEquals(topic.last_username, previous_post.user.username)
 
         forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 1)
-        self.assertEquals(forum.topic_count, 1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
         self.assertEquals(forum.last_post_at, previous_post.posted_at)
         self.assertEquals(forum.last_topic_id, topic.id)
         self.assertEquals(forum.last_topic_title, topic.title)
         self.assertEquals(forum.last_user_id, previous_post.user_id)
         self.assertEquals(forum.last_username, previous_post.user.username)
 
-        forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 2)
-        self.assertEquals(forum_profile.post_count, 2)
-
-    def test_delete_middle_post_in_topic(self):
-        """
-        Verifies that deleting a post in the middle of a topic results
-        following posts' position counter being decremented
-        appropriately, and that last post denormalised data is
-        unaffected.
-        """
-        user = User.objects.get(pk=1)
-        topic = Topic.objects.get(pk=1)
-        post = Post.objects.get(pk=2)
-        post.delete()
-        new_last_post = Post.objects.get(pk=3)
-        self.assertEquals(new_last_post.num_in_topic, 2)
-
-        topic = Topic.objects.get(pk=1)
-        self.assertEquals(topic.posts.count(), 2)
-        self.assertEquals(topic.post_count, 2)
-        self.assertEquals(topic.last_post_at, new_last_post.posted_at)
-        self.assertEquals(topic.last_user_id, new_last_post.user_id)
-        self.assertEquals(topic.last_username, new_last_post.user.username)
-
-        forum = Forum.objects.get(pk=1)
-        self.assertEquals(forum.topics.count(), 1)
-        self.assertEquals(forum.topic_count, 1)
-        self.assertEquals(forum.last_post_at, new_last_post.posted_at)
-        self.assertEquals(forum.last_topic_id, topic.id)
-        self.assertEquals(forum.last_topic_title, topic.title)
-        self.assertEquals(forum.last_user_id, new_last_post.user_id)
-        self.assertEquals(forum.last_username, new_last_post.user.username)
-
-        forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 2)
-        self.assertEquals(forum_profile.post_count, 2)
+        user = User.objects.get(pk=3)
+        forum_profile = ForumProfile.objects.get(pk=3)
+        self.assertEquals(user.posts.count(), 26)
+        self.assertEquals(forum_profile.post_count, 26)
 
 class ManagerTestCase(TestCase):
+    """
+    Tests for custom Manager methods which add extra data to retrieved
+    objects.
+    """
     fixtures = ['testdata.json']
 
     def test_post_manager_with_user_details(self):
@@ -238,6 +352,10 @@ class ManagerTestCase(TestCase):
     def test_topic_manager_with_user_details(self):
         topic = Topic.objects.with_user_details().get(pk=1)
         self.assertEquals(topic.user_username, topic.user.username)
+
+    def test_topic_manager_with_forum_details(self):
+        topic = Topic.objects.with_forum_details().get(pk=1)
+        self.assertEquals(topic.forum_name, topic.forum.name)
 
     def test_topic_manager_with_forum_and_user_details(self):
         topic = Topic.objects.with_forum_and_user_details().get(pk=1)
