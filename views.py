@@ -155,7 +155,7 @@ def add_forum(request, section_id):
             else:
                 # Insert before an existing Forum
                 order = Forum.objects.get(pk=form.cleaned_data['forum']).order
-                Forum.objects.increment_orders(section, order)
+                Forum.objects.increment_orders(section.id, order)
             forum = Forum.objects.create(name=form.cleaned_data['name'],
                 section=section, order=order,
                 description=form.cleaned_data['description'])

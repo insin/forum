@@ -223,21 +223,21 @@ class Section(models.Model):
         transaction.commit_unless_managed()
 
 class ForumManager(models.Manager):
-    def increment_orders(self, section, start_at):
+    def increment_orders(self, section_id, start_at):
         """
         Increments ``order`` for all forums in the given section which
         have an ``order`` greater than or equal to ``start_at``.
         """
-        self._change_orders(section, start_at, '+1')
+        self._change_orders(section_id, start_at, '+1')
 
-    def decrement_orders(self, section, start_at):
+    def decrement_orders(self, section_id, start_at):
         """
         Decrements ``order`` for all forums in the given section which
         have an ``order`` greater than or equal to ``start_at``.
         """
-        self._change_orders(section, start_at, '-1')
+        self._change_orders(section_id, start_at, '-1')
 
-    def _change_orders(self, section, start_at, change):
+    def _change_orders(self, section_id, start_at, change):
         opts = self.model._meta
         cursor = connection.cursor()
         cursor.execute("""
@@ -249,7 +249,7 @@ class ForumManager(models.Manager):
                 'order': qn(opts.get_field('order').column),
                 'change': change,
                 'section_fk': qn(opts.get_field('section').column),
-            }, [section.id, start_at])
+            }, [section_id, start_at])
 
 class Forum(models.Model):
     """
@@ -309,13 +309,12 @@ class Forum(models.Model):
         to update the post counts of any users who had posts in this
         forum.
         """
-        section = self.section
         affected_user_ids = [user['id'] for user in \
             User.objects.filter(posts__topic__forum=self) \
                          .distinct() \
                           .values('id')]
         super(Forum, self).delete()
-        Forum.objects.decrement_orders(section, self.order)
+        Forum.objects.decrement_orders(self.section_id, self.order)
         if len(affected_user_ids) > 0:
             ForumProfile.objects.update_post_counts_in_bulk(affected_user_ids)
         transaction.commit_unless_managed()
