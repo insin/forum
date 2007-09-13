@@ -31,12 +31,13 @@ class SectionForm(forms.Form):
 
 class EditSectionBaseForm(forms.BaseForm):
     def clean_name(self):
-        try:
-            Section.objects.get(name=self.cleaned_data['name'])
-            raise forms.ValidationError(
-                u'A Section with this name already exists.')
-        except Section.DoesNotExist:
-            pass
+        if self.fields['name'].initial != self.cleaned_data['name']:
+            try:
+                Section.objects.get(name=self.cleaned_data['name'])
+                raise forms.ValidationError(
+                    u'A Section with this name already exists.')
+            except Section.DoesNotExist:
+                pass
         return self.cleaned_data['name']
 
 class ForumForm(forms.Form):
