@@ -6,6 +6,25 @@ from django.test import TestCase
 
 from forum.models import *
 
+class ForumProfileTestCase(TestCase):
+    fixtures = ['testdata.json']
+
+    def test_auth_methods(self):
+        """
+        Verifies authorisation-related instance methods.
+        """
+        profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(profile.is_admin(), True)
+        self.assertEquals(profile.is_moderator(), True)
+
+        profile = ForumProfile.objects.get(pk=2)
+        self.assertEquals(profile.is_admin(), False)
+        self.assertEquals(profile.is_moderator(), True)
+
+        profile = ForumProfile.objects.get(pk=3)
+        self.assertEquals(profile.is_admin(), False)
+        self.assertEquals(profile.is_moderator(), False)
+
 class SectionTestCase(TestCase):
     """
     Tests for the Section model:
