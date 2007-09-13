@@ -4,7 +4,7 @@ Tests for the Django Forum application.
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from forum.models import *
+from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 class ForumProfileTestCase(TestCase):
     fixtures = ['testdata.json']
