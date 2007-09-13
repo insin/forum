@@ -6,6 +6,56 @@ from django.test import TestCase
 
 from forum.models import *
 
+class SectionTestCase(TestCase):
+    """
+    Tests for the Section model:
+
+    - Delete a Section.
+    """
+    fixtures = ['testdata.json']
+
+    def test_delete_section(self):
+        """
+        Verifies that deleting a Section has the appropriate effect on
+        the ordering of existing Sections and User postcounts.
+        """
+        section = Section.objects.get(pk=1)
+        section.delete()
+
+        self.assertEquals(Section.objects.get(pk=2).order, 1)
+        self.assertEquals(Section.objects.get(pk=3).order, 2)
+
+        users = User.objects.filter(pk__in=[1,2,3])
+        for user in users:
+            forum_profile = ForumProfile.objects.get_for_user(user)
+            self.assertEquals(user.posts.count(), 18)
+            self.assertEquals(forum_profile.post_count, 18)
+
+class ForumTestCase(TestCase):
+    """
+    Tests for the Forum model:
+
+    - Delete a Forum.
+    """
+    fixtures = ['testdata.json']
+
+    def test_delete_forum(self):
+        """
+        Verifies that deleting a Forum has the appropriate effect on
+        the ordering of existing Forums and User postcounts.
+        """
+        forum = Forum.objects.get(pk=1)
+        forum.delete()
+
+        self.assertEquals(Forum.objects.get(pk=2).order, 1)
+        self.assertEquals(Forum.objects.get(pk=3).order, 2)
+
+        users = User.objects.filter(pk__in=[1,2,3])
+        for user in users:
+            forum_profile = ForumProfile.objects.get_for_user(user)
+            self.assertEquals(user.posts.count(), 24)
+            self.assertEquals(forum_profile.post_count, 24)
+
 class TopicTestCase(TestCase):
     """
     Tests for the Topic model:
