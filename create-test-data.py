@@ -44,7 +44,7 @@ def create_test_data():
     # 3 Forums per Section
     forums = []
     for section in sections:
-        forums += [section.forums.create(name='Forum %s' % i, order=i+1) \
+        forums += [section.forums.create(name='Forum %s' % i, order=i) \
                    for i in xrange(1, 4)]
 
     # 3 Topics per Forum
