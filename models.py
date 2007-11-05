@@ -549,7 +549,7 @@ class Topic(models.Model):
         """
         Gets the first Post in this Topic.
         """
-        return self.posts.order_by('num_in_topic')[0]
+        return self.posts.filter(num_in_topic__isnull=False).order_by('num_in_topic')[0]
 
     def update_post_count(self, meta=False):
         """
@@ -639,7 +639,7 @@ class PostManager(models.Manager):
             ]
         )
 
-    def decrement_num_in_topic(self, topic, start_at, meta=False):
+    def decrement_num_in_topic(self, topic, start_at):
         """
         Decrements ``num_in_topic`` for all posts in the given topic
         which have a ``num_in_topic`` greater than ``start_at``.
@@ -650,13 +650,11 @@ class PostManager(models.Manager):
             UPDATE %(post_table)s
             SET %(num_in_topic)s=%(num_in_topic)s-1
             WHERE %(topic_fk)s=%%s
-              AND %(meta)s=%%s
               AND %(num_in_topic)s>%%s""" % {
                 'post_table': qn(opts.db_table),
-                'meta': qn(opts.get_field('meta').column),
                 'num_in_topic': qn(opts.get_field('num_in_topic').column),
                 'topic_fk': qn(opts.get_field('topic').column),
-            }, [topic.id, meta, start_at])
+            }, [topic.id, start_at])
 
 class Post(models.Model):
     """
@@ -672,7 +670,7 @@ class Post(models.Model):
     meta      = models.BooleanField(default=False)
 
     # Denormalised data
-    num_in_topic = models.PositiveIntegerField(default=0)
+    num_in_topic = models.PositiveIntegerField(default=0, null=True, blank=True)
 
     objects = PostManager()
 
@@ -694,8 +692,10 @@ class Post(models.Model):
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()
-            self.num_in_topic = getattr(self.topic, '%spost_count' % \
-                                        (self.meta and 'meta' or '',)) + 1
+            if not self.meta:
+                self.num_in_topic = self.topic.post_count + 1
+            else:
+                self.num_in_topic = None
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
@@ -730,11 +730,10 @@ class Post(models.Model):
         - If this is not a metapost was the last post in its Topic's
           Forum, the Forum's last post details need to be updated to the
           new last post.
-        - If this was not the last post in its Topic, the
+        - If this was not the last non-metapost post in its Topic, the
           ``num_in_topic`` of all later posts need to be decremented.
         """
         topic = self.topic
-        forum = topic.forum
         forum_profile = ForumProfile.objects.get_for_user(self.user)
         super(Post, self).delete()
         forum_profile.update_post_count()
@@ -743,9 +742,11 @@ class Post(models.Model):
             topic.set_last_post()
         else:
             topic.update_post_count(meta=self.meta)
-        if not self.meta and self.posted_at == forum.last_post_at:
-            forum.set_last_post()
-        Post.objects.decrement_num_in_topic(topic, self.num_in_topic, self.meta)
+        if not self.meta:
+            forum = topic.forum
+            if self.posted_at == forum.last_post_at:
+                forum.set_last_post()
+            Post.objects.decrement_num_in_topic(topic, self.num_in_topic)
         transaction.commit_unless_managed()
 
     class Admin:
