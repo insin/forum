@@ -143,7 +143,7 @@ class ForumProfile(models.Model):
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
             qn(opts.db_table), qn(opts.get_field('post_count').column),
-            qn(opts.pk.column)), [self.user.posts.count(), self._get_pk_val()])
+            qn(opts.pk.column)), [self.user.posts.count(), self.pk])
 
     update_post_count.alters_data = True
 
@@ -328,7 +328,7 @@ class Forum(models.Model):
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
             qn(opts.db_table), qn(opts.get_field('topic_count').column),
-            qn(opts.pk.column)), [self.topics.count(), self._get_pk_val()])
+            qn(opts.pk.column)), [self.topics.count(), self.pk])
 
     update_topic_count.alters_data = True
 
@@ -352,14 +352,13 @@ class Forum(models.Model):
                                            topic__forum=self,
                                            topic__hidden=False) \
                                     .order_by('-posted_at', '-id')[0]
-            params = [post.posted_at, post.topic._get_pk_val(),
-                      post.topic.title, post.user._get_pk_val(),
-                      post.user.username, self._get_pk_val()]
+            params = [post.posted_at, post.topic.pk, post.topic.title,
+                      post.user.pk, post.user.username, self.pk]
         except IndexError:
             # No post was given and there was no latest, non-hidden
             # Post, so there must not be any eligible Topics in the
             # Forum at the moment.
-            params = [None, None, '', None, '', self._get_pk_val()]
+            params = [None, None, '', None, '', self.pk]
         opts = self._meta
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
@@ -561,8 +560,7 @@ class Topic(models.Model):
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
             qn(opts.db_table), qn(opts.get_field('%spost_count' % (meta and 'meta' or '',)).column),
-            qn(opts.pk.column)), [self.posts.filter(meta=meta).count(),
-                                  self._get_pk_val()])
+            qn(opts.pk.column)), [self.posts.filter(meta=meta).count(), self.pk])
 
     update_post_count.alters_data = True
 
@@ -583,8 +581,8 @@ class Topic(models.Model):
             qn(opts.get_field('last_user_id').column),
             qn(opts.get_field('last_username').column),
             qn(opts.pk.column)), [self.posts.filter(meta=False).count(),
-                                  post.posted_at, post.user._get_pk_val(),
-                                  post.user.username, self._get_pk_val()])
+                                  post.posted_at, post.user.pk,
+                                  post.user.username, self.pk])
 
     set_last_post.alters_data = True
 
@@ -598,7 +596,7 @@ class Topic(models.Model):
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
             qn(opts.db_table), qn(opts.get_field('view_count').column),
-            qn(opts.pk.column)), [self.view_count, self._get_pk_val()])
+            qn(opts.pk.column)), [self.view_count, self.pk])
         transaction.commit_unless_managed()
 
     increment_view_count.alters_data = True
