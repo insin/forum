@@ -284,7 +284,7 @@ def add_topic(request, forum_id):
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
-def topic_detail(request, topic_id):
+def topic_detail(request, topic_id, meta=False):
     """
     Displays a Topic's Posts.
     """
@@ -296,7 +296,7 @@ def topic_detail(request, topic_id):
     topic.increment_view_count()
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     return object_list(request,
-        Post.objects.with_user_details().filter(topic=topic),
+        Post.objects.with_user_details().filter(topic=topic, meta=meta),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
         template_name='forum/topic_detail.html',
         extra_context={

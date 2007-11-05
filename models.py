@@ -210,7 +210,7 @@ class Section(models.Model):
         """
         This method is overridden to maintain consecutive ordering and
         to update the post counts of any users who had posts in the
-        forums in this section.
+        Forums in this Section.
         """
         affected_user_ids = [user['id'] for user in \
             User.objects.filter(posts__topic__forum__section=self) \
@@ -337,16 +337,19 @@ class Forum(models.Model):
         Executes a simple SQL ``UPDATE`` to set details about this
         forum's last post.
 
-        It is assumed that any post given is not in a hidden topic. If
-        the last post is not given, the last non-hidden post will be
-        looked up. This method should never set the details of a post in
-        a hidden topic as the last post, as this would result in the
-        display of latest post links which do not work for regular and
+        It is assumed that any post given is not a metapost and is not in
+        a hidden topic.
+
+        If the last post is not given, the last non-meta, non-hidden post
+        will be looked up. This method should never set the details of a
+        post in a hidden topic as the last post, as this would result in
+        the display of latest post links which do not work for regular and
         anonymous users.
         """
         try:
             if post is None:
-                post = Post.objects.filter(topic__forum=self,
+                post = Post.objects.filter(meta=False,
+                                           topic__forum=self,
                                            topic__hidden=False) \
                                     .order_by('-posted_at', '-id')[0]
             params = [post.posted_at, post.topic._get_pk_val(),
@@ -455,6 +458,7 @@ class Topic(models.Model):
 
     # Denormalised data
     post_count     = models.PositiveIntegerField(default=0)
+    metapost_count = models.PositiveIntegerField(default=0)
     view_count     = models.PositiveIntegerField(default=0)
     last_post_at   = models.DateTimeField(null=True, blank=True)
     last_user_id   = models.PositiveIntegerField(null=True, blank=True)
@@ -519,8 +523,8 @@ class Topic(models.Model):
 
     class Admin:
         list_display = ('title', 'forum', 'user', 'started_at', 'post_count',
-                        'view_count', 'last_post_at', 'locked', 'pinned',
-                        'hidden')
+                        'metapost_count', 'view_count', 'last_post_at', 'locked',
+                        'pinned', 'hidden')
         list_filter = ('forum', 'locked', 'pinned', 'hidden')
         fields = (
             (None, {
@@ -532,7 +536,7 @@ class Topic(models.Model):
             (u'Denormalised data', {
                 'classes': 'collapse',
                 'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('post_count', 'view_count',
+                'fields': ('post_count', 'metapost_count', 'view_count',
                            'last_post_at', 'last_user_id', 'last_username'),
             }),
         )
@@ -548,28 +552,29 @@ class Topic(models.Model):
         """
         return self.posts.order_by('num_in_topic')[0]
 
-    def update_post_count(self):
+    def update_post_count(self, meta=False):
         """
-        Executes a simple SQL ``UPDATE`` to update this topic's
-        ``post_count``.
+        Executes a simple SQL ``UPDATE`` to update one of this topic's
+        denormalised post counts, based on ``meta``.
         """
         opts = self._meta
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('post_count').column),
-            qn(opts.pk.column)), [self.posts.count(), self._get_pk_val()])
+            qn(opts.db_table), qn(opts.get_field('%spost_count' % (meta and 'meta' or '',)).column),
+            qn(opts.pk.column)), [self.posts.filter(meta=meta).count(),
+                                  self._get_pk_val()])
 
     update_post_count.alters_data = True
 
     def set_last_post(self, post=None):
         """
         Executes a simple SQL ``UPDATE`` to set details about this
-        topic's last post and update its ``post_count``.
+        topic's last post and update its denormalised ``post_count``.
 
         If the last post is not given, it will be looked up.
         """
         if post is None:
-            post = self.posts.order_by('-posted_at')[0]
+            post = self.posts.filter(meta=False).order_by('-posted_at')[0]
         opts = self._meta
         cursor = connection.cursor()
         cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
@@ -577,9 +582,9 @@ class Topic(models.Model):
             qn(opts.get_field('last_post_at').column),
             qn(opts.get_field('last_user_id').column),
             qn(opts.get_field('last_username').column),
-            qn(opts.pk.column)), [self.posts.count(), post.posted_at,
-                                  post.user._get_pk_val(), post.user.username,
-                                  self._get_pk_val()])
+            qn(opts.pk.column)), [self.posts.filter(meta=False).count(),
+                                  post.posted_at, post.user._get_pk_val(),
+                                  post.user.username, self._get_pk_val()])
 
     set_last_post.alters_data = True
 
@@ -636,7 +641,7 @@ class PostManager(models.Manager):
             ]
         )
 
-    def decrement_num_in_topic(self, topic, start_at):
+    def decrement_num_in_topic(self, topic, start_at, meta=False):
         """
         Decrements ``num_in_topic`` for all posts in the given topic
         which have a ``num_in_topic`` greater than ``start_at``.
@@ -647,11 +652,13 @@ class PostManager(models.Manager):
             UPDATE %(post_table)s
             SET %(num_in_topic)s=%(num_in_topic)s-1
             WHERE %(topic_fk)s=%%s
+              AND %(meta)s=%%s
               AND %(num_in_topic)s>%%s""" % {
                 'post_table': qn(opts.db_table),
+                'meta': qn(opts.get_field('meta').column),
                 'num_in_topic': qn(opts.get_field('num_in_topic').column),
                 'topic_fk': qn(opts.get_field('topic').column),
-            }, [topic.id, start_at])
+            }, [topic.id, meta, start_at])
 
 class Post(models.Model):
     """
@@ -664,6 +671,7 @@ class Post(models.Model):
     posted_at = models.DateTimeField(editable=False)
     edited_at = models.DateTimeField(editable=False, null=True, blank=True)
     user_ip   = models.IPAddressField(editable=False, null=True, blank=True)
+    meta      = models.BooleanField(default=False)
 
     # Denormalised data
     num_in_topic = models.PositiveIntegerField(default=0)
@@ -688,17 +696,23 @@ class Post(models.Model):
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()
-            self.num_in_topic = self.topic.post_count + 1
+            self.num_in_topic = getattr(self.topic, '%spost_count' % \
+                                        (self.meta and 'meta' or '',)) + 1
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
         super(Post, self).save(**kwargs)
         if is_new:
-            self.topic.set_last_post(self)
+            if not self.meta:
+                # Includes a non-metapost post count update
+                self.topic.set_last_post(self)
+            else:
+                self.topic.update_post_count(meta=False)
+
             # Don't update the forum's last post if the topic is hidden
             # - this allows moderators to add posts to hidden topics
             # without them becoming visible on forum listing pages.
-            if not self.topic.hidden:
+            if not self.meta and not self.topic.hidden:
                 self.topic.forum.set_last_post(self)
             ForumProfile.objects.get_for_user(self.user).update_post_count()
             transaction.commit_unless_managed()
@@ -711,35 +725,38 @@ class Post(models.Model):
 
         - The ``post_count`` of the ForumProfile for the User who made
           the post always needs to be updated.
-        - The ``post_count`` of the post's Topic always needs to be
-          updated.
-        - If this was the last post in its Topic, its last post details
-          need to be updated to the new last post.
-        - If this was the last post in its Topic's Forum, its last post
-          details need to be updated to the new last post.
+        - The ``post_count`` or ``metapost_count`` of the post's Topic
+          always needs to be updated.
+        - If this is not a metapost and was the last post in its Topic,
+          the Topic's last post details need to be updated.
+        - If this is not a metapost was the last post in its Topic's
+          Forum, the Forum's last post details need to be updated to the
+          new last post.
         - If this was not the last post in its Topic, the
-          ``num_in topic`` of all later posts need to be decremented.
+          ``num_in_topic`` of all later posts need to be decremented.
         """
         topic = self.topic
         forum = topic.forum
         forum_profile = ForumProfile.objects.get_for_user(self.user)
         super(Post, self).delete()
         forum_profile.update_post_count()
-        if self.posted_at == topic.last_post_at:
-            topic.set_last_post() # Includes a post count update
+        if not self.meta and self.posted_at == topic.last_post_at:
+            # Includes a non-metapost post count update
+            topic.set_last_post()
         else:
-            topic.update_post_count()
-        if self.posted_at == forum.last_post_at:
+            topic.update_post_count(meta=self.meta)
+        if not self.meta and self.posted_at == forum.last_post_at:
             forum.set_last_post()
-        Post.objects.decrement_num_in_topic(topic, self.num_in_topic)
+        Post.objects.decrement_num_in_topic(topic, self.num_in_topic, self.meta)
         transaction.commit_unless_managed()
 
     class Admin:
-        list_display = ('__unicode__', 'user', 'topic', 'posted_at',
+        list_display = ('__unicode__', 'user', 'topic', 'meta', 'posted_at',
                         'edited_at', 'user_ip')
+        list_filter = ('meta',)
         fields = (
             (None, {
-                'fields': ('user', 'topic', 'body'),
+                'fields': ('user', 'topic', 'body', 'meta'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',
