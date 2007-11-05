@@ -58,5 +58,10 @@ def create_test_data():
         for i in xrange(1, 4):
             topic.posts.create(user=topic.user, body='Post %s' % i)
 
+    # 3 Metaposts per Topic
+    for topic in topics:
+        for i in xrange(1, 4):
+            topic.posts.create(user=topic.user, meta=True, body='Metapost %s' % i)
+
 if __name__ == '__main__':
     create_test_data()
