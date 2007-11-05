@@ -705,7 +705,7 @@ class Post(models.Model):
                 # Includes a non-metapost post count update
                 self.topic.set_last_post(self)
             else:
-                self.topic.update_post_count(meta=False)
+                self.topic.update_post_count(meta=True)
 
             # Don't update the forum's last post if the topic is hidden
             # - this allows moderators to add posts to hidden topics
