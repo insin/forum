@@ -48,8 +48,8 @@ class SectionTestCase(TestCase):
         users = User.objects.filter(pk__in=[1,2,3])
         for user in users:
             forum_profile = ForumProfile.objects.get_for_user(user)
-            self.assertEquals(user.posts.count(), 18)
-            self.assertEquals(forum_profile.post_count, 18)
+            self.assertEquals(user.posts.count(), 36)
+            self.assertEquals(forum_profile.post_count, 36)
 
 class ForumTestCase(TestCase):
     """
@@ -73,8 +73,8 @@ class ForumTestCase(TestCase):
         users = User.objects.filter(pk__in=[1,2,3])
         for user in users:
             forum_profile = ForumProfile.objects.get_for_user(user)
-            self.assertEquals(user.posts.count(), 24)
-            self.assertEquals(forum_profile.post_count, 24)
+            self.assertEquals(user.posts.count(), 48)
+            self.assertEquals(forum_profile.post_count, 48)
 
 class TopicTestCase(TestCase):
     """
@@ -124,8 +124,8 @@ class TopicTestCase(TestCase):
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 28)
-        self.assertEquals(forum_profile.post_count, 28)
+        self.assertEquals(user.posts.count(), 55)
+        self.assertEquals(forum_profile.post_count, 55)
 
     def test_edit_topic(self):
         """
@@ -160,8 +160,8 @@ class TopicTestCase(TestCase):
 
         user = User.objects.get(pk=1)
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 24)
-        self.assertEquals(forum_profile.post_count, 24)
+        self.assertEquals(user.posts.count(), 48)
+        self.assertEquals(forum_profile.post_count, 48)
 
     def test_edit_last_topic(self):
         """
@@ -224,8 +224,8 @@ class TopicTestCase(TestCase):
         users = User.objects.filter(pk__in=[1,2,3])
         for user in users:
             forum_profile = ForumProfile.objects.get_for_user(user)
-            self.assertEquals(user.posts.count(), 24)
-            self.assertEquals(forum_profile.post_count, 24)
+            self.assertEquals(user.posts.count(), 48)
+            self.assertEquals(forum_profile.post_count, 48)
 
 class PostTestCase(TestCase):
     """
@@ -258,8 +258,9 @@ class PostTestCase(TestCase):
         self.assertEquals(post.edited_at, None)
 
         topic = Topic.objects.get(pk=1)
-        self.assertEquals(topic.posts.count(), 4)
+        self.assertEquals(topic.posts.count(), 7)
         self.assertEquals(topic.post_count, 4)
+        self.assertEquals(topic.metapost_count, 3)
         self.assertEquals(topic.last_post_at, post.posted_at)
         self.assertEquals(topic.last_user_id, post.user_id)
         self.assertEquals(topic.last_username, post.user.username)
@@ -274,8 +275,8 @@ class PostTestCase(TestCase):
         self.assertEquals(forum.last_username, post.user.username)
 
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 28)
-        self.assertEquals(forum_profile.post_count, 28)
+        self.assertEquals(user.posts.count(), 55)
+        self.assertEquals(forum_profile.post_count, 55)
 
     def test_edit_post(self):
         """
@@ -292,7 +293,8 @@ class PostTestCase(TestCase):
         self.assertNotEquals(post.body_html, '')
 
         topic = Topic.objects.get(pk=3)
-        self.assertEquals(topic.posts.count(), 3)
+        self.assertEquals(topic.posts.count(), 6)
+        self.assertEquals(topic.post_count, 3)
         self.assertEquals(topic.post_count, 3)
         self.assertEquals(topic.last_post_at, post.posted_at)
         self.assertEquals(topic.last_user_id, post.user_id)
@@ -309,8 +311,8 @@ class PostTestCase(TestCase):
 
         user = post.user
         forum_profile = ForumProfile.objects.get(pk=3)
-        self.assertEquals(user.posts.count(), 27)
-        self.assertEquals(forum_profile.post_count, 27)
+        self.assertEquals(user.posts.count(), 54)
+        self.assertEquals(forum_profile.post_count, 54)
 
     def test_delete_post(self):
         """
@@ -327,16 +329,17 @@ class PostTestCase(TestCase):
         self.assertEquals(last_post.num_in_topic, 2)
 
         topic = Topic.objects.get(pk=1)
-        self.assertEquals(topic.posts.count(), 2)
+        self.assertEquals(topic.posts.count(), 5)
         self.assertEquals(topic.post_count, 2)
+        self.assertEquals(topic.metapost_count, 3)
         self.assertEquals(topic.last_post_at, last_post.posted_at)
         self.assertEquals(topic.last_user_id, last_post.user_id)
         self.assertEquals(topic.last_username, last_post.user.username)
 
         user = post.user
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 26)
-        self.assertEquals(forum_profile.post_count, 26)
+        self.assertEquals(user.posts.count(), 53)
+        self.assertEquals(forum_profile.post_count, 53)
 
     def test_delete_last_post_in_topic(self):
         """
@@ -348,8 +351,9 @@ class PostTestCase(TestCase):
 
         previous_post_in_topic = Post.objects.get(pk=2)
         topic = Topic.objects.get(pk=1)
-        self.assertEquals(topic.posts.count(), 2)
+        self.assertEquals(topic.posts.count(), 5)
         self.assertEquals(topic.post_count, 2)
+        self.assertEquals(topic.metapost_count, 3)
         self.assertEquals(topic.last_post_at, previous_post_in_topic.posted_at)
         self.assertEquals(topic.last_user_id, previous_post_in_topic.user_id)
         self.assertEquals(topic.last_username, previous_post_in_topic.user.username)
@@ -366,8 +370,8 @@ class PostTestCase(TestCase):
 
         user = User.objects.get(pk=1)
         forum_profile = ForumProfile.objects.get(pk=1)
-        self.assertEquals(user.posts.count(), 26)
-        self.assertEquals(forum_profile.post_count, 26)
+        self.assertEquals(user.posts.count(), 53)
+        self.assertEquals(forum_profile.post_count, 53)
 
     def test_delete_last_post_in_forum(self):
         """
@@ -381,8 +385,9 @@ class PostTestCase(TestCase):
         previous_post = Post.objects.get(pk=8)
 
         topic = Topic.objects.get(pk=3)
-        self.assertEquals(topic.posts.count(), 2)
+        self.assertEquals(topic.posts.count(), 5)
         self.assertEquals(topic.post_count, 2)
+        self.assertEquals(topic.metapost_count, 3)
         self.assertEquals(topic.last_post_at, previous_post.posted_at)
         self.assertEquals(topic.last_user_id, previous_post.user_id)
         self.assertEquals(topic.last_username, previous_post.user.username)
@@ -398,8 +403,8 @@ class PostTestCase(TestCase):
 
         user = User.objects.get(pk=3)
         forum_profile = ForumProfile.objects.get(pk=3)
-        self.assertEquals(user.posts.count(), 26)
-        self.assertEquals(forum_profile.post_count, 26)
+        self.assertEquals(user.posts.count(), 53)
+        self.assertEquals(forum_profile.post_count, 53)
 
 class ManagerTestCase(TestCase):
     """
