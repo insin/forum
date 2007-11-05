@@ -406,6 +406,121 @@ class PostTestCase(TestCase):
         self.assertEquals(user.posts.count(), 53)
         self.assertEquals(forum_profile.post_count, 53)
 
+class MetapostTestCase(TestCase):
+    """
+    Tests for the Post model when working with Posts flagged as "meta":
+
+    - Add a Metapost
+    - Edit a Metapost
+    - Delete a Metapost
+    """
+    fixtures = ['testdata.json']
+
+    def test_add_metapost(self):
+        """
+        Verifies that adding a meta-Post to a Topic has the appropriate
+        effect on denormalised data.
+        """
+        user = User.objects.get(pk=1)
+        topic = Topic.objects.get(pk=1)
+
+        post = Post.objects.create(topic=topic, user=user, meta=True, body='Test Metapost.')
+        self.assertEquals(post.num_in_topic, None)
+        self.assertNotEquals(post.posted_at, None)
+        self.assertNotEquals(post.body_html, '')
+        self.assertEquals(post.edited_at, None)
+
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.posts.count(), 7)
+        self.assertEquals(topic.post_count, 3)
+        self.assertEquals(topic.metapost_count, 4)
+
+        # Verify that the Topic's last post details have not changed
+        last_post = Post.objects.get(pk=3)
+        self.assertEquals(topic.last_post_at, last_post.posted_at)
+        self.assertEquals(topic.last_user_id, last_post.user_id)
+        self.assertEquals(topic.last_username, last_post.user.username)
+
+        # Verify that the Forum's last post details have not changed
+        last_post = Post.objects.get(pk=9)
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, last_post.topic.id)
+        self.assertEquals(forum.last_topic_title, last_post.topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user_id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
+        forum_profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(user.posts.count(), 55)
+        self.assertEquals(forum_profile.post_count, 55)
+
+    def test_edit_metapost(self):
+        """
+        Verifies that editing a meta-Post results in appropriate Post fields
+        being updated and doesn't have any effect on denormalised data.
+        """
+        post = Post.objects.get(pk=90)
+        post.body = 'Test Metapost.'
+        post.save()
+        self.assertEquals(post.num_in_topic, None)
+        self.assertNotEquals(post.posted_at, None)
+        self.assertNotEquals(post.edited_at, None)
+        self.assertTrue(post.edited_at > post.posted_at)
+        self.assertNotEquals(post.body_html, '')
+
+        topic = Topic.objects.get(pk=3)
+        self.assertEquals(topic.posts.count(), 6)
+        self.assertEquals(topic.post_count, 3)
+        self.assertEquals(topic.post_count, 3)
+        last_post = Post.objects.get(pk=9)
+        self.assertEquals(topic.last_post_at, last_post.posted_at)
+        self.assertEquals(topic.last_user_id, last_post.user_id)
+        self.assertEquals(topic.last_username, last_post.user.username)
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.topics.count(), 3)
+        self.assertEquals(forum.topic_count, 3)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, topic.id)
+        self.assertEquals(forum.last_topic_title, topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user_id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
+        user = post.user
+        forum_profile = ForumProfile.objects.get(pk=3)
+        self.assertEquals(user.posts.count(), 54)
+        self.assertEquals(forum_profile.post_count, 54)
+
+    def test_delete_metapost(self):
+        """
+        Verifies that deleting a meta-Post only results in the
+        appropriate denormalised post count data being updated.
+        """
+        post = Post.objects.get(pk=82)
+        post.delete()
+
+        self.assertEquals(Post.objects.get(pk=1).num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=2).num_in_topic, 2)
+        self.assertEquals(Post.objects.get(pk=3).num_in_topic, 3)
+        self.assertEquals(Post.objects.get(pk=83).num_in_topic, None)
+        self.assertEquals(Post.objects.get(pk=83).num_in_topic, None)
+
+        last_post = Post.objects.get(pk=3)
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.posts.count(), 5)
+        self.assertEquals(topic.post_count, 3)
+        self.assertEquals(topic.metapost_count, 2)
+        self.assertEquals(topic.last_post_at, last_post.posted_at)
+        self.assertEquals(topic.last_user_id, last_post.user_id)
+        self.assertEquals(topic.last_username, last_post.user.username)
+
+        user = post.user
+        forum_profile = ForumProfile.objects.get(pk=1)
+        self.assertEquals(user.posts.count(), 53)
+        self.assertEquals(forum_profile.post_count, 53)
+
 class ManagerTestCase(TestCase):
     """
     Tests for custom Manager methods which add extra data to retrieved
