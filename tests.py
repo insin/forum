@@ -425,7 +425,7 @@ class MetapostTestCase(TestCase):
         topic = Topic.objects.get(pk=1)
 
         post = Post.objects.create(topic=topic, user=user, meta=True, body='Test Metapost.')
-        self.assertEquals(post.num_in_topic, None)
+        self.assertEquals(post.num_in_topic, 4)
         self.assertNotEquals(post.posted_at, None)
         self.assertNotEquals(post.body_html, '')
         self.assertEquals(post.edited_at, None)
@@ -464,7 +464,7 @@ class MetapostTestCase(TestCase):
         post = Post.objects.get(pk=90)
         post.body = 'Test Metapost.'
         post.save()
-        self.assertEquals(post.num_in_topic, None)
+        self.assertEquals(post.num_in_topic, 3)
         self.assertNotEquals(post.posted_at, None)
         self.assertNotEquals(post.edited_at, None)
         self.assertTrue(post.edited_at > post.posted_at)
@@ -504,8 +504,8 @@ class MetapostTestCase(TestCase):
         self.assertEquals(Post.objects.get(pk=1).num_in_topic, 1)
         self.assertEquals(Post.objects.get(pk=2).num_in_topic, 2)
         self.assertEquals(Post.objects.get(pk=3).num_in_topic, 3)
-        self.assertEquals(Post.objects.get(pk=83).num_in_topic, None)
-        self.assertEquals(Post.objects.get(pk=83).num_in_topic, None)
+        self.assertEquals(Post.objects.get(pk=83).num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=84).num_in_topic, 2)
 
         last_post = Post.objects.get(pk=3)
         topic = Topic.objects.get(pk=1)
