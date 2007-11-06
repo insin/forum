@@ -31,7 +31,6 @@ urlpatterns = patterns('forum.views',
 
 if app_settings.STANDALONE:
     urlpatterns += patterns('',
-        url(r'^terms_of_service/$', 'forum.views.terms_of_service', name='forum_terms_of_service'),
         (r'accounts/', include('registration.urls')),
         (r'admin/', include('django.contrib.admin.urls')),
     )

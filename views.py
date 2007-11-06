@@ -670,11 +670,3 @@ def edit_user_forum_settings(request, user_id):
         'form': form,
         'title': 'Edit Forum Settings',
     }, context_instance=RequestContext(request))
-
-def terms_of_service(request):
-    """
-    Displays the Terms of Service for the forum.
-    """
-    return render_to_response('forum/terms_of_service.html', {
-        'title': 'Terms of Service',
-    }, context_instance=RequestContext(request))
