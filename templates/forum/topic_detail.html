@@ -1,9 +1,23 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
+
 {% block extrahead %}
   <script type="text/javascript">var createFastReplyControls = {{ user|can_see_post_actions:topic|yesno:"true,false" }};</script>
   <script type="text/javascript" src="{{ MEDIA_URL }}js/Topic.js"></script>
   {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}
 {% endblock %}
+
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a>
+&raquo; <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>
+{% if meta %}
+&raquo; <a href="{{ topic.get_absolute_url }}">{{ title|escape }}</a>
+&raquo; Metaposts
+{% else %}
+&raquo; <strong>{{ title|escape }}</strong>
+{% endif %}
+{% endblock %}
+
 {% block main_content %}
 {% if topic.hidden %}
 <p class="description"><img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>
@@ -15,7 +29,8 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div class="actions">
-  {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
+  {% if user|can_see_post_actions:topic %}<a href="{{ urls.add_reply }}">Add Reply</a> |{% endif %}
+  {% if not meta %}<a href="{{ topic.get_meta_url }}">View Metaposts</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
@@ -70,7 +85,8 @@
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
 {% if user.is_authenticated %}
 <div id="topic-actions-bottom" class="actions">
-  {% if user|can_see_post_actions:topic %}<a href="{% url forum_add_reply topic.id %}">Add Reply</a> |{% endif %}
+  {% if user|can_see_post_actions:topic %}<a href="{{ urls.add_reply }}">Add Reply</a> |{% endif %}
+  {% if not meta %}<a href="{{ topic.get_meta_url }}">View Metaposts</a> |{% endif %}
   <a href="{% url forum_add_topic forum.id %}">New Topic</a>
 </div>
 {% endif %}
@@ -78,7 +94,7 @@
 
 {% if user.is_authenticated and user|can_see_post_actions:topic %}
 <div id="fast-reply"{% if not show_fast_reply %} style="display: none;"{% endif %}>
-  <form name="fastReplyForm" id="fastReplyForm" action="{% url forum_add_reply topic.id %}" method="POST">
+  <form name="fastReplyForm" id="fastReplyForm" action="{{ urls.add_reply }}" method="POST">
     <fieldset class="module">
       <h2>Fast Reply</h2>
       <div class="fast-reply-field">

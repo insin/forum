@@ -19,6 +19,25 @@ from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 qn = connection.ops.quote_name
 
+###################
+# Utility Classes #
+###################
+
+class TopicURLs:
+    def __init__(self, topic, meta):
+        self.topic = topic
+        self.meta = meta
+
+    def topic_detail(self):
+        if self.meta:
+            return self.topic.get_meta_url()
+        else:
+            return self.topic.get_absolute_url()
+
+    def add_reply(self):
+        url_name = self.meta and 'forum_add_meta_reply' or 'forum_add_reply'
+        return reverse(url_name, args=(smart_unicode(self.topic.pk),))
+
 #####################
 # Utility Functions #
 #####################
@@ -305,6 +324,8 @@ def topic_detail(request, topic_id, meta=False):
             'topic': topic,
             'title': topic.title,
             'avatar_dimensions': get_avatar_dimensions(),
+            'meta': meta,
+            'urls': TopicURLs(topic, meta),
             'show_fast_reply': request.user.is_authenticated() and \
                 ForumProfile.objects.get_for_user(request.user).auto_fast_reply \
                 or False,
@@ -391,7 +412,7 @@ def delete_topic(request, topic_id):
 
 @login_required
 @transaction.commit_on_success
-def add_reply(request, topic_id, quote_post=None):
+def add_reply(request, topic_id, meta=False, quote_post=None):
     """
     Adds a Post to a Topic.
 
@@ -418,6 +439,7 @@ def add_reply(request, topic_id, quote_post=None):
                 post = form.save(commit=False)
                 post.topic = topic
                 post.user = request.user
+                post.meta = meta
                 post.user_ip = request.META['REMOTE_ADDR']
                 post.save()
                 return redirect_to_post(request, post.id, post)
@@ -433,6 +455,8 @@ def add_reply(request, topic_id, quote_post=None):
         'forum': forum,
         'topic': topic,
         'preview': preview,
+        'meta': meta,
+        'urls': TopicURLs(topic, meta),
         'title': u'Add Reply to %s' % topic.title,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
@@ -443,7 +467,7 @@ def quote_post(request, post_id):
     Adds a Post to a Topic, prepopulating the form with a quoted Post.
     """
     post = get_object_or_404(Post, pk=post_id)
-    return add_reply(request, post.topic_id, post)
+    return add_reply(request, post.topic_id, meta=post.meta, quote_post=post)
 
 def redirect_to_post(request, post_id, post=None):
     """
@@ -462,8 +486,9 @@ def redirect_to_post(request, post_id, post=None):
     page, remainder = divmod(post.num_in_topic, posts_per_page)
     if post.num_in_topic < posts_per_page or remainder != 0:
         page += 1
+    url_name = post.meta and 'forum_topic_meta_detail' or 'forum_topic_detail'
     return HttpResponseRedirect('%s?page=%s&#post%s' \
-        % (reverse('forum_topic_detail', args=(smart_unicode(post.topic_id),)),
+        % (reverse(url_name, args=(smart_unicode(post.topic_id),)),
            page, post_id))
 
 def redirect_to_last_post(request, topic_id):

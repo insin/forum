@@ -545,6 +545,10 @@ class Topic(models.Model):
     def get_absolute_url(self):
         return ('forum_topic_detail', (smart_unicode(self.id),))
 
+    @models.permalink
+    def get_meta_url(self):
+        return ('forum_topic_meta_detail', (smart_unicode(self.id),))
+
     def get_first_post(self):
         """
         Gets the first Post in this Topic.
