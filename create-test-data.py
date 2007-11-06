@@ -21,19 +21,19 @@ def create_test_data():
     admin.is_staff = True
     admin.is_superuser = True
     admin.save()
-    ForumProfile.objects.create(user=admin, group='A')
+    ForumProfile.objects.create(user=admin, group=ForumProfile.ADMIN_GROUP)
 
     moderator = User.objects.create_user('moderator', 'm@m.com', 'moderator')
     moderator.first_name = 'Moderator'
     moderator.last_name = 'User'
     moderator.save()
-    ForumProfile.objects.create(user=moderator, group='M')
+    ForumProfile.objects.create(user=moderator, group=ForumProfile.MODERATOR_GROUP)
 
     user = User.objects.create_user('user', 'u@u.com', 'user')
     user.first_name = 'Test'
     user.last_name = 'User'
     user.save()
-    ForumProfile.objects.create(user=user, group='U')
+    ForumProfile.objects.create(user=user, group=ForumProfile.USER_GROUP)
 
     users = [admin, moderator, user]
 

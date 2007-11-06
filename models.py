@@ -51,32 +51,36 @@ class ForumProfileManager(models.Manager):
 
 TIMEZONE_CHOICES = tuple([(tz, tz) for tz in common_timezones])
 
-USER_GROUP_CHOICES = (
-    ('U', 'Users'),
-    ('M', 'Moderators'),
-    ('A', 'Admins'),
-)
-
 TOPICS_PER_PAGE_CHOICES = (
-    (10,   '10'),
-    (20,   '20'),
-    (30,   '30'),
-    (40,   '40'),
+    (10, '10'),
+    (20, '20'),
+    (30, '30'),
+    (40, '40'),
 )
 
 POSTS_PER_PAGE_CHOICES = (
-    (10,   '10'),
-    (20,   '20'),
-    (30,   '30'),
-    (40,   '40'),
+    (10, '10'),
+    (20, '20'),
+    (30, '30'),
+    (40, '40'),
 )
 
 class ForumProfile(models.Model):
     """
     A user's forum profile.
     """
+    USER_GROUP      = 'U'
+    MODERATOR_GROUP = 'M'
+    ADMIN_GROUP     = 'A'
+
+    GROUP_CHOICES = (
+        (USER_GROUP, 'Users'),
+        (MODERATOR_GROUP, 'Moderators'),
+        (ADMIN_GROUP, 'Admins'),
+    )
+
     user     = models.ForeignKey(User, unique=True, related_name='forum_profile')
-    group    = models.CharField(max_length=1, choices=USER_GROUP_CHOICES, default='U')
+    group    = models.CharField(max_length=1, choices=GROUP_CHOICES, default=USER_GROUP)
     title    = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
     avatar   = models.URLField(max_length=200, verify_exists=False, blank=True)
@@ -125,14 +129,14 @@ class ForumProfile(models.Model):
         Returns ``True`` if the User represented by this profile has
         moderation privileges, ``False`` otherwise.
         """
-        return self.group in ('M', 'A')
+        return self.group in (self.MODERATOR_GROUP, self.ADMIN_GROUP)
 
     def is_admin(self):
         """
         Returns ``True`` if the User represented by this profile has
         administrative privileges, ``False`` otherwise.
         """
-        return self.group == 'A'
+        return self.group == self.ADMIN_GROUP
 
     def update_post_count(self):
         """
