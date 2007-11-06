@@ -69,6 +69,12 @@
 <h2><span class="title">Most Recent Topics Started</span>{% if recent_topics %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_user_topics forum_user.id %}">View All Topics</a></span>{% endif %}</h2>
 {% if recent_topics %}
 <table>
+<col width="35%">
+<col width="15%">
+<col>
+<col width="1">
+<col width="1">
+<col width="20%">
 <thead>
   <tr>
     <th>Topic</th>
