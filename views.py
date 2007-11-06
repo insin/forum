@@ -24,6 +24,10 @@ qn = connection.ops.quote_name
 ###################
 
 class TopicURLs:
+    """
+    Handles display of different URLs based on whether or not a topic
+    is being viewed in meta mode.
+    """
     def __init__(self, topic, meta):
         self.topic = topic
         self.meta = meta
