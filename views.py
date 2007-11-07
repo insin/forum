@@ -319,12 +319,13 @@ def topic_detail(request, topic_id, meta=False):
         filters['hidden'] = False
     topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
     topic.increment_view_count()
-    last_read = datetime.datetime.now()
-    tracker, created = \
-        TopicTracker.objects.get_or_create(user=request.user, topic=topic,
-                                           defaults={'last_read': last_read})
-    if not created:
-        tracker.update_last_read(last_read)
+    if request.user.is_authenticated():
+        last_read = datetime.datetime.now()
+        tracker, created = \
+            TopicTracker.objects.get_or_create(user=request.user, topic=topic,
+                                               defaults={'last_read': last_read})
+        if not created:
+            tracker.update_last_read(last_read)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
