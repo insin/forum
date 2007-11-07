@@ -660,6 +660,22 @@ class TopicTracker(models.Model):
     class Admin:
         pass
 
+    def update_last_read(self, last_read):
+        """
+        Executes a simple SQL ``UPDATE`` to update this tracker's
+        ``last_read``.
+
+        This avoids the extra query which would be performed to determine
+        existance if calling save() on the instance instead.
+        """
+        opts = self._meta
+        cursor = connection.cursor()
+        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
+            qn(opts.db_table), qn(opts.get_field('last_read').column),
+            qn(opts.pk.column)), [last_read, self.pk])
+
+    update_last_read.alters_data = True
+
 class PostManager(models.Manager):
     def with_user_details(self):
         """

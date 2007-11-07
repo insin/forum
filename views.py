@@ -324,8 +324,7 @@ def topic_detail(request, topic_id, meta=False):
         TopicTracker.objects.get_or_create(user=request.user, topic=topic,
                                            defaults={'last_read': last_read})
     if not created:
-        tracker.last_read = last_read
-        tracker.save()
+        tracker.update_last_read(last_read)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
