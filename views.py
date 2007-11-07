@@ -1,3 +1,5 @@
+import datetime
+
 from django import newforms as forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -15,7 +17,7 @@ from forum.formatters import post_formatter
 from forum.forms import (EditSectionBaseForm, ForumForm, SectionForm,
     forum_profile_formfield_callback, post_formfield_callback,
     topic_formfield_callback)
-from forum.models import Forum, ForumProfile, Post, Section, Topic
+from forum.models import Forum, ForumProfile, Post, Section, Topic, TopicTracker
 
 qn = connection.ops.quote_name
 
@@ -315,16 +317,20 @@ def topic_detail(request, topic_id, meta=False):
     if not request.user.is_authenticated() or \
        not auth.is_moderator(request.user):
         filters['hidden'] = False
-    topic = get_object_or_404(Topic, **filters)
+    topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
     topic.increment_view_count()
-    forum = Forum.objects.select_related().get(pk=topic.forum_id)
+    last_read = datetime.datetime.now()
+    tracker, created = \
+        TopicTracker.objects.get_or_create(user=request.user, topic=topic,
+                                           defaults={'last_read': last_read})
+    if not created:
+        tracker.last_read = last_read
+        tracker.save()
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
         template_name='forum/topic_detail.html',
         extra_context={
-            'section': forum.section,
-            'forum': forum,
             'topic': topic,
             'title': topic.title,
             'avatar_dimensions': get_avatar_dimensions(),

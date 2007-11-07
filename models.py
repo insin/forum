@@ -444,6 +444,40 @@ class TopicManager(models.Manager):
             self._add_user_details(
                 super(TopicManager, self).get_query_set()))
 
+    def with_display_details(self):
+        """
+        Creates a ``QuerySet`` which adds additional information required
+        to display a Topic's detail page without having to perform extra
+        queries.
+        """
+        opts = self.model._meta
+        forum_opts = Forum._meta
+        forum_table = qn(forum_opts.db_table)
+        section_opts = Section._meta
+        section_table = qn(section_opts.db_table)
+        return super(TopicManager, self).get_query_set().extra(
+            select={
+                'forum_name': '%s.%s' % (forum_table, qn(forum_opts.get_field('name').column)),
+                'section_id': '%s.%s' % (forum_table, qn(forum_opts.get_field('section').column)),
+                'section_name': '%s.%s' % (section_table, qn(section_opts.get_field('name').column)),
+            },
+            tables=[forum_table, section_table],
+            where=[
+                '%s.%s=%s.%s' % (
+                    qn(opts.db_table),
+                    qn(opts.get_field('forum').column),
+                    forum_table,
+                    qn(forum_opts.pk.column),
+                ),
+                '%s.%s=%s.%s' % (
+                    qn(forum_table),
+                    qn(forum_opts.get_field('section').column),
+                    section_table,
+                    qn(section_opts.pk.column),
+                ),
+            ]
+        )
+
 class Topic(models.Model):
     """
     A discussion topic.
@@ -608,6 +642,23 @@ class Topic(models.Model):
         transaction.commit_unless_managed()
 
     increment_view_count.alters_data = True
+
+class TopicTracker(models.Model):
+    """
+    Tracks the last time a user read a particular topic.
+    """
+    user      = models.ForeignKey(User, related_name='topic_trackers')
+    topic     = models.ForeignKey(Topic, related_name='trackers')
+    last_read = models.DateTimeField()
+
+    def __unicode__(self):
+        return u'%s read %s at %s' % (self.user, self.topic, self.last_read)
+
+    class Meta:
+        unique_together = (('user', 'topic'),)
+
+    class Admin:
+        pass
 
 class PostManager(models.Manager):
     def with_user_details(self):

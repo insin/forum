@@ -8,8 +8,8 @@
 
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a>
-&raquo; <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>
+&raquo; <a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a>
+&raquo; <a href="{% url forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a>
 {% if meta %}
 &raquo; <a href="{{ topic.get_absolute_url }}">{{ title|escape }}</a>
 &raquo; Metaposts
