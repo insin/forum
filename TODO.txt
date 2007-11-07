@@ -15,6 +15,7 @@ Make It So, Number One
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
+- Metapost moderation - change a post's meta status.
 - Non-standalone mode issues which will need to be resolved:
 
   - Provide a means of performing certain URL lookups based on whether we're in
@@ -65,9 +66,6 @@ the moment.*
   which should have a configurable lower boundary in user profiles, scores under
   which would result in topics, posts or everything from given users being
   hidden. Let consensus be your ignore list, if you're mad enough.
-- Metaposts, a place to talk about a topic without participating in it, which
-  should help with a particular kind of topic derailment and give mods somewhere
-  to move those types of posts without being moaned at (as much).
 - Forum Types, which could affect how everything in a particular forum works.
   Examples:
 
