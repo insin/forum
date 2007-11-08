@@ -588,7 +588,8 @@ def redirect_to_last_post(request, topic_id):
     Redirects to the last Post in the Topic with the given id.
     """
     try:
-        post = Post.objects.filter(topic=topic_id).order_by('-posted_at')[0]
+        post = Post.objects.filter(topic=topic_id, meta=False) \
+                            .order_by('-posted_at')[0]
     except Post.DoesNotExist:
         raise Http404
     return redirect_to_post(request, post.id, post)
