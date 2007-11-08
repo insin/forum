@@ -604,7 +604,8 @@ def delete_post(request, post_id):
         return delete_topic(request, post.topic_id)
     if request.method == 'POST':
         post.delete()
-        return HttpResponseRedirect(topic.get_absolute_url())
+        url = post.meta and topic.get_meta_url() or topic.get_absolute_url()
+        return HttpResponseRedirect(url)
     else:
         forum = Forum.objects.select_related().get(pk=topic.forum_id)
         return render_to_response('forum/delete_post.html', {
