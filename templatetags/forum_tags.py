@@ -162,6 +162,13 @@ def forum_datetime(st, user=None):
     return format_datetime(st, user, 'M jS Y', 'H:i A', ', ')
 
 @register.filter
+def is_first_post(post):
+    """
+    Determines if the given post is the first post in a topic.
+    """
+    return post.num_in_topic == 1 and not post.meta
+
+@register.filter
 def post_time(posted_at, user=None):
     """
     Formats a Post time.
