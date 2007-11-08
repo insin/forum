@@ -14,6 +14,7 @@ from django.views.generic.list_detail import object_list
 
 from forum import app_settings
 from forum import auth
+from forum import moderation
 from forum.formatters import post_formatter
 from forum.forms import (EditSectionBaseForm, ForumForm, SectionForm,
     forum_profile_formfield_callback, post_formfield_callback,
@@ -362,7 +363,8 @@ def topic_detail(request, topic_id, meta=False):
             tracker.update_last_read(last_read)
     transaction.commit()
     return object_list(request,
-        Post.objects.with_user_details().filter(topic=topic, meta=meta),
+        Post.objects.with_user_details().filter(topic=topic, meta=meta) \
+                                         .order_by('posted_at', 'num_in_topic'),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,
         template_name='forum/topic_detail.html',
         extra_context={
@@ -547,6 +549,7 @@ def redirect_to_last_post(request, topic_id):
     return redirect_to_post(request, post.id, post)
 
 @login_required
+@transaction.commit_on_success
 def edit_post(request, post_id):
     """
     Edits the given Post.
@@ -559,7 +562,11 @@ def edit_post(request, post_id):
     if not auth.user_can_edit_post(request.user, post, topic):
         return HttpResponseForbidden()
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    PostForm = forms.form_for_instance(post, fields=('body',),
+    editable_fields = ['body']
+    if auth.is_moderator(request.user):
+        editable_fields += ['meta']
+        was_meta = post.meta
+    PostForm = forms.form_for_instance(post, fields=editable_fields,
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
@@ -568,7 +575,14 @@ def edit_post(request, post_id):
             if 'preview' in request.POST:
                 preview = post_formatter.format_post_body(form.cleaned_data['body'])
             elif 'submit' in request.POST:
-                post = form.save(commit=True)
+                post = form.save(commit=False)
+                if auth.is_moderator(request.user):
+                    if post.meta and not was_meta:
+                        moderation.make_post_meta(post, topic, forum)
+                    elif not post.meta and was_meta:
+                        moderation.make_post_not_meta(post, topic, forum)
+                else:
+                    post.save()
                 return redirect_to_post(request, post.id, post)
     else:
         form = PostForm()

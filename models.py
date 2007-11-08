@@ -730,22 +730,26 @@ class PostManager(models.Manager):
             ]
         )
 
-    def decrement_num_in_topic(self, topic, start_at, meta=False):
+    def update_num_in_topic(self, topic, start_at, increment=False, meta=False):
         """
-        Decrements ``num_in_topic`` for all posts in the given topic
+        Updates ``num_in_topic`` for all posts in the given topic
         which have a ``num_in_topic`` greater than ``start_at``.
+
+        Values will be incremented or decremented based on ``increment``.
         """
         opts = self.model._meta
         cursor = connection.cursor()
+        operator = {True: '+', False: '-'}[increment]
         cursor.execute("""
             UPDATE %(post_table)s
-            SET %(num_in_topic)s=%(num_in_topic)s-1
+            SET %(num_in_topic)s=%(num_in_topic)s%(operator)s1
             WHERE %(topic_fk)s=%%s
               AND %(meta)s=%%s
               AND %(num_in_topic)s>%%s""" % {
                 'post_table': qn(opts.db_table),
                 'meta': qn(opts.get_field('meta').column),
                 'num_in_topic': qn(opts.get_field('num_in_topic').column),
+                'operator': operator,
                 'topic_fk': qn(opts.get_field('topic').column),
             }, [topic.id, meta, start_at])
 
@@ -836,7 +840,8 @@ class Post(models.Model):
             topic.update_post_count(meta=self.meta)
         if not self.meta and self.posted_at == forum.last_post_at:
             forum.set_last_post()
-        Post.objects.decrement_num_in_topic(topic, self.num_in_topic, self.meta)
+        Post.objects.update_num_in_topic(topic, self.num_in_topic,
+                                         increment=False, meta=self.meta)
         transaction.commit_unless_managed()
 
     class Admin:
