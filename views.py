@@ -581,6 +581,8 @@ def edit_post(request, post_id):
                         moderation.make_post_meta(post, topic, forum)
                     elif not post.meta and was_meta:
                         moderation.make_post_not_meta(post, topic, forum)
+                    else:
+                        post.save()
                 else:
                     post.save()
                 return redirect_to_post(request, post.id, post)
