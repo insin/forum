@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from forum import auth
+from forum import moderation
 from forum.models import Forum, ForumProfile, Post, Section, Topic
 
 class ForumProfileTestCase(TestCase):
@@ -80,15 +81,15 @@ class TopicTestCase(TestCase):
     """
     Tests for the Topic model:
 
-    - Add a Topic
-    - Edit a Topic
-    - Delete a Topic
+    - Add a Topic.
+    - Edit a Topic.
+    - Delete a Topic.
 
     The following tests are for appropriate changes to denormalised
     data:
 
-    - Edit the last Topic in a Forum
-    - Delete the last Topic in a Forum
+    - Edit the last Topic in a Forum.
+    - Delete the last Topic in a Forum.
     """
     fixtures = ['testdata.json']
 
@@ -231,15 +232,15 @@ class PostTestCase(TestCase):
     """
     Tests for the Post model:
 
-    - Add a Post
-    - Edit a Post
-    - Delete a Post
+    - Add a Post.
+    - Edit a Post.
+    - Delete a Post.
 
     The following tests are for appropriate changes to denormalised
     data:
 
-    - Delete the last Post in a Topic
-    - Delete the last Post in a Forum
+    - Delete the last Post in a Topic.
+    - Delete the last Post in a Forum.
     """
     fixtures = ['testdata.json']
 
@@ -410,9 +411,9 @@ class MetapostTestCase(TestCase):
     """
     Tests for the Post model when working with Posts flagged as "meta":
 
-    - Add a Metapost
-    - Edit a Metapost
-    - Delete a Metapost
+    - Add a Metapost.
+    - Edit a Metapost.
+    - Delete a Metapost.
     """
     fixtures = ['testdata.json']
 
@@ -520,6 +521,97 @@ class MetapostTestCase(TestCase):
         forum_profile = ForumProfile.objects.get(pk=1)
         self.assertEquals(user.posts.count(), 53)
         self.assertEquals(forum_profile.post_count, 53)
+
+class ModerationTestCase(TestCase):
+    """
+    Tests for moderation functions, which can involve large-scale changes
+    to data.
+
+    - Make a post into a metapost.
+    - Make the last post in a topic/forum into a metapost.
+    - Make a metapost into a post.
+    - Make a metapost into a post which will become the last post in a
+      topic/forum.
+    """
+    fixtures = ['testdata.json']
+
+    def test_post_to_metapost(self):
+        post = Post.objects.get(pk=2)
+        post.meta = True
+        moderation.make_post_meta(post, post.topic, post.topic.forum)
+
+        self.assertEquals(post.num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=82).num_in_topic, 2)
+        self.assertEquals(Post.objects.get(pk=83).num_in_topic, 3)
+        self.assertEquals(Post.objects.get(pk=84).num_in_topic, 4)
+        self.assertEquals(Post.objects.get(pk=1).num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=3).num_in_topic, 2)
+
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.post_count, 2)
+        self.assertEquals(topic.metapost_count, 4)
+
+    def test_last_post_to_metapost(self):
+        post = Post.objects.get(pk=9)
+        post.meta = True
+        moderation.make_post_meta(post, post.topic, post.topic.forum)
+
+        self.assertEquals(post.num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=88).num_in_topic, 2)
+        self.assertEquals(Post.objects.get(pk=89).num_in_topic, 3)
+        self.assertEquals(Post.objects.get(pk=90).num_in_topic, 4)
+
+        topic = Topic.objects.get(pk=3)
+        last_post = Post.objects.get(pk=8)
+        self.assertEquals(topic.last_post_at, last_post.posted_at)
+        self.assertEquals(topic.last_user_id, last_post.user_id)
+        self.assertEquals(topic.last_username, last_post.user.username)
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.last_post_at, last_post.posted_at)
+        self.assertEquals(forum.last_topic_id, topic.id)
+        self.assertEquals(forum.last_topic_title, topic.title)
+        self.assertEquals(forum.last_user_id, last_post.user_id)
+        self.assertEquals(forum.last_username, last_post.user.username)
+
+    def test_metapost_to_post(self):
+        post = Post.objects.get(pk=83)
+        post.meta = False
+        moderation.make_post_not_meta(post, post.topic, post.topic.forum)
+
+        self.assertEquals(post.num_in_topic, 4)
+        self.assertEquals(Post.objects.get(pk=82).num_in_topic, 1)
+        self.assertEquals(Post.objects.get(pk=84).num_in_topic, 2)
+
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.post_count, 4)
+        self.assertEquals(topic.metapost_count, 2)
+
+        topic = Topic.objects.get(pk=1)
+        self.assertEquals(topic.last_post_at, post.posted_at)
+        self.assertEquals(topic.last_user_id, post.user_id)
+        self.assertEquals(topic.last_username, post.user.username)
+
+    def test_metapost_to_last_post(self):
+        post = Post.objects.get(pk=90)
+        post.meta = False
+        moderation.make_post_not_meta(post, post.topic, post.topic.forum)
+
+        self.assertEquals(post.num_in_topic, 4)
+
+        topic = Topic.objects.get(pk=3)
+        self.assertEquals(topic.post_count, 4)
+        self.assertEquals(topic.metapost_count, 2)
+        self.assertEquals(topic.last_post_at, post.posted_at)
+        self.assertEquals(topic.last_user_id, post.user_id)
+        self.assertEquals(topic.last_username, post.user.username)
+
+        forum = Forum.objects.get(pk=1)
+        self.assertEquals(forum.last_post_at, post.posted_at)
+        self.assertEquals(forum.last_topic_id, topic.id)
+        self.assertEquals(forum.last_topic_title, topic.title)
+        self.assertEquals(forum.last_user_id, post.user_id)
+        self.assertEquals(forum.last_username, post.user.username)
 
 class ManagerTestCase(TestCase):
     """
