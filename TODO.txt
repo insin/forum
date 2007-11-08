@@ -15,7 +15,6 @@ Make It So, Number One
 *Features, fixes and tasks which are ready to be implementated or performed as
 and when the time can be found.*
 
-- Metapost moderation - change a post's meta status.
 - Non-standalone mode issues which will need to be resolved:
 
   - Provide a means of performing certain URL lookups based on whether we're in
@@ -29,6 +28,7 @@ and when the time can be found.*
     registration templates into the ``/forum/templates/`` directory as one of
     the installation steps for using the forum in standalone mode.
 
+- Basic searching.
 - Create full help templates for the provided post formatters.
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
@@ -49,8 +49,8 @@ For Future Consideration
 ========================
 
 *Features which require a bit more consideration - as in does the application
-really need the added complexity they bring? It has a very simple structure at
-the moment.*
+really need the added complexity they bring? It has a fairly simple structure
+at the moment.*
 
 *Boring stuff which most forums have:*
 
