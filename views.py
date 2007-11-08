@@ -481,7 +481,8 @@ def delete_topic(request, topic_id):
     if not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic, **filters)
-    post = Post.objects.with_user_details().get(topic=topic, num_in_topic=1)
+    post = Post.objects.with_user_details().get(topic=topic, meta=False,
+                                                num_in_topic=1)
     if not auth.user_can_edit_topic(request.user, topic):
         return HttpResponseForbidden()
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
