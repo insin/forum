@@ -55,7 +55,6 @@ the moment.*
 *Boring stuff which most forums have:*
 
 - Subforums.
-- Tracking the topics a user has viewed and when they last viewed them.
 - Tracking which posts were replied to / using this information to offer a
   threaded topic view.
 - Poll topics.
