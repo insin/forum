@@ -178,17 +178,18 @@ def joined_date(date):
 @register.filter
 def topic_status_image(topic):
     """
-    Outputs HTML to represent a topic's status.
+    Returns HTML for an image representing a topic's status.
     """
     last_read = getattr(topic, 'last_read', False)
     if last_read is not False and \
        (last_read is None or topic.last_post_at > last_read):
-        src = 'img/new_posts.gif'
-        alt = 'New Posts'
+        src = u'img/new_posts.gif'
+        description = u'New Posts'
     else:
-        src = 'img/no_new_posts.gif'
-        alt = 'No New Posts'
-    return '<img src="%s" alt="%s">' % (urljoin(settings.MEDIA_URL, src), alt)
+        src = u'img/no_new_posts.gif'
+        description = u'No New Posts'
+    return u'<img src="%s" alt="%s" title="%s">' % (
+        urljoin(settings.MEDIA_URL, src), description, description)
 
 @register.filter
 def topic_pagination(topic, posts_per_page):
