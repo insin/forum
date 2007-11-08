@@ -27,8 +27,9 @@ def make_post_meta(post, topic, forum):
         # Find the first earlier meta post by post time - fall back on id
         # if times are equal.
         previous_meta_post = \
-            topic.posts.filter(meta=True, posted_at__lte=post.posted_at) \
-                        .order_by('-posted_at', '-id')[0]
+            (topic.posts.filter(meta=True, posted_at__lt=post.posted_at) | \
+             topic.posts.filter(meta=True, posted_at=post.posted_at, pk__lt=post.pk)) \
+             .order_by('-posted_at', '-id')[0]
         post.num_in_topic = previous_meta_post.num_in_topic + 1
         increment_from = previous_meta_post.num_in_topic
     except IndexError:
@@ -69,8 +70,9 @@ def make_post_not_meta(post, topic, forum):
         # Find the first earlier post by post time - fall back on id if
         # times are equal.
         previous_post = \
-            topic.posts.filter(meta=False, posted_at__lte=post.posted_at) \
-                        .order_by('-posted_at', '-id')[0]
+            (topic.posts.filter(meta=False, posted_at__lt=post.posted_at) | \
+             topic.posts.filter(meta=False, posted_at=post.posted_at, pk__lt=post.pk)) \
+             .order_by('-posted_at', '-id')[0]
         post.num_in_topic = previous_post.num_in_topic + 1
         increment_from = previous_post.num_in_topic
     except IndexError:
