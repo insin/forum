@@ -10,7 +10,9 @@
 <div class="module no-margin">
 <h2>{{ title|escape }}</h2>
 {% if topic_list %}
+{% add_last_read_times topic_list user %}
 <table>
+<col width="1">
 <col width="40%">
 <col width="25%">
 <col>
@@ -19,6 +21,7 @@
 <col width="15%">
 <thead>
   <tr>
+    <th>&nbsp;</th>
     <th>Topic</th>
     <th>In Forum</th>
     <th>Started By</th>
@@ -30,6 +33,7 @@
 <tbody>
 {% for topic in topic_list %}
   <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
+    <td>{{ topic|topic_status_image }}</td>
     <td>
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}

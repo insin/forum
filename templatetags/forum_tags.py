@@ -7,9 +7,21 @@ from django.utils import dateformat
 
 import pytz
 from forum import auth
-from forum.models import ForumProfile
+from forum.models import ForumProfile, TopicTracker
 
 register = template.Library()
+
+#################
+# Template Tags #
+#################
+
+@register.simple_tag
+def add_last_read_times(topics, user):
+    """
+    Adds last read details to the given topics for the given user.
+    """
+    TopicTracker.objects.add_last_read_to_topics(topics, user)
+    return u''
 
 ##################
 # Inclusion Tags #
