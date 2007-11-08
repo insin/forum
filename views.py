@@ -474,7 +474,10 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
        not auth.is_moderator(request.user):
         return HttpResponseForbidden()
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    PostForm = forms.form_for_model(Post, fields=('body',),
+    editable_fields = ['body']
+    if not meta:
+        editable_fields += ['meta']
+    PostForm = forms.form_for_model(Post, fields=editable_fields,
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
@@ -486,7 +489,8 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
                 post = form.save(commit=False)
                 post.topic = topic
                 post.user = request.user
-                post.meta = meta
+                if meta:
+                    post.meta = True
                 post.user_ip = request.META['REMOTE_ADDR']
                 post.save()
                 return redirect_to_post(request, post.id, post)
