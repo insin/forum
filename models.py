@@ -639,9 +639,23 @@ class Topic(models.Model):
         cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
             qn(opts.db_table), qn(opts.get_field('view_count').column),
             qn(opts.pk.column)), [self.view_count, self.pk])
-        transaction.commit_unless_managed()
 
     increment_view_count.alters_data = True
+
+class TopicTrackerManager(models.Manager):
+    def add_last_read_to_topics(self, topics, user):
+        """
+        If the given User is authenticated, adds a ``last_read``
+        attribute to the given Topics based on their TopicTrackers. This
+        will be ``None`` if there is no TopicTrackers for a Topic.
+        """
+        if user.is_authenticated():
+            queryset = super(TopicTrackerManager, self).get_query_set().filter(
+                user=user, topic__in=topics)
+            last_read_dict = dict([(tracker.topic_id, tracker.last_read) \
+                                   for tracker in queryset])
+            for topic in topics:
+                topic.last_read = last_read_dict.get(topic.pk, None)
 
 class TopicTracker(models.Model):
     """
@@ -650,6 +664,8 @@ class TopicTracker(models.Model):
     user      = models.ForeignKey(User, related_name='topic_trackers')
     topic     = models.ForeignKey(Topic, related_name='trackers')
     last_read = models.DateTimeField()
+
+    objects = TopicTrackerManager()
 
     def __unicode__(self):
         return u'%s read %s at %s' % (self.user, self.topic, self.last_read)

@@ -3,6 +3,7 @@ import datetime
 from django import newforms as forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import ObjectPaginator, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
@@ -222,31 +223,63 @@ def forum_detail(request, forum_id):
     Displays a Forum's Topics.
     """
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
-    filters = {
+    topic_filters = {
         'forum': forum,
+        'pinned': False,
     }
     if not request.user.is_authenticated() or \
        not auth.is_moderator(request.user):
-        filters['hidden'] = False
-    extra_context = {
+        topic_filters['hidden'] = False
+    # Get a page of topics
+    topics_per_page = get_topics_per_page(request.user)
+    paginator = ObjectPaginator(
+        Topic.objects.with_user_details().filter(**topic_filters),
+        topics_per_page)
+    page = request.GET.get('page', 1)
+    try:
+        page_number = int(page)
+    except ValueError:
+        raise Http404
+    try:
+        topics = list(paginator.get_page(page_number - 1))
+    except InvalidPage:
+        if page_number == 1:
+            topics = []
+        else:
+            raise Http404
+    context = {
         'section': forum.section,
         'forum': forum,
+        'topic_list': topics,
         'title': forum.name,
         'posts_per_page': get_posts_per_page(request.user),
+        'is_paginated': paginator.pages > 1,
+        'results_per_page': topics_per_page,
+        'has_next': paginator.has_next_page(page_number - 1),
+        'has_previous': paginator.has_previous_page(page_number - 1),
+        'page': page_number,
+        'next': page_number + 1,
+        'previous': page_number - 1,
+        'last_on_page': paginator.last_on_page(page_number - 1),
+        'first_on_page': paginator.first_on_page(page_number - 1),
+        'pages': paginator.pages,
+        'hits' : paginator.hits,
     }
     # Get pinned topics too if we're on the first page
-    if request.GET.get('page', 1) in (u'1', 1):
-        filters['pinned'] = True
-        extra_context['pinned_topics'] = Topic.objects.with_user_details() \
-                                                       .filter(**filters) \
-                                                        .order_by('-started_at')
-    filters['pinned'] = False
-    return object_list(request,
-        Topic.objects.with_user_details() \
-                      .filter(**filters),
-        paginate_by=get_topics_per_page(request.user), allow_empty=True,
-        template_name='forum/forum_detail.html', extra_context=extra_context,
-        template_object_name='topic')
+    if page_number == 1:
+        topic_filters['pinned'] = True
+        pinned_topics = list(Topic.objects.with_user_details() \
+                                           .filter(**topic_filters) \
+                                            .order_by('-started_at'))
+        context['pinned_topics'] = pinned_topics
+    # Add the current user's last read details to topics
+    if page_number == 1:
+        TopicTracker.objects.add_last_read_to_topics(topics + pinned_topics,
+                                                     request.user)
+    else:
+        TopicTracker.objects.add_last_read_to_topics(topics, request.user)
+    return render_to_response('forum/forum_detail.html', context,
+        context_instance=RequestContext(request))
 
 @login_required
 def new_posts(request):
@@ -309,6 +342,7 @@ def add_topic(request, forum_id):
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
+@transaction.commit_manually
 def topic_detail(request, topic_id, meta=False):
     """
     Displays a Topic's Posts.
@@ -326,6 +360,7 @@ def topic_detail(request, topic_id, meta=False):
                                                defaults={'last_read': last_read})
         if not created:
             tracker.update_last_read(last_read)
+    transaction.commit()
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta),
         paginate_by=get_posts_per_page(request.user), allow_empty=True,

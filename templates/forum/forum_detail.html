@@ -14,6 +14,7 @@
 <h2><span class="title">{{ forum.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_forum forum.id %}">Edit Forum</a></span>{% endif %}</h2>
 {% if topic_list or pinned_topics %}
 <table>
+<col width="1">
 <col width="60%">
 <col>
 <col width="1">
@@ -21,6 +22,7 @@
 <col width="15%">
 <thead>
   <tr>
+    <th>&nbsp;</th>
     <th>Topic</th>
     <th>Started By</th>
     <th>Posts</th>
@@ -32,6 +34,7 @@
 {% if pinned_topics %}
 {% for topic in pinned_topics %}
   <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
+    <td>{{ topic|topic_status_image }}</td>
     <td>
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
@@ -49,6 +52,7 @@
 {% endif %}
 {% for topic in topic_list %}
   <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
+    <td>{{ topic|topic_status_image }}</td>
     <td>
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
