@@ -165,6 +165,25 @@ def edit_section(request, section_id):
 
 @login_required
 @transaction.commit_on_success
+def delete_section(request, section_id):
+    """
+    Deletes a Section after confirmation is made via POST.
+    """
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    section = get_object_or_404(Section, pk=section_id)
+    if request.method == 'POST':
+        section.delete()
+        return HttpResponseRedirect(reverse('forum_index'))
+    else:
+        return render_to_response('forum/delete_section.html', {
+            'section': section,
+            'forum_list': section.forums.all(),
+            'title': u'Delete Topic',
+        }, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
 def add_forum(request, section_id):
     """
     Adds a Forum to a Section.
@@ -281,6 +300,28 @@ def forum_detail(request, forum_id):
         TopicTracker.objects.add_last_read_to_topics(topics, request.user)
     return render_to_response('forum/forum_detail.html', context,
         context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
+def delete_forum(request, forum_id):
+    """
+    Deletes a Forum after confirmation is made via POST.
+    """
+    if not auth.is_admin(request.user):
+        return HttpResponseForbidden()
+    forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
+    section = forum.section
+    if request.method == 'POST':
+        forum.delete()
+        return HttpResponseRedirect(section.get_absolute_url())
+    else:
+        return render_to_response('forum/delete_forum.html', {
+            'section': section,
+            'forum': forum,
+            'topic_count': forum.topics.count(),
+            'title': u'Delete Forum',
+        }, context_instance=RequestContext(request))
+
 
 @login_required
 def new_posts(request):

@@ -11,7 +11,7 @@
 {% endif %}
 </div>
 <div class="module no-margin">
-<h2><span class="title">{{ forum.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_forum forum.id %}">Edit Forum</a></span>{% endif %}</h2>
+<h2><span class="title">{{ forum.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_forum forum.id %}">Edit Forum</a> | <a href="{% url forum_delete_forum forum.id %}">Delete Forum</a></span>{% endif %}</h2>
 {% if topic_list or pinned_topics %}
 <table>
 <col width="1">

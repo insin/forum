@@ -8,7 +8,7 @@
 </div>
 {% endif %}
 <div class="module">
-<h2><span class="title">{{ section.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_section section.id %}">Edit Section</a></span>{% endif %}</h2>
+<h2><span class="title">{{ section.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_section section.id %}">Edit Section</a> | <a href="{% url forum_delete_section section.id %}">Delete Section</a></span>{% endif %}</h2>
 {% if forum_list %}
 <table>
 <col width="65%">
