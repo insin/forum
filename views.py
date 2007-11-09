@@ -680,7 +680,7 @@ def delete_post(request, post_id):
     if not auth.user_can_edit_post(request.user, post, topic):
         return permission_denied(request,
             message=u'You do not have permission to delete this post.')
-    if post.num_in_topic == 1:
+    if post.num_in_topic == 1 and not post.meta:
         return delete_topic(request, post.topic_id)
     if request.method == 'POST':
         post.delete()
