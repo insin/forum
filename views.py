@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.template import loader, RequestContext
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
@@ -90,6 +90,18 @@ def get_avatar_dimensions():
 # View Functions #
 ##################
 
+def permission_denied(request, title=u'Permission denied',
+    message=u'You do not have permission to perform the requested action.'):
+    """
+    Returns an HttpResponseForbidden with a permission denied error
+    screen.
+    """
+    return HttpResponseForbidden(loader.render_to_string(
+        'forum/permission_denied.html', {
+            'title': title,
+            'message': message,
+        }, context_instance=RequestContext(request)))
+
 def forum_index(request):
     """
     Displays a list of Sections and their Forums.
@@ -106,7 +118,7 @@ def add_section(request):
     Adds a Section.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     sections = list(Section.objects.all())
     if request.method == 'POST':
         form = SectionForm(sections, data=request.POST)
@@ -146,7 +158,7 @@ def edit_section(request, section_id):
     Edits a Section.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     SectionForm = forms.form_for_instance(section, fields=('name',),
         form=EditSectionBaseForm)
@@ -170,7 +182,7 @@ def delete_section(request, section_id):
     Deletes a Section after confirmation is made via POST.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     if request.method == 'POST':
         section.delete()
@@ -189,7 +201,7 @@ def add_forum(request, section_id):
     Adds a Forum to a Section.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     forums = list(section.forums.all())
     if request.method == 'POST':
@@ -221,7 +233,7 @@ def edit_forum(request, forum_id):
     Edits a Forum.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     ForumForm = forms.form_for_instance(forum, fields=('name', 'description'))
     if request.method == 'POST':
@@ -308,7 +320,7 @@ def delete_forum(request, forum_id):
     Deletes a Forum after confirmation is made via POST.
     """
     if not auth.is_admin(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     section = forum.section
     if request.method == 'POST':
@@ -439,7 +451,8 @@ def edit_topic(request, topic_id):
     topic = get_object_or_404(Topic, **filters)
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if not auth.user_can_edit_topic(request.user, topic):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to edit this topic.')
     editable_fields = ['title', 'description']
     if auth.is_moderator(request.user):
         editable_fields += ['pinned', 'locked', 'hidden']
@@ -484,7 +497,8 @@ def delete_topic(request, topic_id):
     post = Post.objects.with_user_details().get(topic=topic, meta=False,
                                                 num_in_topic=1)
     if not auth.user_can_edit_topic(request.user, topic):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to delete this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if request.method == 'POST':
         topic.delete()
@@ -514,7 +528,8 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
     topic = get_object_or_404(Topic, **filters)
     if topic.locked and \
        not auth.is_moderator(request.user):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to post in this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     editable_fields = ['body']
     if not meta:
@@ -607,7 +622,8 @@ def edit_post(request, post_id):
     post = get_object_or_404(Post, **filters)
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to edit this post.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     editable_fields = ['body']
     if auth.is_moderator(request.user):
@@ -662,7 +678,8 @@ def delete_post(request, post_id):
     post = get_object_or_404(Post.objects.with_user_details(), **filters)
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to delete this post.')
     if post.num_in_topic == 1:
         return delete_topic(request, post.topic_id)
     if request.method == 'POST':
@@ -731,7 +748,8 @@ def edit_user_forum_profile(request, user_id):
     """
     user = get_object_or_404(User, pk=user_id)
     if not auth.user_can_edit_user_profile(request.user, user):
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to edit this user\'s forum profile.')
     user_profile = ForumProfile.objects.get_for_user(user)
     editable_fields = ['location', 'avatar', 'website']
     if auth.is_moderator(request.user):
@@ -761,7 +779,8 @@ def edit_user_forum_settings(request, user_id):
     """
     user = get_object_or_404(User, pk=user_id)
     if request.user.id != user.id:
-        return HttpResponseForbidden()
+        return permission_denied(request,
+            message=u'You do not have permission to edit this user\'s forum settings.')
     user_profile = ForumProfile.objects.get_for_user(user)
     ForumSettingsForm = forms.form_for_instance(user_profile,
         fields=['timezone', 'topics_per_page', 'posts_per_page',
