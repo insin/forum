@@ -1,6 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
 <p class="description">Are you sure you want to delete the following post?</p>
+<div class="module">
 <div class="post odd">
   <div class="postbody">
     <div class="body">
@@ -29,6 +30,7 @@
       {% endif %}
     </dl>
   </div>
+</div>
 </div>
 
 <form name="deletePostForm" id="deletePostForm" action="." method="POST">
