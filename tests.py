@@ -631,6 +631,27 @@ class ManagerTestCase(TestCase):
         self.assertEquals(post.user_location, forum_profile.location)
         self.assertEquals(post.user_website, forum_profile.website)
 
+    def test_post_manager_with_standalone_details(self):
+        post = Post.objects.with_standalone_details().get(pk=1)
+        forum_profile = ForumProfile.objects.get_for_user(post.user)
+        topic = post.topic
+        forum = topic.forum
+        section = forum.section
+        self.assertEquals(post.user_username, post.user.username)
+        self.assertEquals(post.user_date_joined, post.user.date_joined)
+        self.assertEquals(post.user_title, forum_profile.title)
+        self.assertEquals(post.user_avatar, forum_profile.avatar)
+        self.assertEquals(post.user_post_count, forum_profile.post_count)
+        self.assertEquals(post.user_location, forum_profile.location)
+        self.assertEquals(post.user_website, forum_profile.website)
+        self.assertEquals(post.topic_title, topic.title)
+        self.assertEquals(post.topic_post_count, topic.post_count)
+        self.assertEquals(post.topic_view_count, topic.view_count)
+        self.assertEquals(post.forum_id, forum.pk)
+        self.assertEquals(post.forum_name, forum.name)
+        self.assertEquals(post.section_id, section.pk)
+        self.assertEquals(post.section_name, section.name)
+
     def test_topic_manager_with_user_details(self):
         topic = Topic.objects.with_user_details().get(pk=1)
         self.assertEquals(topic.user_username, topic.user.username)

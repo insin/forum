@@ -730,6 +730,52 @@ class PostManager(models.Manager):
             ]
         )
 
+    def with_standalone_details(self):
+        """
+        Creates a ``QuerySet`` containing Posts which have
+        additional information about the User who created them and their
+        Topic, Forum and Section.
+        """
+        opts = self.model._meta
+        topic_opts = Topic._meta
+        forum_opts = Forum._meta
+        section_opts = Section._meta
+        topic_table = qn(topic_opts.db_table)
+        forum_table = qn(forum_opts.db_table)
+        section_table = qn(section_opts.db_table)
+        return self.with_user_details().extra(
+            select={
+                'topic_title': '%s.%s' % (topic_table, qn(topic_opts.get_field('title').column)),
+                'topic_post_count': '%s.%s' % (topic_table, qn(topic_opts.get_field('post_count').column)),
+                'topic_view_count': '%s.%s' % (topic_table, qn(topic_opts.get_field('view_count').column)),
+                'forum_id': '%s.%s' % (topic_table, qn(topic_opts.get_field('forum').column)),
+                'forum_name': '%s.%s' % (forum_table, qn(forum_opts.get_field('name').column)),
+                'section_id': '%s.%s' % (forum_table, qn(forum_opts.get_field('section').column)),
+                'section_name': '%s.%s' % (section_table, qn(section_opts.get_field('name').column)),
+            },
+            tables=[topic_table, forum_table, section_table],
+            where=[
+                '%s.%s=%s.%s' % (
+                    qn(opts.db_table),
+                    qn(opts.get_field('topic').column),
+                    topic_table,
+                    qn(topic_opts.pk.column),
+                ),
+                '%s.%s=%s.%s' % (
+                    qn(topic_opts.db_table),
+                    qn(topic_opts.get_field('forum').column),
+                    forum_table,
+                    qn(forum_opts.pk.column),
+                ),
+                '%s.%s=%s.%s' % (
+                    forum_table,
+                    qn(forum_opts.get_field('section').column),
+                    section_table,
+                    qn(section_opts.pk.column),
+                ),
+            ]
+        )
+
     def update_num_in_topic(self, topic, start_at, increment=False, meta=False):
         """
         Updates ``num_in_topic`` for all posts in the given topic
