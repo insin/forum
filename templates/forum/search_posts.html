@@ -1,0 +1,53 @@
+{% extends "base_forum.html" %}
+{% block main_content %}
+<form name="addTopicForm" id="addTopicForm" action="{% url forum_search %}" method="GET">
+  <fieldset class="module aligned">
+    <h2>Search Terms</h2>
+    <div class="form-row">
+      {% if form.keywords.errors %}{{ form.keywords.errors.as_ul }}{% endif %}
+      {{ form.keywords.label_tag }}
+      <div class="form-field">
+        {{ form.keywords }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.username.errors %}{{ form.username.errors.as_ul }}{% endif %}
+      {{ form.username.label_tag }}
+      <div class="form-field">
+        {{ form.username }}
+        <label class="checkbox" for="id_exact_username">{{ form.exact_username }} Match exact username</label>
+      </div>
+    </div>
+  </fieldset>
+  <fieldset class="module aligned">
+    <h2>Search Options</h2>
+    <div class="form-row">
+      {% if form.search_in.errors %}{{ form.search_in.errors.as_ul }}{% endif %}
+      {{ form.search_in.label_tag }}
+      <div class="form-field">
+        {{ form.search_in }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.search_from.errors %}{{ form.search_from.errors.as_ul }}{% endif %}
+      {{ form.search_from.label_tag }}
+      <div class="form-field">
+        {{ form.search_from }}
+        <div class="radio-list">
+        {{ form.search_when }}
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.sort_direction.errors %}{{ form.sort_direction.errors.as_ul }}{% endif %}
+      {{ form.sort_direction.label_tag }}
+      <div class="form-field radio-list">
+        {{ form.sort_direction }}
+      </div>
+    </div>
+  </fieldset>
+  <div class="buttons">
+    <input type="submit" value="Perform Search">
+  </div>
+</form>
+{% endblock %}

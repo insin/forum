@@ -1,11 +1,14 @@
+import datetime
+import operator
 import urllib
 
 from django import newforms as forms
+from django.db.models.query import Q, QNot
 from django.template.defaultfilters import filesizeformat
-from django.utils.text import capfirst, get_text_list
+from django.utils.text import capfirst, get_text_list, smart_split
 
 from forum import app_settings
-from forum.models import Section
+from forum.models import Post, Section
 from PIL import ImageFile
 
 #########
@@ -49,6 +52,141 @@ class ForumForm(forms.Form):
         super(ForumForm, self).__init__(*args, **kwargs)
         self.fields['forum'].choices = [(u'', u'----------')] + \
             [(forum.id, forum.name) for forum in forums]
+
+class SearchPostsForm(forms.Form):
+    """
+    Provides criteria for searching Posts and creates QuerySets based on
+    selected criteria.
+    """
+    SEARCH_ALL_FORUMS = 'A'
+    SEARCH_IN_SECTION = 'S'
+    SEARCH_IN_FORUM   = 'F'
+
+    SEARCH_FROM_TODAY = 'T'
+    SEARCH_ANY_DATE   = 'A'
+    SEARCH_FROM_CHOICES = (
+        (SEARCH_FROM_TODAY, 'Today and...'),
+        (7, '7 days ago and...'),
+        (30, '30 days ago and...'),
+        (60, '60 days ago and...'),
+        (90, '90 days ago and...'),
+        (180, '180 days ago and...'),
+        (365, '365 days ago and...'),
+        (SEARCH_ANY_DATE, 'Any date'),
+    )
+
+    SEARCH_OLDER = 'O'
+    SEARCH_NEWER = 'N'
+    SEARCH_WHEN_CHOICES = (
+        (SEARCH_OLDER, 'Older'),
+        (SEARCH_NEWER, 'Newer'),
+    )
+    SEARCH_WHEN_LOOKUP = {
+        SEARCH_OLDER: 'lte',
+        SEARCH_NEWER: 'gte',
+    }
+
+    SORT_DESCENDING = 'D'
+    SORT_ASCENDING  = 'A'
+    SORT_DIRECTION_CHOICES = (
+        (SORT_DESCENDING, 'Descending'),
+        (SORT_ASCENDING, 'Ascending'),
+    )
+    SORT_DIRECTION_FLAG = {
+        SORT_DESCENDING: '-',
+        SORT_ASCENDING: '',
+    }
+
+    USERNAME_LOOKUP = {True: '', False: '__icontains'}
+
+    keywords       = forms.CharField(required=False)
+    username       = forms.CharField(required=False)
+    exact_username = forms.BooleanField(required=False, initial=True, label=u'Match exact username')
+    search_in      = forms.MultipleChoiceField(required=False, initial=[SEARCH_ALL_FORUMS])
+    search_from    = forms.ChoiceField(choices=SEARCH_FROM_CHOICES)
+    search_when    = forms.ChoiceField(choices=SEARCH_WHEN_CHOICES, initial=SEARCH_OLDER, widget=forms.RadioSelect)
+    sort_direction = forms.ChoiceField(choices=SORT_DIRECTION_CHOICES, initial=SORT_DESCENDING, widget=forms.RadioSelect)
+
+    def __init__(self, *args, **kwargs):
+        super(SearchPostsForm, self).__init__(*args, **kwargs)
+        choices = [(self.SEARCH_ALL_FORUMS, u'All Forums')]
+        for section, forums in Section.objects.get_forums_by_section():
+            choices.append(('%s.%s' % (self.SEARCH_IN_SECTION, section.pk),
+                            section.name))
+            choices.extend([('%s.%s' % (self.SEARCH_IN_FORUM, forum.pk),
+                            u'|-- %s' % forum.name) \
+                            for forum in forums])
+        self.fields['search_in'].choices = choices
+        self.fields['search_in'].widget.attrs['size'] = 10
+
+    def get_queryset(self):
+        """
+        Creates a ``QuerySet`` based on the search criteria specified in
+        this form.
+
+        Returns ``None`` if the form is invalid.
+        """
+        if not self.is_valid():
+            return None
+
+        filters = []
+
+        search_in = {}
+        if len(self.cleaned_data['search_in']) and \
+           self.SEARCH_ALL_FORUMS not in self.cleaned_data['search_in']:
+            for item in self.cleaned_data['search_in']:
+                bits = item.split('.')
+                search_in.setdefault(bits[0], []).append(bits[1])
+
+        from_date = None
+        if self.cleaned_data['search_from'] != self.SEARCH_ANY_DATE:
+            from_date = datetime.date.today()
+            if self.cleaned_data['search_from'] != self.SEARCH_FROM_TODAY:
+                days_ago = int(self.cleaned_data['search_from'])
+                from_date = from_date - datetime.timedelta(days=days_ago)
+
+        if self.SEARCH_IN_SECTION in search_in and \
+           self.SEARCH_IN_FORUM in search_in:
+            filters.append(Q(topic__forum__section__in=\
+                             search_in[self.SEARCH_IN_SECTION]) | \
+                           Q(topic__forum__in=search_in[self.SEARCH_IN_FORUM]))
+        elif self.SEARCH_IN_SECTION in search_in:
+            filters.append(Q(topic__forum__section__in=\
+                             search_in[self.SEARCH_IN_SECTION]))
+        elif self.SEARCH_IN_FORUM in search_in:
+            filters.append(Q(topic__forum__in=search_in[self.SEARCH_IN_FORUM]))
+
+        if from_date is not None:
+            lookup_type = self.SEARCH_WHEN_LOOKUP[self.cleaned_data['search_when']]
+            filters.append(Q(**{'posted_at__%s' % lookup_type: from_date}))
+
+        if self.cleaned_data['username']:
+            lookup_type = self.USERNAME_LOOKUP[self.cleaned_data['exact_username']]
+            filters.append(Q(**{'user__username%s' % lookup_type: \
+                                self.cleaned_data['username']}))
+
+        if self.cleaned_data['keywords']:
+            phrase_filters = []
+            for phrase in smart_split(self.cleaned_data['keywords']):
+                if phrase[0] == '+':
+                    filters.append(Q(body__icontains=phrase[1:]))
+                elif phrase[0] == '-':
+                    filters.append(QNot(Q(body__icontains=phrase[1:])))
+                else:
+                    if phrase[0] == '"' and phrase[-1] == '"' or \
+                       phrase[0] == "'" and phrase[-1] == "'":
+                        phrase = phrase[1:-1]
+                    phrase_filters.append(Q(body__icontains=phrase))
+            if phrase_filters:
+                filters.append(reduce(operator.or_, phrase_filters))
+
+        # Apply filters and perform ordering
+        qs = Post.objects.all()
+        if len(filters):
+            qs = qs.filter(reduce(operator.and_, filters))
+        order_by = '%sposted_at' % \
+            self.SORT_DIRECTION_FLAG[self.cleaned_data['sort_direction']]
+        return qs.order_by(order_by).values('id')
 
 #######################
 # Formfield Callbacks #

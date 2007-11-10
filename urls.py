@@ -4,6 +4,7 @@ from forum import app_settings
 
 urlpatterns = patterns('forum.views',
     url(r'^$',                                           'forum_index',              name='forum_index'),
+    url(r'^search_posts/$',                              'search_posts',             name='forum_search_posts'),
     url(r'^new_posts/$',                                 'new_posts',                name='forum_new_posts'),
     url(r'^add_section/$',                               'add_section',              name='forum_add_section'),
     url(r'^section/(?P<section_id>\d+)/$',               'section_detail',           name='forum_section_detail'),

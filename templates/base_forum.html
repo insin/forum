@@ -17,7 +17,8 @@
     Logged in as: <a class="user" href="{% url forum_user_profile user.id %}">{{ user.username|escape }}</a> (<a href="{% url auth_logout %}">Log out</a>)
   </div>
   <div id="user-tools">
-    <a href="{% url forum_new_posts %}">View New Posts</a>
+    <a href="{% url forum_new_posts %}">View New Posts</a> |
+    <a href="{% url forum_search_posts %}">Search Posts</a>
   </div>
 {% else %}
   <div id="anonymous">

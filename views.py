@@ -16,8 +16,8 @@ from forum import app_settings
 from forum import auth
 from forum import moderation
 from forum.formatters import post_formatter
-from forum.forms import (EditSectionBaseForm, ForumForm, SectionForm,
-    forum_profile_formfield_callback, post_formfield_callback,
+from forum.forms import (EditSectionBaseForm, ForumForm, SearchPostsForm,
+    SectionForm, forum_profile_formfield_callback, post_formfield_callback,
     topic_formfield_callback)
 from forum.models import Forum, ForumProfile, Post, Section, Topic, TopicTracker
 
@@ -109,6 +109,24 @@ def forum_index(request):
     return render_to_response('forum/forum_index.html', {
         'section_list': list(Section.objects.get_forums_by_section()),
         'title': u'Forum Index',
+    }, context_instance=RequestContext(request))
+
+@login_required
+def search_posts(request):
+    """
+    Searches for posts using multiple criteria.
+    """
+    if request.GET:
+        form = SearchPostsForm(data=request.GET)
+        posts = form.get_queryset()
+        if posts is not None:
+            # TODO Process post search results
+            pass
+    else:
+        form = SearchPostsForm()
+    return render_to_response('forum/search_posts.html', {
+        'form': form,
+        'title': u'Search Posts',
     }, context_instance=RequestContext(request))
 
 @login_required
