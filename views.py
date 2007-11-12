@@ -88,6 +88,27 @@ def get_avatar_dimensions():
     else:
         return u''
 
+def get_page_content_or_404(request, paginator):
+    """
+    Uses the page attribute specified in the given request (assuming the
+    first page if none is specified) to retrieve a page of items from the
+    given paginator, returning the current page number and items or
+    raising 404 if an invalid page was specified.
+    """
+    page = request.GET.get('page', 1)
+    try:
+        page_number = int(page)
+    except ValueError:
+        raise Http404
+    try:
+        items = list(paginator.get_page(page_number - 1))
+    except InvalidPage:
+        if page_number == 1:
+            items = []
+        else:
+            raise Http404
+    return page_number, items
+
 ##################
 # View Functions #
 ##################
@@ -146,18 +167,7 @@ def search_results(request, search_id):
             message=u'You may only view your own search results.')
     paginator = ObjectPaginator(search.result_ids.split(','),
                                 get_posts_per_page(request.user))
-    page = request.GET.get('page', 1)
-    try:
-        page_number = int(page)
-    except ValueError:
-        raise Http404
-    try:
-        post_ids = paginator.get_page(page_number - 1)
-    except InvalidPage:
-        if page_number == 1:
-            post_ids = []
-        else:
-            raise Http404
+    page_number, post_ids = get_page_content_or_404(request, paginator)
     context = {
         'title': u'Search Results',
         'post_list': Post.objects.with_standalone_details() \
@@ -333,22 +343,11 @@ def forum_detail(request, forum_id):
     paginator = ObjectPaginator(
         Topic.objects.with_user_details().filter(**topic_filters),
         topics_per_page)
-    page = request.GET.get('page', 1)
-    try:
-        page_number = int(page)
-    except ValueError:
-        raise Http404
-    try:
-        topics = list(paginator.get_page(page_number - 1))
-    except InvalidPage:
-        if page_number == 1:
-            topics = []
-        else:
-            raise Http404
+    page_number, topics = get_page_content_or_404(request, paginator)
     context = {
         'section': forum.section,
         'forum': forum,
-        'topic_list': topics,
+        'topic_list': list(topics),
         'title': forum.name,
         'posts_per_page': get_posts_per_page(request.user),
         'is_paginated': paginator.pages > 1,
