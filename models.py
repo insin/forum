@@ -909,3 +909,30 @@ class Post(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_redirect_to_post', (smart_unicode(self.id),))
+
+class Search(models.Model):
+    """
+    Caches search criteria and a limited number of results to avoid
+    repitition of expensive searches when paginating results.
+    """
+    POST_SEARCH  = 'P'
+    TOPIC_SEARCH = 'S'
+    TYPE_CHOICES = (
+        (POST_SEARCH, 'Posts'),
+        (TOPIC_SEARCH, 'Topics'),
+    )
+
+    type          = models.CharField(max_length=1, choices=TYPE_CHOICES)
+    user          = models.ForeignKey(User, related_name='searches')
+    searched_at   = models.DateTimeField(editable=False)
+    criteria_json = models.TextField()
+    result_ids    = models.TextField()
+
+    def save(self, **kwargs):
+        if not self.id:
+            self.searched_at = datetime.datetime.now()
+        super(Search, self).save(**kwargs)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('forum_search_results', (smart_unicode(self.id),))

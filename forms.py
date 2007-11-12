@@ -62,6 +62,15 @@ class SearchPostsForm(forms.Form):
     SEARCH_IN_SECTION = 'S'
     SEARCH_IN_FORUM   = 'F'
 
+    SEARCH_ALL_POSTS     = 'A'
+    SEARCH_REGULAR_POSTS = 'R'
+    SEARCH_METAPOSTS     = 'M'
+    SEARCH_POST_TYPE_CHOICES = (
+        (SEARCH_ALL_POSTS, 'All Posts'),
+        (SEARCH_REGULAR_POSTS, 'Regular Posts'),
+        (SEARCH_METAPOSTS, 'Metaposts'),
+    )
+
     SEARCH_FROM_TODAY = 'T'
     SEARCH_ANY_DATE   = 'A'
     SEARCH_FROM_CHOICES = (
@@ -99,9 +108,10 @@ class SearchPostsForm(forms.Form):
 
     USERNAME_LOOKUP = {True: '', False: '__icontains'}
 
-    keywords       = forms.CharField(required=False)
+    keywords       = forms.CharField()
     username       = forms.CharField(required=False)
     exact_username = forms.BooleanField(required=False, initial=True, label=u'Match exact username')
+    post_type      = forms.ChoiceField(choices=SEARCH_POST_TYPE_CHOICES, initial=SEARCH_ALL_POSTS, widget=forms.RadioSelect)
     search_in      = forms.MultipleChoiceField(required=False, initial=[SEARCH_ALL_FORUMS])
     search_from    = forms.ChoiceField(choices=SEARCH_FROM_CHOICES)
     search_when    = forms.ChoiceField(choices=SEARCH_WHEN_CHOICES, initial=SEARCH_OLDER, widget=forms.RadioSelect)
@@ -119,14 +129,30 @@ class SearchPostsForm(forms.Form):
         self.fields['search_in'].choices = choices
         self.fields['search_in'].widget.attrs['size'] = 10
 
+    def clean_keywords(self):
+        """
+        Validates that no search keyword is shorter than 3 characters.
+        """
+        for keyword in smart_split(self.cleaned_data['keywords']):
+            keyword_len = len(keyword)
+            if keyword[0] in ('+', '-'):
+                keyword_len = keyword_len - 1
+            elif keyword[0] == '"' and keyword[-1] == '"' or \
+                 keyword[0] == "'" and keyword[-1] == "'":
+                keyword_len = keyword_len - 2
+            if keyword_len < 3:
+                raise forms.ValidationError('Keywords must be a minimun of 3 characters long.')
+        return self.cleaned_data['keywords']
+
     def get_queryset(self):
         """
         Creates a ``QuerySet`` based on the search criteria specified in
         this form.
 
-        Returns ``None`` if the form is invalid.
+        Returns ``None`` if the form doesn't appear to have been
+        validated.
         """
-        if not self.is_valid():
+        if not hasattr(self, 'cleaned_data'):
             return None
 
         filters = []
@@ -144,6 +170,10 @@ class SearchPostsForm(forms.Form):
             if self.cleaned_data['search_from'] != self.SEARCH_FROM_TODAY:
                 days_ago = int(self.cleaned_data['search_from'])
                 from_date = from_date - datetime.timedelta(days=days_ago)
+
+        if self.cleaned_data['post_type'] != self.SEARCH_ALL_POSTS:
+            meta = self.cleaned_data['post_type'] == self.SEARCH_METAPOSTS
+            filters.append(Q(meta=meta))
 
         if self.SEARCH_IN_SECTION in search_in and \
            self.SEARCH_IN_FORUM in search_in:
@@ -165,28 +195,31 @@ class SearchPostsForm(forms.Form):
             filters.append(Q(**{'user__username%s' % lookup_type: \
                                 self.cleaned_data['username']}))
 
-        if self.cleaned_data['keywords']:
-            phrase_filters = []
-            for phrase in smart_split(self.cleaned_data['keywords']):
-                if phrase[0] == '+':
-                    filters.append(Q(body__icontains=phrase[1:]))
-                elif phrase[0] == '-':
-                    filters.append(QNot(Q(body__icontains=phrase[1:])))
-                else:
-                    if phrase[0] == '"' and phrase[-1] == '"' or \
-                       phrase[0] == "'" and phrase[-1] == "'":
-                        phrase = phrase[1:-1]
-                    phrase_filters.append(Q(body__icontains=phrase))
-            if phrase_filters:
-                filters.append(reduce(operator.or_, phrase_filters))
+        one_of_filters = []
+        phrase_filters = []
+        for keyword in smart_split(self.cleaned_data['keywords']):
+            if keyword[0] == '+':
+                filters.append(Q(body__icontains=keyword[1:]))
+            elif keyword[0] == '-':
+                filters.append(QNot(Q(body__icontains=keyword[1:])))
+            elif keyword[0] == '"' and keyword[-1] == '"' or \
+                 keyword[0] == "'" and keyword[-1] == "'":
+                phrase_filters.append(Q(body__icontains=keyword[1:-1]))
+            else:
+                one_of_filters.append(Q(body__icontains=keyword))
+        if one_of_filters:
+            filters.append(reduce(operator.or_, one_of_filters))
+        if phrase_filters:
+            filters.append(reduce(operator.or_, phrase_filters))
 
         # Apply filters and perform ordering
         qs = Post.objects.all()
         if len(filters):
             qs = qs.filter(reduce(operator.and_, filters))
-        order_by = '%sposted_at' % \
+        sort_direction_flag = \
             self.SORT_DIRECTION_FLAG[self.cleaned_data['sort_direction']]
-        return qs.order_by(order_by).values('id')
+        return qs.order_by('%sposted_at' % sort_direction_flag,
+                           '%sid' % sort_direction_flag)
 
 #######################
 # Formfield Callbacks #

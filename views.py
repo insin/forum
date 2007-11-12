@@ -9,6 +9,7 @@ from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import loader, RequestContext
+from django.utils import simplejson
 from django.utils.encoding import smart_unicode
 from django.views.generic.list_detail import object_list
 
@@ -19,7 +20,8 @@ from forum.formatters import post_formatter
 from forum.forms import (EditSectionBaseForm, ForumForm, SearchPostsForm,
     SectionForm, forum_profile_formfield_callback, post_formfield_callback,
     topic_formfield_callback)
-from forum.models import Forum, ForumProfile, Post, Section, Topic, TopicTracker
+from forum.models import (Forum, ForumProfile, Post, Search, Section, Topic,
+    TopicTracker)
 
 qn = connection.ops.quote_name
 
@@ -116,18 +118,64 @@ def search_posts(request):
     """
     Searches for posts using multiple criteria.
     """
-    if request.GET:
-        form = SearchPostsForm(data=request.GET)
-        posts = form.get_queryset()
-        if posts is not None:
-            # TODO Process post search results
-            pass
+    if request.method == 'POST':
+        form = SearchPostsForm(data=request.POST)
+        if form.is_valid():
+            posts = form.get_queryset().values('id')[:1000]
+            print posts
+            search = Search.objects.create(type=Search.POST_SEARCH,
+                user=request.user,
+                criteria_json=simplejson.dumps(form.cleaned_data),
+                result_ids=u','.join([smart_unicode(post['id']) for post in posts]))
+            return HttpResponseRedirect(search.get_absolute_url())
     else:
         form = SearchPostsForm()
     return render_to_response('forum/search_posts.html', {
         'form': form,
         'title': u'Search Posts',
     }, context_instance=RequestContext(request))
+
+@login_required
+def search_results(request, search_id):
+    """
+    Displays search results.
+    """
+    search = get_object_or_404(Search, pk=search_id)
+    if not auth.user_can_view_search_results(request.user, search):
+        return permission_denied(request,
+            message=u'You may only view your own search results.')
+    paginator = ObjectPaginator(search.result_ids.split(','),
+                                get_posts_per_page(request.user))
+    page = request.GET.get('page', 1)
+    try:
+        page_number = int(page)
+    except ValueError:
+        raise Http404
+    try:
+        post_ids = paginator.get_page(page_number - 1)
+    except InvalidPage:
+        if page_number == 1:
+            post_ids = []
+        else:
+            raise Http404
+    context = {
+        'title': u'Search Results',
+        'post_list': Post.objects.with_standalone_details() \
+                                  .filter(pk__in=post_ids).order_by('id'),
+        'is_paginated': paginator.pages > 1,
+        'results_per_page': paginator.num_per_page,
+        'has_next': paginator.has_next_page(page_number - 1),
+        'has_previous': paginator.has_previous_page(page_number - 1),
+        'page': page_number,
+        'next': page_number + 1,
+        'previous': page_number - 1,
+        'last_on_page': paginator.last_on_page(page_number - 1),
+        'first_on_page': paginator.first_on_page(page_number - 1),
+        'pages': paginator.pages,
+        'hits' : paginator.hits,
+    }
+    return render_to_response('forum/search_posts_results.html', context,
+        context_instance=RequestContext(request))
 
 @login_required
 @transaction.commit_on_success

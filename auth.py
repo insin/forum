@@ -50,3 +50,10 @@ def user_can_edit_user_profile(user, user_to_edit):
     profile, ``False`` otherwise.
     """
     return user.id == user_to_edit.id or is_moderator(user)
+
+def user_can_view_search_results(user, search):
+    """
+    Returns ``True`` if the given User can view the given search results,
+    ``False`` otherwise.
+    """
+    return user.id == search.user_id or is_moderator(user)

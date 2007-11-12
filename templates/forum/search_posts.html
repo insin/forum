@@ -1,6 +1,6 @@
 {% extends "base_forum.html" %}
 {% block main_content %}
-<form name="addTopicForm" id="addTopicForm" action="{% url forum_search %}" method="GET">
+<form name="addTopicForm" id="addTopicForm" action="{% url forum_search %}" method="POST">
   <fieldset class="module aligned">
     <h2>Search Terms</h2>
     <div class="form-row">
@@ -26,6 +26,13 @@
       {{ form.search_in.label_tag }}
       <div class="form-field">
         {{ form.search_in }}
+      </div>
+    </div>
+    <div class="form-row">
+      {% if form.post_type.errors %}{{ form.post_type.errors.as_ul }}{% endif %}
+      {{ form.post_type.label_tag }}
+      <div class="form-field radio-list">
+        {{ form.post_type }}
       </div>
     </div>
     <div class="form-row">

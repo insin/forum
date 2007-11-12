@@ -1,0 +1,55 @@
+{% extends "base_forum.html" %}{% load forum_tags %}
+
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{% url forum_search_posts %}">Search Posts</a>
+&raquo; <strong>{{ title|escape }}</strong>
+{% endblock %}
+
+{% block main_content %}
+{% if post_list %}
+<div class="tools">
+{% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+</div>
+{% for post in post_list %}
+<div class="module">
+<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count }} Post{{ post.topic_post_count|pluralize }}, {{ post.topic_view_count }} View{{ post.topic_view_count|pluralize }}</h2>
+<div class="post" id="post{{ post.id }}">
+  <div class="postbody">
+    <div class="body">
+      <p class="author"><a href="{{ post.get_absolute_url }}">#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time:user }}</p>
+      <div class="content">
+      {{ post.body_html }}
+      </div>
+    </div>
+  </div>
+  <div class="profile">
+    <dl>
+      {% if post.user_avatar %}
+      <dt class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""{{ avatar_dimensions }}></dt>
+      {% endif %}
+      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
+      {% if post.user_title %}
+      <dd class="title">{{ post.user_title|escape }}</dd>
+      {% endif %}
+      <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
+      <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
+      {% if post.user_location %}
+      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      {% endif %}
+      {% if user|is_moderator and post.user_ip %}
+      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+</div>
+{% endfor %}
+<div class="tools">
+{% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+</div>
+{% else %}
+<h2>No Posts Found</h2>
+<p>Your search did not return any results.</p>
+{% endif %}
+{% endblock %}
