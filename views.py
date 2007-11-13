@@ -138,16 +138,17 @@ def forum_index(request):
 @login_required
 def search(request):
     """
-    Searches topics or posts using multiple criteria.
+    Searches Topics or Posts based on given criteria.
     """
     if request.method == 'POST':
         form = SearchForm(data=request.POST)
         if form.is_valid():
-            posts = form.get_queryset().values('id')[:1000]
+            results = form.get_queryset().values('id')[:1000]
             search = Search.objects.create(type=form.cleaned_data['search_type'],
                 user=request.user,
                 criteria_json=simplejson.dumps(form.cleaned_data),
-                result_ids=u','.join([smart_unicode(post['id']) for post in posts]))
+                result_ids=u','.join([smart_unicode(result['id']) \
+                                      for result in results]))
             return HttpResponseRedirect(search.get_absolute_url())
     else:
         form = SearchForm()

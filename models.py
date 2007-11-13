@@ -939,7 +939,7 @@ class Search(models.Model):
     repitition of expensive searches when paginating results.
     """
     POST_SEARCH  = 'P'
-    TOPIC_SEARCH = 'S'
+    TOPIC_SEARCH = 'T'
     TYPE_CHOICES = (
         (POST_SEARCH, 'Posts'),
         (TOPIC_SEARCH, 'Topics'),
@@ -961,10 +961,19 @@ class Search(models.Model):
         return ('forum_search_results', (smart_unicode(self.id),))
 
     def get_result_model(self):
+        """
+        Returns the model class this search holds results for.
+        """
         return {self.POST_SEARCH: Post, self.TOPIC_SEARCH: Topic}[self.type]
 
     def is_post_search(self):
+        """
+        Returns ``True`` if this is a Post search, ``False`` otherwise.
+        """
         return self.type == self.POST_SEARCH
 
     def is_topic_search(self):
+        """
+        Returns ``True`` if this is a Topic search, ``False`` otherwise.
+        """
         return self.type == self.TOPIC_SEARCH
