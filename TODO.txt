@@ -28,7 +28,9 @@ and when the time can be found.*
     registration templates into the ``/forum/templates/`` directory as one of
     the installation steps for using the forum in standalone mode.
 
-- Basic searching.
+- Navigation to the latest post in a topic if there are new posts since the
+  current user last viewed it.
+- Basic topic searching.
 - Create full help templates for the provided post formatters.
 - Give the BBCode formatter some love - we're currently using the default set of
   tags it provides. Decide which we really need, which are missing and implement
