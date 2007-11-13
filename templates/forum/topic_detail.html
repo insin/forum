@@ -30,7 +30,7 @@
 {% if user.is_authenticated %}
 <div class="actions">
   {% if user|can_see_post_actions:topic %}<a href="{{ urls.add_reply }}">Add Reply</a> |{% endif %}
-  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+  <a href="{% url forum_add_topic topic.forum_id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
@@ -85,7 +85,7 @@
 {% if user.is_authenticated %}
 <div id="topic-actions-bottom" class="actions">
   {% if user|can_see_post_actions:topic %}<a href="{{ urls.add_reply }}">Add Reply</a> |{% endif %}
-  <a href="{% url forum_add_topic forum.id %}">New Topic</a>
+  <a href="{% url forum_add_topic topic.forum_id %}">New Topic</a>
 </div>
 {% endif %}
 </div>
