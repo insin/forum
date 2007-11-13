@@ -30,7 +30,7 @@ qn = connection.ops.quote_name
 # Utility Classes #
 ###################
 
-class TopicURLs:
+class TopicURLs(object):
     """
     Handles display of different URLs based on whether or not a topic
     is being viewed in meta mode.
