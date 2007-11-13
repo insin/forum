@@ -187,9 +187,7 @@ def topic_status_image(topic):
     """
     Returns HTML for an image representing a topic's status.
     """
-    last_read = getattr(topic, 'last_read', False)
-    if last_read is not False and \
-       (last_read is None or topic.last_post_at > last_read):
+    if has_new_posts(topic):
         src = u'img/new_posts.gif'
         description = u'New Posts'
     else:
@@ -197,6 +195,16 @@ def topic_status_image(topic):
         description = u'No New Posts'
     return u'<img src="%s" alt="%s" title="%s">' % (
         urljoin(settings.MEDIA_URL, src), description, description)
+
+@register.filter
+def has_new_posts(topic):
+    """
+    Returns ``True`` if the given topic has new posts, based on the
+    presence and value of a ``last_read`` attribute.
+    """
+    last_read = getattr(topic, 'last_read', False)
+    return last_read is not False and \
+       (last_read is None or topic.last_post_at > last_read)
 
 @register.filter
 def topic_pagination(topic, posts_per_page):

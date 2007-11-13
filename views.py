@@ -680,10 +680,35 @@ def redirect_to_last_post(request, topic_id):
     """
     try:
         post = Post.objects.filter(topic=topic_id, meta=False) \
-                            .order_by('-posted_at')[0]
+                            .order_by('-posted_at', '-id')[0]
     except Post.DoesNotExist:
         raise Http404
     return redirect_to_post(request, post.id, post)
+
+@login_required
+def redirect_to_unread_post(request, topic_id):
+    """
+    Redirects to the first Post in the given Topic since the logged-in
+    User last viewed it.
+
+    If the User in question has never viewed the given Topic, redirects
+    to the Topic's first page.
+
+    If an unread Post can't be found for whatever reason (if it was
+    deleted in the interim period, for example), redirects to the Topic's
+    last post instead.
+    """
+    try:
+        tracker = TopicTracker.objects.get(user=request.user, topic=topic_id)
+        unread_post = \
+            Post.objects.filter(topic=topic_id, meta=False,
+                                posted_at__gt=tracker.last_read) \
+                         .order_by('posted_at', 'id')[0]
+        return redirect_to_post(request, unread_post.pk, unread_post)
+    except TopicTracker.DoesNotExist:
+        return topic_detail(request, topic_id)
+    except IndexError:
+        return redirect_to_last_post(request, topic_id)
 
 @login_required
 @transaction.commit_on_success

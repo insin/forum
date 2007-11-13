@@ -6,8 +6,10 @@ img { vertical-align: text-bottom; }
 table  { border-collapse: collapse; width: 100%; }
 td, th { padding: 4px 6px; border: 1px solid #999; text-align: left; }
 th { font-weight: bold; }
-td p.description { margin: 0; }
+td p.description { margin: 4px 0 0 0; }
 th.forum-topics { text-align: center; }
+a.unread { margin-right: 4px; }
+a.unread img { vertical-align: middle; }
 
 /* Common formatting */
 .odd { background-color: #e9e9f9; }
