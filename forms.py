@@ -180,11 +180,16 @@ class SearchForm(forms.Form):
             forum_lookup = 'topic__forum'
             date_lookup = 'posted_at'
             text_lookup = 'body'
+            # Searching should not give the user access to Posts in
+            # hidden Topics.
+            filters.append(Q(topic__hidden=False))
         else:
             section_lookup = 'forum__section'
             forum_lookup = 'forum'
             date_lookup = 'started_at'
             text_lookup = 'title'
+            # Searching should not give the user access to hidden Topics
+            filters.append(Q(hidden=False))
 
         # Create lookup filters
         if search_type == Search.POST_SEARCH and \
