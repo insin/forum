@@ -11,13 +11,14 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import loader, RequestContext
 from django.utils import simplejson
 from django.utils.encoding import smart_unicode
+from django.utils.text import capfirst
 from django.views.generic.list_detail import object_list
 
 from forum import app_settings
 from forum import auth
 from forum import moderation
 from forum.formatters import post_formatter
-from forum.forms import (EditSectionBaseForm, ForumForm, SearchPostsForm,
+from forum.forms import (EditSectionBaseForm, ForumForm, SearchForm,
     SectionForm, forum_profile_formfield_callback, post_formfield_callback,
     topic_formfield_callback)
 from forum.models import (Forum, ForumProfile, Post, Search, Section, Topic,
@@ -135,25 +136,24 @@ def forum_index(request):
     }, context_instance=RequestContext(request))
 
 @login_required
-def search_posts(request):
+def search(request):
     """
-    Searches for posts using multiple criteria.
+    Searches topics or posts using multiple criteria.
     """
     if request.method == 'POST':
-        form = SearchPostsForm(data=request.POST)
+        form = SearchForm(data=request.POST)
         if form.is_valid():
             posts = form.get_queryset().values('id')[:1000]
-            print posts
-            search = Search.objects.create(type=Search.POST_SEARCH,
+            search = Search.objects.create(type=form.cleaned_data['search_type'],
                 user=request.user,
                 criteria_json=simplejson.dumps(form.cleaned_data),
                 result_ids=u','.join([smart_unicode(post['id']) for post in posts]))
             return HttpResponseRedirect(search.get_absolute_url())
     else:
-        form = SearchPostsForm()
-    return render_to_response('forum/search_posts.html', {
+        form = SearchForm()
+    return render_to_response('forum/search.html', {
         'form': form,
-        'title': u'Search Posts',
+        'title': u'Search',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -165,13 +165,20 @@ def search_results(request, search_id):
     if not auth.user_can_view_search_results(request.user, search):
         return permission_denied(request,
             message=u'You may only view your own search results.')
-    paginator = ObjectPaginator(search.result_ids.split(','),
-                                get_posts_per_page(request.user))
-    page_number, post_ids = get_page_content_or_404(request, paginator)
+    if search.type == Search.POST_SEARCH:
+        items_per_page = get_posts_per_page(request.user)
+    else:
+        items_per_page = get_topics_per_page(request.user)
+    paginator = ObjectPaginator(search.result_ids.split(','), items_per_page)
+    page_number, object_ids = get_page_content_or_404(request, paginator)
+    model = search.get_result_model()
+    model_name = capfirst(model._meta.verbose_name)
     context = {
-        'title': u'Search Results',
-        'post_list': Post.objects.with_standalone_details() \
-                                  .filter(pk__in=post_ids).order_by('id'),
+        'title': u'%s Search Results' % model_name,
+        'search': search,
+        'object_list': model.objects.with_standalone_details() \
+                             .filter(pk__in=object_ids).order_by('id'),
+        'object_name': model_name,
         'is_paginated': paginator.pages > 1,
         'results_per_page': paginator.num_per_page,
         'has_next': paginator.has_next_page(page_number - 1),
@@ -184,7 +191,9 @@ def search_results(request, search_id):
         'pages': paginator.pages,
         'hits' : paginator.hits,
     }
-    return render_to_response('forum/search_posts_results.html', context,
+    if search.type == Search.TOPIC_SEARCH:
+        context['posts_per_page'] = get_posts_per_page(request.user)
+    return render_to_response('forum/search_results.html', context,
         context_instance=RequestContext(request))
 
 @login_required
@@ -833,7 +842,7 @@ def edit_user_forum_profile(request, user_id):
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
-        'title': 'Edit Forum Profile',
+        'title': u'Edit Forum Profile',
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
@@ -861,5 +870,5 @@ def edit_user_forum_settings(request, user_id):
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
-        'title': 'Edit Forum Settings',
+        'title': u'Edit Forum Settings',
     }, context_instance=RequestContext(request))

@@ -478,6 +478,29 @@ class TopicManager(models.Manager):
             ]
         )
 
+    def with_standalone_details(self):
+        """
+        Creates a ``QuerySet`` comtaining Topics which have additional
+        information about their User, Forum and Section.
+        """
+        opts = self.model._meta
+        user_opts = User._meta
+        user_table = qn(user_opts.db_table)
+        return self.with_display_details().extra(
+            select={
+                'user_username': '%s.%s' % (user_table, qn(user_opts.get_field('username').column)),
+            },
+            tables=[user_table],
+            where=[
+                '%s.%s=%s.%s' % (
+                    qn(opts.db_table),
+                    qn(opts.get_field('user').column),
+                    user_table,
+                    qn(user_opts.pk.column),
+                ),
+            ]
+        )
+
 class Topic(models.Model):
     """
     A discussion topic.
@@ -936,3 +959,12 @@ class Search(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('forum_search_results', (smart_unicode(self.id),))
+
+    def get_result_model(self):
+        return {self.POST_SEARCH: Post, self.TOPIC_SEARCH: Topic}[self.type]
+
+    def is_post_search(self):
+        return self.type == self.POST_SEARCH
+
+    def is_topic_search(self):
+        return self.type == self.TOPIC_SEARCH

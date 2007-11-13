@@ -4,6 +4,13 @@
   <fieldset class="module aligned">
     <h2>Search Terms</h2>
     <div class="form-row">
+      {% if form.search_type.errors %}{{ form.search_type.errors.as_ul }}{% endif %}
+      {{ form.search_type.label_tag }}
+      <div class="form-field radio-list">
+        {{ form.search_type }}
+      </div>
+    </div>
+    <div class="form-row">
       {% if form.keywords.errors %}{{ form.keywords.errors.as_ul }}{% endif %}
       {{ form.keywords.label_tag }}
       <div class="form-field">

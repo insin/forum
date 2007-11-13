@@ -2,16 +2,17 @@
 
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{% url forum_search_posts %}">Search Posts</a>
+&raquo; <a href="{% url forum_search %}">Search</a>
 &raquo; <strong>{{ title|escape }}</strong>
 {% endblock %}
 
 {% block main_content %}
-{% if post_list %}
+{% if object_list %}
 <div class="tools">
-{% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+{% if is_paginated %}<div class="paginator">{% paginator object_name %}</div>{% endif %}
 </div>
-{% for post in post_list %}
+{% if search.is_post_search %}
+{% for post in object_list %}
 <div class="module">
 <h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count }} Post{{ post.topic_post_count|pluralize }}, {{ post.topic_view_count }} View{{ post.topic_view_count|pluralize }}</h2>
 <div class="post" id="post{{ post.id }}">
@@ -45,8 +46,51 @@
 </div>
 </div>
 {% endfor %}
+{% else %}
+{% add_last_read_times object_list user %}
+<table>
+<col width="1">
+<col width="30%">
+<col>
+<col>
+<col>
+<col width="1">
+<col width="1">
+<col width="15%">
+<thead>
+  <tr>
+    <th>&nbsp;</th>
+    <th>Topic</th>
+    <th>In Forum</th>
+    <th>In Section</th>
+    <th>Started By</th>
+    <th>Posts</th>
+    <th>Views</th>
+    <th>Last Post</th>
+  </tr>
+</thead>
+<tbody>
+{% for topic in object_list %}
+  <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
+    <td>{{ topic|topic_status_image }}</td>
+    <td>
+      {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
+      {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
+      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+    </td>
+    <td><a href="{% url forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
+    <td><a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a></td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td>{{ topic.post_count }}</td>
+    <td>{{ topic.view_count }}</td>
+    <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+  </tr>{% endfor %}
+</tbody>
+</table>
+{% endif %}
 <div class="tools">
-{% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
+{% if is_paginated %}<div class="paginator">{% paginator object_name %}</div>{% endif %}
 </div>
 {% else %}
 <h2>No Posts Found</h2>

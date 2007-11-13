@@ -8,7 +8,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.text import capfirst, get_text_list, smart_split
 
 from forum import app_settings
-from forum.models import Post, Section
+from forum.models import Post, Search, Section, Topic
 from PIL import ImageFile
 
 #########
@@ -53,10 +53,10 @@ class ForumForm(forms.Form):
         self.fields['forum'].choices = [(u'', u'----------')] + \
             [(forum.id, forum.name) for forum in forums]
 
-class SearchPostsForm(forms.Form):
+class SearchForm(forms.Form):
     """
-    Provides criteria for searching Posts and creates QuerySets based on
-    selected criteria.
+    Provides criteria for searching Topics or Posts, creates QuerySets
+    based on selected criteria.
     """
     SEARCH_ALL_FORUMS = 'A'
     SEARCH_IN_SECTION = 'S'
@@ -108,6 +108,7 @@ class SearchPostsForm(forms.Form):
 
     USERNAME_LOOKUP = {True: '', False: '__icontains'}
 
+    search_type    = forms.ChoiceField(choices=Search.TYPE_CHOICES, initial=Search.POST_SEARCH, widget=forms.RadioSelect)
     keywords       = forms.CharField()
     username       = forms.CharField(required=False)
     exact_username = forms.BooleanField(required=False, initial=True, label=u'Match exact username')
@@ -118,7 +119,7 @@ class SearchPostsForm(forms.Form):
     sort_direction = forms.ChoiceField(choices=SORT_DIRECTION_CHOICES, initial=SORT_DESCENDING, widget=forms.RadioSelect)
 
     def __init__(self, *args, **kwargs):
-        super(SearchPostsForm, self).__init__(*args, **kwargs)
+        super(SearchForm, self).__init__(*args, **kwargs)
         choices = [(self.SEARCH_ALL_FORUMS, u'All Forums')]
         for section, forums in Section.objects.get_forums_by_section():
             choices.append(('%s.%s' % (self.SEARCH_IN_SECTION, section.pk),
@@ -155,8 +156,10 @@ class SearchPostsForm(forms.Form):
         if not hasattr(self, 'cleaned_data'):
             return None
 
+        search_type = self.cleaned_data['search_type']
         filters = []
 
+        # Calculate certain lookup values based on criteria
         search_in = {}
         if len(self.cleaned_data['search_in']) and \
            self.SEARCH_ALL_FORUMS not in self.cleaned_data['search_in']:
@@ -171,24 +174,36 @@ class SearchPostsForm(forms.Form):
                 days_ago = int(self.cleaned_data['search_from'])
                 from_date = from_date - datetime.timedelta(days=days_ago)
 
-        if self.cleaned_data['post_type'] != self.SEARCH_ALL_POSTS:
+        # Some lookup fields which change based on the search type
+        if search_type == Search.POST_SEARCH:
+            section_lookup = 'topic__forum__section'
+            forum_lookup = 'topic__forum'
+            date_lookup = 'posted_at'
+            text_lookup = 'body'
+        else:
+            section_lookup = 'forum__section'
+            forum_lookup = 'forum'
+            date_lookup = 'started_at'
+            text_lookup = 'title'
+
+        # Create lookup filters
+        if search_type == Search.POST_SEARCH and \
+           self.cleaned_data['post_type'] != self.SEARCH_ALL_POSTS:
             meta = self.cleaned_data['post_type'] == self.SEARCH_METAPOSTS
             filters.append(Q(meta=meta))
 
         if self.SEARCH_IN_SECTION in search_in and \
            self.SEARCH_IN_FORUM in search_in:
-            filters.append(Q(topic__forum__section__in=\
-                             search_in[self.SEARCH_IN_SECTION]) | \
-                           Q(topic__forum__in=search_in[self.SEARCH_IN_FORUM]))
+            filters.append(Q(**{'%s__in' % section_lookup: search_in[self.SEARCH_IN_SECTION]}) | \
+                           Q(**{'%s__in' % forum_lookup: search_in[self.SEARCH_IN_FORUM]}))
         elif self.SEARCH_IN_SECTION in search_in:
-            filters.append(Q(topic__forum__section__in=\
-                             search_in[self.SEARCH_IN_SECTION]))
+            filters.append(Q(**{'%s__in' % section_lookup: search_in[self.SEARCH_IN_SECTION]}))
         elif self.SEARCH_IN_FORUM in search_in:
-            filters.append(Q(topic__forum__in=search_in[self.SEARCH_IN_FORUM]))
+            filters.append(Q(**{'%s__in' % forum_lookup: search_in[self.SEARCH_IN_FORUM]}))
 
         if from_date is not None:
             lookup_type = self.SEARCH_WHEN_LOOKUP[self.cleaned_data['search_when']]
-            filters.append(Q(**{'posted_at__%s' % lookup_type: from_date}))
+            filters.append(Q(**{'%s__%s' % (date_lookup, lookup_type): from_date}))
 
         if self.cleaned_data['username']:
             lookup_type = self.USERNAME_LOOKUP[self.cleaned_data['exact_username']]
@@ -199,26 +214,29 @@ class SearchPostsForm(forms.Form):
         phrase_filters = []
         for keyword in smart_split(self.cleaned_data['keywords']):
             if keyword[0] == '+':
-                filters.append(Q(body__icontains=keyword[1:]))
+                filters.append(Q(**{'%s__icontains' % text_lookup: keyword[1:]}))
             elif keyword[0] == '-':
-                filters.append(QNot(Q(body__icontains=keyword[1:])))
+                filters.append(QNot(Q(**{'%s__icontains' % text_lookup: keyword[1:]})))
             elif keyword[0] == '"' and keyword[-1] == '"' or \
                  keyword[0] == "'" and keyword[-1] == "'":
-                phrase_filters.append(Q(body__icontains=keyword[1:-1]))
+                phrase_filters.append(Q(**{'%s__icontains' % text_lookup: keyword[1:-1]}))
             else:
-                one_of_filters.append(Q(body__icontains=keyword))
+                one_of_filters.append(Q(**{'%s__icontains' % text_lookup: keyword}))
         if one_of_filters:
             filters.append(reduce(operator.or_, one_of_filters))
         if phrase_filters:
             filters.append(reduce(operator.or_, phrase_filters))
 
         # Apply filters and perform ordering
-        qs = Post.objects.all()
+        if search_type == Search.POST_SEARCH:
+            qs = Post.objects.all()
+        else:
+            qs = Topic.objects.all()
         if len(filters):
             qs = qs.filter(reduce(operator.and_, filters))
         sort_direction_flag = \
             self.SORT_DIRECTION_FLAG[self.cleaned_data['sort_direction']]
-        return qs.order_by('%sposted_at' % sort_direction_flag,
+        return qs.order_by('%s%s' % (sort_direction_flag, date_lookup),
                            '%sid' % sort_direction_flag)
 
 #######################
