@@ -45,7 +45,7 @@
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
     <td>{{ topic.post_count }}</td>
     <td>{{ topic.view_count }}</td>
-    <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
   <tr>
     <th colspan="5" class="forum-topics">Forum Topics</th>
@@ -64,7 +64,7 @@
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
     <td>{{ topic.post_count }}</td>
     <td>{{ topic.view_count }}</td>
-    <td>{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
 </table>
