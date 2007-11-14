@@ -14,7 +14,7 @@ QUICK_HELP_TEMPLATE = 'forum/help/basic_formatting_quick.html'
 FULL_HELP_TEMPLATE = 'forum/help/basic_formatting.html'
 
 emoticon_processor = emoticons.Emoticons(
-    base_url='%simg/emoticons/' % settings.MEDIA_URL)
+    base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
 quote_post_re = re.compile(r'^', re.MULTILINE)
 
 def format_post_body(body):

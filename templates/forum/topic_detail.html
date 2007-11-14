@@ -2,8 +2,8 @@
 
 {% block extrahead %}
   <script type="text/javascript">var createFastReplyControls = {{ user|can_see_post_actions:topic|yesno:"true,false" }};</script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/Topic.js"></script>
-  {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}
+  <script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Topic.js"></script>
+  {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -20,10 +20,10 @@
 
 {% block main_content %}
 {% if topic.hidden %}
-<p class="description"><img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>
+<p class="description"><img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>
 {% endif %}
 {% if topic.locked %}
-<p class="description"><img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
+<p class="description"><img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
 {% endif %}
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}

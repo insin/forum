@@ -189,10 +189,10 @@ def topic_status_image(topic):
     Returns HTML for an image representing a topic's status.
     """
     if has_new_posts(topic):
-        src = u'img/new_posts.gif'
+        src = u'forum/img/new_posts.gif'
         description = u'New Posts'
     else:
-        src = u'img/no_new_posts.gif'
+        src = u'forum/img/no_new_posts.gif'
         description = u'No New Posts'
     return mark_safe(u'<img src="%s" alt="%s" title="%s">' % (
         urljoin(settings.MEDIA_URL, src), description, description))

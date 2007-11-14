@@ -4,9 +4,9 @@
   <title>{% block title %}{{ title|escape }}{% endblock %}</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="Author" content="Jonathan Buchanan">
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" media="all">
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}forum/css/style.css" media="all">
   <!--[if LT IE 7]><link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/ie.css" media="all"><![endif]-->
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery-1.1.4.pack.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}forum/js/jquery-1.1.4.pack.js"></script>
   {% block extrahead %}{% endblock %}
 </head>
 <body>
@@ -44,7 +44,7 @@
 
 <div id="footer">
   <a href="http://www.jonathanbuchanan.plus.com/repos/forum/">Django Forum</a> by <a href="http://insin.webfactional.com/">Jonathan Buchanan</a>,
-  <a href="http://www.djangoproject.com/"><img src="{{ MEDIA_URL }}img/djangosite.gif" alt="A Django site." title="A Django site."></a>
+  <a href="http://www.djangoproject.com/"><img src="{{ MEDIA_URL }}forum/img/djangosite.gif" alt="A Django site." title="A Django site."></a>
 </div>
 
 {% if debug %}

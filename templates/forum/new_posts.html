@@ -1,5 +1,5 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
-{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
+{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block main_content %}
 <p class="description">Topics with new posts in the last 14 days.</p>
 {% if is_paginated %}
@@ -35,9 +35,9 @@
   <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
     <td>{{ topic|topic_status_image }}</td>
     <td>
-      {% if topic.hidden %}<img src="{{ MEDIA_URL }}img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
-      {% if topic.locked %}<img src="{{ MEDIA_URL }}img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
-      {% if topic|has_new_posts %}<a href="{% url forum_redirect_to_unread_post topic.id %}" class="unread"><img src="{{ MEDIA_URL }}img/unread_post.gif" alt="First Unread Post" title="Go to first unread post"></a>{% endif %}
+      {% if topic.hidden %}<img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
+      {% if topic.locked %}<img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
+      {% if topic|has_new_posts %}<a href="{% url forum_redirect_to_unread_post topic.id %}" class="unread"><img src="{{ MEDIA_URL }}forum/img/unread_post.gif" alt="First Unread Post" title="Go to first unread post"></a>{% endif %}
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>

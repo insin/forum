@@ -13,7 +13,7 @@ QUICK_HELP_TEMPLATE = 'forum/help/bbcode_formatting_quick.html'
 FULL_HELP_TEMPLATE = 'forum/help/bbcode_formatting.html'
 
 emoticon_processor = emoticons.Emoticons(
-    base_url='%simg/emoticons/' % settings.MEDIA_URL)
+    base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
 
 def format_post_body(body):
     """
