@@ -69,9 +69,9 @@ Standalone Mode
 ---------------
 
 At the time of writing, the codebase comes with the standard Django
-``manage.py`` convenience module for administrating projects and a complete
-``settings.py`` module which is filesystem agnostic and uses sqlite as
-the project's database engine.
+``manage.py`` convenience script for administrating projects and a complete
+development ``settings.py`` module which is filesystem agnostic and uses SQLite
+as the project's database engine.
 
 Quick Start
 ~~~~~~~~~~~
@@ -128,7 +128,7 @@ Additional Configuration
 
 If the server you're running the forum application on is sitting behind a
 reverse proxy, add ``'django.middleware.http.SetRemoteAddrFromForwardedFor'`` to
-the list of ``MIDDLEWARE_CLASSES`` in your settings module, to ensure that the
+the list of ``MIDDLEWARE_CLASSES`` in your settings module to ensure that the
 IP address each post was made from is recorded accurately.
 
 In this situation, without this middleware in place all posts would appear to be
@@ -251,9 +251,9 @@ help, suitable for embedding in a standalone page.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function should accept raw post text input by the user, returning a version
-of it which has been transform and escaped for display. It is important that the
-output of this function has been made safe for direct inclusion in templates, as
-no further escaping will be performed.
+of it which has been transformed and escaped for display. It is important that
+the output of this function has been made safe for direct inclusion in templates,
+as no further escaping will be performed.
 
 For example, given the raw post text::
 
@@ -277,7 +277,7 @@ details such as the name of the user who made the post, the time the post was
 made at, a link back to the quoted post... and so on.
 
 Note that the raw post text returned by this function will be escaped when it is
-displayed to the user for editing, so to avoid double escaping, it should not
+displayed to the user for editing, so to avoid double escaping it should *not*
 be escaped by this function.
 
 For example, given a ``Post`` whose raw ``body`` text is::
