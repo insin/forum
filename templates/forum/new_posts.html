@@ -1,7 +1,7 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}js/Paginator.js"></script>{% endif %}{% endblock %}
 {% block main_content %}
-<p class="description">Topics with new posts since your last login, {{ user.last_login|post_time:user }}.</p>
+<p class="description">Topics with new posts in the last 14 days.</p>
 {% if is_paginated %}
 <div class="tools">
 <div class="paginator">{% paginator "Topic" %}</div>

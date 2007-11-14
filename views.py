@@ -413,10 +413,11 @@ def delete_forum(request, forum_id):
 @login_required
 def new_posts(request):
     """
-    Displays Topics containing new posts since the current User's last
-    login.
+    Displays all Topics hich have had new posts in the last fortnight,
+    those with newest posts first.
     """
-    filters = {'last_post_at__gte': request.user.last_login}
+    filters = {'last_post_at__gte': \
+               datetime.date.today() - datetime.timedelta(days=14)}
     if not auth.is_moderator(request.user):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_and_user_details().filter(
