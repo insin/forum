@@ -305,7 +305,7 @@ class Forum(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('forum_detail', (smart_unicode(self.id),))
+        return ('forum_forum_detail', (smart_unicode(self.id),))
 
     def delete(self):
         """

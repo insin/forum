@@ -45,7 +45,7 @@
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
-    <td><a href="{% url forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
+    <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
     <td>{{ topic.started_at|forum_datetime:user }}</td>
     <td>{{ topic.post_count }}</td>
     <td>{{ topic.view_count }}</td>

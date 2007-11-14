@@ -14,7 +14,7 @@
 {% if search.is_post_search %}
 {% for post in object_list %}
 <div class="module">
-<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count }} Post{{ post.topic_post_count|pluralize }}, {{ post.topic_view_count }} View{{ post.topic_view_count|pluralize }}</h2>
+<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count }} Post{{ post.topic_post_count|pluralize }}, {{ post.topic_view_count }} View{{ post.topic_view_count|pluralize }}</h2>
 <div class="post" id="post{{ post.id }}">
   <div class="postbody">
     <div class="body">
@@ -80,7 +80,7 @@
       <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
       {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
     </td>
-    <td><a href="{% url forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
+    <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
     <td><a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a></td>
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
     <td>{{ topic.post_count }}</td>

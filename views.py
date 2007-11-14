@@ -409,7 +409,6 @@ def delete_forum(request, forum_id):
             'title': u'Delete Forum',
         }, context_instance=RequestContext(request))
 
-
 @login_required
 def new_posts(request):
     """
