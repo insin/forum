@@ -12,7 +12,7 @@ from markdown import Markdown
 QUICK_HELP_TEMPLATE = 'forum/help/markdown_formatting_quick.html'
 FULL_HELP_TEMPLATE = 'forum/help/markdown_formatting.html'
 
-md = Markdown(safe_mode=True)
+md = Markdown(safe_mode='escape')
 emoticon_processor = emoticons.Emoticons(
     base_url='%simg/emoticons/' % settings.MEDIA_URL)
 quote_post_re = re.compile(r'^', re.MULTILINE)
