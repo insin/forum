@@ -5,7 +5,7 @@
 &raquo; <strong>Log in</strong>
 {% endblock %}
 {% block main_content %}
-<p class="description">If you don't have an account, you can <a href="{% url registration_register %}">sign up</a> for one; it's free, and you'll get access to a bunch of nifty features.</p>
+<p class="description">If you don't have an account, you can <a href="{% url registration_register %}">sign up</a> for one.</p>
 <form method="POST" action="{% if next %}?next={{ next }}{% endif %}">
   <div class="module aligned">
     <h2>Log in</h2>
@@ -22,6 +22,9 @@
       <div class="form-field">
         {{ form.password }}
       </div>
+    </div>
+    <div class="form-row">
+      Forgotten your password? You can <a href="{% url auth_password_reset %}">reset it</a> if you're really stumped.
     </div>
   </div>
   <div class="buttons"><input type="submit" value="Log in"></div>

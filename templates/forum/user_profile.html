@@ -1,5 +1,12 @@
 {% extends "base_forum.html" %}{% load forum_tags %}
 {% block main_content %}
+{% ifequal user.id forum_user.id %}
+<div class="tools">
+  <div class="actions">
+    <a href="{% url auth_password_change %}">Change Password</a>
+  </div>
+</div>
+{% endifequal %}
 <div class="col-l">
   <div class="module forum-profile">
   <h2><span class="title">{{ title|escape }}</span>{% if user|can_edit_user_profile:forum_user %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_user_forum_profile forum_user.id %}">Edit</a></span>{% endif %}</h2>
