@@ -20,7 +20,7 @@
     <div class="body">
       <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time:user }}</p>
       <div class="content">
-      {{ post.body_html }}
+      {{ post.body_html|safe }}
       </div>
     </div>
   </div>

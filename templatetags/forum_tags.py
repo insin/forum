@@ -4,6 +4,7 @@ from urlparse import urljoin
 from django import template
 from django.conf import settings
 from django.utils import dateformat
+from django.utils.safestring import mark_safe
 
 import pytz
 from forum import auth
@@ -21,7 +22,7 @@ def add_last_read_times(topics, user):
     Adds last read details to the given topics for the given user.
     """
     TopicTracker.objects.add_last_read_to_topics(topics, user)
-    return u''
+    return mark_safe(u'')
 
 ##################
 # Inclusion Tags #
@@ -159,7 +160,7 @@ def forum_datetime(st, user=None):
     """
     Formats a general datetime.
     """
-    return format_datetime(st, user, 'M jS Y', 'H:i A', ', ')
+    return mark_safe(format_datetime(st, user, 'M jS Y', 'H:i A', ', '))
 
 @register.filter
 def is_first_post(post):
@@ -173,14 +174,14 @@ def post_time(posted_at, user=None):
     """
     Formats a Post time.
     """
-    return format_datetime(posted_at, user, r'\o\n M jS Y', r'\a\t H:i A')
+    return mark_safe(format_datetime(posted_at, user, r'\o\n M jS Y', r'\a\t H:i A'))
 
 @register.filter
 def joined_date(date):
     """
     Formats a joined date.
     """
-    return dateformat.format(date, 'M jS Y')
+    return mark_safe(dateformat.format(date, 'M jS Y'))
 
 @register.filter
 def topic_status_image(topic):
@@ -193,8 +194,8 @@ def topic_status_image(topic):
     else:
         src = u'img/no_new_posts.gif'
         description = u'No New Posts'
-    return u'<img src="%s" alt="%s" title="%s">' % (
-        urljoin(settings.MEDIA_URL, src), description, description)
+    return mark_safe(u'<img src="%s" alt="%s" title="%s">' % (
+        urljoin(settings.MEDIA_URL, src), description, description))
 
 @register.filter
 def has_new_posts(topic):
@@ -223,14 +224,15 @@ def topic_pagination(topic, posts_per_page):
         hits = 0
     pages = hits // posts_per_page + 1
     if pages < 2:
-        return u''
+        html = u''
     else:
         page_link = u'<a class="pagelink" href="%s?page=%%s">%%s</a>' % \
             topic.get_absolute_url()
         if pages < 6:
-            return u' '.join([page_link % (page, page) \
+            html = u' '.join([page_link % (page, page) \
                               for page in xrange(1, pages + 1)])
         else:
-            return u' '.join([page_link % (1 ,1), u'&hellip;'] + \
+            html = u' '.join([page_link % (1 ,1), u'&hellip;'] + \
                 [page_link % (page, page) \
                  for page in xrange(pages - 2, pages + 1)])
+    return mark_safe(html)
