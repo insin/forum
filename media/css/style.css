@@ -25,6 +25,7 @@ a.unread img { vertical-align: middle; }
 .module h2 span.controls { float: right; }
   .module h2 span.controls a { color: #ff0; }
 .module h2 span.separator { display: none; }
+.module p.message { text-align: center; margin: 1em; }
 .clear { clear: both; }
 
 /* Navigation elements */

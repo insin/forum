@@ -39,6 +39,7 @@
   <span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>
   {% if not meta %}<span class="separator"> - </span><span class="controls"><a href="{{ topic.get_meta_url }}">View Metaposts</a>{% if user|can_edit_topic:topic %} | <a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a>{% endif %}</span>{% endif %}
 </h2>
+{% if post_list %}
 {% for post in post_list %}
 <div class="post {% cycle odd,even %}" id="post{{ post.id }}">
   <div class="postbody">
@@ -79,6 +80,9 @@
   </div>
 </div>
 {% endfor %}
+{% else %}
+<p class="message">There are no {% if meta %}Meta{% endif %}posts yet.</p>
+{% endif %}
 </div>
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Post" %}</div>{% endif %}
