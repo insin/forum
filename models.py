@@ -834,6 +834,7 @@ class Post(models.Model):
     edited_at = models.DateTimeField(editable=False, null=True, blank=True)
     user_ip   = models.IPAddressField(editable=False, null=True, blank=True)
     meta      = models.BooleanField(default=False)
+    emoticons = models.BooleanField(default=True)
 
     # Denormalised data
     num_in_topic = models.PositiveIntegerField(default=0)
@@ -854,7 +855,8 @@ class Post(models.Model):
           and ``ForumProfile`` objects when creating a new post.
         """
         self.body = self.body.strip()
-        self.body_html = post_formatter.format_post_body(self.body)
+        self.body_html = post_formatter.format_post_body(self.body,
+                                                         self.emoticons)
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()
@@ -919,7 +921,7 @@ class Post(models.Model):
         list_filter = ('meta',)
         fields = (
             (None, {
-                'fields': ('user', 'topic', 'body', 'meta'),
+                'fields': ('user', 'topic', 'body', 'meta', 'emoticons'),
             }),
             (u'Denormalised data', {
                 'classes': 'collapse',

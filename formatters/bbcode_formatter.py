@@ -15,11 +15,14 @@ FULL_HELP_TEMPLATE = 'forum/help/bbcode_formatting.html'
 emoticon_processor = emoticons.Emoticons(
     base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
 
-def format_post_body(body):
+def format_post_body(body, process_emoticons=True):
     """
     Formats the given raw post body as HTML.
     """
-    return emoticon_processor.replace(render_bbcode(body).strip())
+    result = render_bbcode(body).strip()
+    if process_emoticons:
+        return emoticon_processor.replace(result)
+    return result
 
 def quote_post(post):
     """

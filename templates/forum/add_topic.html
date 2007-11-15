@@ -41,6 +41,10 @@
       </div>
       {% include quick_help_template %}
     </div>
+    <div class="form-row checkbox-row">
+      {% if post_form.emoticons.errors %}{{ post_form.emoticons.errors.as_ul }}{% endif %}
+      <label for="id_emoticons">{{ post_form.emoticons }} Enable emoticons</label>
+    </div>
   </fieldset>
   <div class="buttons">
     <input type="submit" name="submit" value="Add Topic">

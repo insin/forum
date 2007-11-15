@@ -248,13 +248,17 @@ FULL_HELP_TEMPLATE
 This variable should specify the location of a template file providing detailed
 help, suitable for embedding in a standalone page.
 
-``format_post_body(body)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+``format_post_body(body, process_emoticons=True)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function should accept raw post text input by the user, returning a version
-of it which has been transformed and escaped for display. It is important that
-the output of this function has been made safe for direct inclusion in templates,
-as no further escaping will be performed.
+of it which has been transformed and escaped for display.
+
+An optional ``process_emoticons`` argument should be provided to toggle
+replacement of designated emoticon symbols with their image equivalent.
+
+It is important that the output of this function has been made safe for direct
+inclusion in templates, as no further escaping will be performed.
 
 For example, given the raw post text::
 

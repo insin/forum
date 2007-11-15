@@ -17,11 +17,14 @@ emoticon_processor = emoticons.Emoticons(
     base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
 quote_post_re = re.compile(r'^', re.MULTILINE)
 
-def format_post_body(body):
+def format_post_body(body, process_emoticons=True):
     """
     Formats the given raw post body as HTML.
     """
-    return emoticon_processor.replace(linebreaks(urlize(escape(body.strip()))))
+    result = linebreaks(urlize(escape(body.strip())))
+    if process_emoticons:
+        return emoticon_processor.replace(result)
+    return result
 
 def quote_post(post):
     """

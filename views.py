@@ -438,7 +438,7 @@ def add_topic(request, forum_id):
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     TopicForm = forms.form_for_model(Topic, fields=('title', 'description'),
         formfield_callback=topic_formfield_callback)
-    PostForm = forms.form_for_model(Post, fields=('body',),
+    PostForm = forms.form_for_model(Post, fields=('body', 'emoticons'),
         formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
@@ -446,7 +446,9 @@ def add_topic(request, forum_id):
         post_form = PostForm(data=request.POST)
         if topic_form.is_valid() and post_form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(post_form.cleaned_data['body'])
+                preview = post_formatter.format_post_body(
+                    post_form.cleaned_data['body'],
+                    post_form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
                 topic = topic_form.save(commit=False)
                 topic.user = request.user
@@ -606,7 +608,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         return permission_denied(request,
             message=u'You do not have permission to post in this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    editable_fields = ['body']
+    editable_fields = ['body', 'emoticons']
     if not meta:
         editable_fields += ['meta']
     PostForm = forms.form_for_model(Post, fields=editable_fields,
@@ -616,7 +618,8 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(form.cleaned_data['body'])
+                preview = post_formatter.format_post_body(
+                    form.cleaned_data['body'], form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
                 post = form.save(commit=False)
                 post.topic = topic
@@ -725,7 +728,7 @@ def edit_post(request, post_id):
         return permission_denied(request,
             message=u'You do not have permission to edit this post.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    editable_fields = ['body']
+    editable_fields = ['body', 'emoticons']
     if auth.is_moderator(request.user):
         editable_fields += ['meta']
         was_meta = post.meta
@@ -736,7 +739,8 @@ def edit_post(request, post_id):
         form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(form.cleaned_data['body'])
+                preview = post_formatter.format_post_body(
+                    form.cleaned_data['body'], form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
                 post = form.save(commit=False)
                 if auth.is_moderator(request.user):

@@ -18,6 +18,10 @@
       </div>
       {% include quick_help_template %}
     </div>
+    <div class="form-row checkbox-row">
+      {% if form.emoticons.errors %}{{ form.emoticons.errors.as_ul }}{% endif %}
+      <label for="id_emoticons">{{ form.emoticons }} Enable emoticons</label>
+    </div>
   </fieldset>
   {% if user|is_moderator %}
   <fieldset class="module aligned">
