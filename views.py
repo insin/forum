@@ -446,7 +446,7 @@ def add_topic(request, forum_id):
         post_form = PostForm(data=request.POST)
         if topic_form.is_valid() and post_form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(
+                preview = post_formatter.format_post(
                     post_form.cleaned_data['body'],
                     post_form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
@@ -618,7 +618,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(
+                preview = post_formatter.format_post(
                     form.cleaned_data['body'], form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
                 post = form.save(commit=False)
@@ -739,7 +739,7 @@ def edit_post(request, post_id):
         form = PostForm(data=request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
-                preview = post_formatter.format_post_body(
+                preview = post_formatter.format_post(
                     form.cleaned_data['body'], form.cleaned_data['emoticons'])
             elif 'submit' in request.POST:
                 post = form.save(commit=False)

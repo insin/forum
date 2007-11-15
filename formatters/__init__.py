@@ -1,24 +1,112 @@
-from forum import app_settings
+import re
 
-# Two-tuples of (attribute name, must be callable), defining the minimum
-# required of a post formatting module.
-POST_FORMATTING_MODULE_REQUIREMENTS = (
-    ('QUICK_HELP_TEMPLATE', False),
-    ('FULL_HELP_TEMPLATE', False),
-    ('format_post_body', True),
-    ('quote_post', True),
-)
+from django.conf import settings
+from django.utils.html import escape, linebreaks, urlize
+from django.utils.text import normalize_newlines, wrap
+
+from forum.formatters.emoticons import Emoticons
+
+quote_post_re = re.compile(r'^', re.MULTILINE)
+
+class PostFormatter(object):
+    QUICK_HELP_TEMPLATE = 'forum/help/basic_formatting_quick.html'
+    FULL_HELP_TEMPLATE  = 'forum/help/basic_formatting.html'
+
+    def __init__(self, emoticons=None):
+        self.emoticon_processor = Emoticons(emoticons=emoticons,
+            base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
+
+    def format_post(self, body, process_emoticons=True):
+        if process_emoticons:
+            return self.emoticon_processor.process(self.format_post_body(body))
+        else:
+            return self.format_post_body(body)
+
+    def format_post_body(self, body):
+        """
+        Formats the given raw post body as HTML.
+        """
+        return linebreaks(urlize(escape(body.strip())))
+
+    def quote_post(post):
+        """
+        Returns a raw post body which quotes the given Post.
+        """
+        return u'%s wrote:\n\n%s\n\n' % (
+            escape(post.user.username),
+            quote_post_re.sub('> ', wrap(normalize_newlines(post.body), 80)),
+        )
+
+class MarkdownFormatter(PostFormatter):
+    """
+    Post formatter which uses Markdown syntax to format posts as HTML.
+    """
+    QUICK_HELP_TEMPLATE = 'forum/help/markdown_formatting_quick.html'
+    FULL_HELP_TEMPLATE  = 'forum/help/markdown_formatting.html'
+
+    def __init__(self, *args, **kwargs):
+        super(MarkdownFormatter, self).__init__(*args, **kwargs)
+        from markdown import Markdown
+        self.md = Markdown(safe_mode='escape')
+
+    def format_post_body(self, body):
+        """
+        Formats the given raw post body as HTML using Markdown.
+        """
+        self.md.reset()
+        return self.md.toString(body).strip()
+
+    def quote_post(self, post):
+        """
+        Returns a raw post body which quotes the given Post using
+        Markdown.
+        """
+        return u'**%s** [wrote](%s "View quoted post"):\n\n%s\n\n' % (
+            escape(post.user.username),
+            post.get_absolute_url(),
+            quote_post_re.sub('> ', post.body),
+        )
+
+class BBCodeFormatter(PostFormatter):
+    """
+    Post formatter which uses BBCode syntax to format posts as HTML.
+    """
+    QUICK_HELP_TEMPLATE = 'forum/help/bbcode_formatting_quick.html'
+    FULL_HELP_TEMPLATE  = 'forum/help/bbcode_formatting.html'
+
+    def __init__(self, *args, **kwargs):
+        super(BBCodeFormatter, self).__init__(*args, **kwargs)
+        import postmarkup
+        self.pm = postmarkup.create()
+
+    def format_post_body(self, body):
+        """
+        Formats the given raw post body as HTML using BBCode.
+        """
+        return self.pm(body).strip()
+
+    def quote_post(self, post):
+        """
+        Returns a raw post body which quotes the given Post using BBCode.
+        """
+        return u'[quote]%s[/quote]' % post.body
 
 def get_post_formatter():
+    from django.core import exceptions
+    from forum import app_settings
     try:
-        mod = __import__(app_settings.POST_FORMATTING_MODULE, {}, {}, [''])
-        for attr, must_be_callable in POST_FORMATTING_MODULE_REQUIREMENTS:
-            if not hasattr(mod, attr) or \
-               must_be_callable and not callable(getattr(mod, attr)):
-                raise ValueError('The "%s" module does not define a %s"%s" attribute, which is required for it to be used as a post formatter.' % (
-                    app_settings.POST_FORMATTING_MODULE, must_be_callable and 'callable ' or '', attr))
-        return mod
+        dot = app_settings.POST_FORMATTER.rindex('.')
+    except ValueError:
+        raise exceptions.ImproperlyConfigured, '%s isn\'t a post formatting module' % app_settings.POST_FORMATTER
+    modulename, classname = app_settings.POST_FORMATTER[:dot], app_settings.POST_FORMATTER[dot+1:]
+    try:
+        mod = __import__(modulename, {}, {}, [''])
     except ImportError, e:
-        raise EnvironmentError('Could not import post formatting module "%s" (Is it on sys.path? Does it have syntax errors?): %s' % (app_settings.POST_FORMATTING_MODULE, e))
+        raise exceptions.ImproperlyConfigured, 'Error importing post formatting module %s: "%s"' % (modulename, e)
+    try:
+        formatter_class = getattr(mod, classname)
+    except AttributeError:
+        raise exceptions.ImproperlyConfigured, 'Post formatting module "%s" does not define a "%s" class' % (module, classname)
+    return formatter_class(emoticons=app_settings.EMOTICONS)
 
 post_formatter = get_post_formatter()

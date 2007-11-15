@@ -34,12 +34,11 @@ forum in standalone mode:
 The following modules are only required in certain circumstances:
 
 - `python-markdown`_ SVN revision 55 or better is required to use the
-  ``forum.formatters.markdown_formatter`` module to to format posts using
+  ``forum.formatters.MarkdownFormatter`` class to to format posts using
   `Markdown`_ syntax, which depends on the ``safe_mode='escape'`` feature
   introduced in revision 55.
-- `postmarkup`_ is required to use the
-  ``forum.formatters.bbcode_formatter`` module to format posts using a
-  `BBCode`_-like syntax.
+- `postmarkup`_ is required to use the ``forum.formatters.BBCodeFormatter``
+  class to format posts using a `BBCode`_-like syntax.
 
 .. _`Django`: http://www.djangoproject.com/
 .. _`Python Imaging Library`: http://www.pythonware.com/products/pil/
@@ -87,10 +86,10 @@ execute the following commands::
     python manage.py runserver
 
 Ensure that the application's static media files are accessible - the default
-``MEDIA_URL`` setting points at ``http://localhost/media/forum/``, as the
-default settings assume that you're going to be running a webserver locally to
-serve up static media. If you're running `Apache`_, adding the following line to
-your ``httpd.conf`` and restarting the server will ensure that the application's
+``MEDIA_URL`` setting points at ``http://localhost/media/``, as the default
+settings assume that you're going to be running a webserver locally to serve up
+static media. If you're running `Apache`_, adding the following line to your
+``httpd.conf`` and restarting the server will ensure that the application's
 media is accessible::
 
     Alias /media/forum /full/path/to/forum/media
@@ -160,11 +159,10 @@ applications will be included in the application's main URLConf.
 FORUM_POST_FORMATTING_MODULE
 ----------------------------
 
-Default: ``'forum.formatters.basic_formatter'``
+Default: ``'forum.formatters.PostFormatter'``
 
-The Python path to the module to be used to format raw post input. This module
-should satisfy the requirements defined below in `Post Formatting Module
-Structure`_.
+The Python path to the module to be used to format raw post input. This class
+should satisfy the requirements defined below in `Post Formatter Structure`_.
 
 FORUM_DEFAULT_POSTS_PER_PAGE
 ----------------------------
@@ -217,48 +215,55 @@ Whether or not ``<img>`` tags created for user avatars should include ``width``
 and ``height`` attributes to force all avatars to be displayed with the
 dimensions specified in the ``FORUM_MAX_AVATAR_DIMENSIONS`` setting.
 
+FORUM_EMOTICONS
+---------------
 
-Post Formatting Modules
-=======================
+Default: ``None``
 
-Post formatting modules are responsible for taking raw input entered by forum
+A dict mapping emoticon symbols to the names of image files which they should
+be replaced with when emoticons are enabled while posting. If ``None``, the
+default set of emoticon specified in
+``forum.formatters.emoticons.DEFAULT_EMOTICONS`` will be used.
+
+
+Post Formatters
+===============
+
+Post formatting classes are responsible for taking raw input entered by forum
 users and transforming and escaping it for display, as well as performing any
 other operations which are dependent on the post formatting syntax being used.
 
-The following post formatting modules are bundled with the forum application:
+The following post formatting classes are bundled with the forum application:
 
-- ``forum.formatters.basic_formatter``
-- ``forum.formatters.markdown_formatter``
-- ``forum.formatters.bbcode_formatter``
+- ``forum.formatters.PostFormatter``
+- ``forum.formatters.MarkdownFormatter``
+- ``forum.formatters.BBCodeFormatter``
 
-Post Formatting Module Structure
---------------------------------
+Post Formatter Structure
+------------------------
 
-Post formatting modules must provide the following:
+When creating a custom post formatting class, you should subclass
+``forum.formatters.PostFormatter`` and override the following:
 
 QUICK_HELP_TEMPLATE
 ~~~~~~~~~~~~~~~~~~~
 
-This variable should specify the location of a template providing quick help,
-suitable for embedding into posting pages.
+This class-level attribute should specify the location of a template providing
+quick help, suitable for embedding into posting pages.
 
 FULL_HELP_TEMPLATE
 ~~~~~~~~~~~~~~~~~~
 
-This variable should specify the location of a template file providing detailed
-help, suitable for embedding in a standalone page.
+This class-level attribute should specify the location of a template file
+providing detailed help, suitable for embedding in a standalone page.
 
-``format_post_body(body, process_emoticons=True)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``format_post_body(body)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This function should accept raw post text input by the user, returning a version
-of it which has been transformed and escaped for display.
-
-An optional ``process_emoticons`` argument should be provided to toggle
-replacement of designated emoticon symbols with their image equivalent.
-
-It is important that the output of this function has been made safe for direct
-inclusion in templates, as no further escaping will be performed.
+This method should accept raw post text input by the user, returning a version
+of it which has been transformed and escaped for display. It is important that
+the output of this function has been made safe for direct inclusion in
+templates, as no further escaping will be performed.
 
 For example, given the raw post text::
 
@@ -275,7 +280,7 @@ For example, given the raw post text::
 ``quote_post(post)``
 ~~~~~~~~~~~~~~~~~~~~
 
-This function should accept a ``Post`` object and return the raw post text for a
+This method should accept a ``Post`` object and return the raw post text for a
 a "quoted" version of the post's content. The ``Post`` object itself is passed,
 as opposed to just the raw post text, as the quote may wish to include other
 details such as the name of the user who made the post, the time the post was

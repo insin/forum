@@ -855,8 +855,7 @@ class Post(models.Model):
           and ``ForumProfile`` objects when creating a new post.
         """
         self.body = self.body.strip()
-        self.body_html = post_formatter.format_post_body(self.body,
-                                                         self.emoticons)
+        self.body_html = post_formatter.format_post(self.body, self.emoticons)
         is_new = False
         if not self.id:
             self.posted_at = datetime.datetime.now()

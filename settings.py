@@ -83,7 +83,7 @@ LOGIN_REDIRECT_URL = '/'
 
 # Forum settings
 FORUM_STANDALONE = True
-FORUM_POST_FORMATTING_MODULE = 'forum.formatters.markdown_formatter'
+FORUM_POST_FORMATTER = 'forum.formatters.MarkdownFormatter'
 
 # Registration settings
 ACCOUNT_ACTIVATION_DAYS = 10
