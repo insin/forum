@@ -7,66 +7,46 @@ Converts emoticon symbols to images, with the symbols set as their
 
 Basic usage::
 
-   >>> em = Emoticons()
+   >>> em = Emoticons({':p': 'tongue.gif'})
    >>> em.process(u'Cheeky :p')
    u'Cheeky <img src="tongue.gif" alt=":p">'
 
 Example showing usage of all arguments::
 
-   >>> em = Emoticons(emoticons={':p': 'cheeky'},
-   ...     base_url='http://localhost/', file_extension='png',
-   ...     xhtml=True)
+   >>> em = Emoticons({':p': 'cheeky.png'},
+   ...     base_url='http://localhost/', xhtml=True)
    >>> em.process(u'Cheeky :p')
    u'Cheeky <img src="http://localhost/cheeky.png" alt=":p" />'
 
+Other tests::
+
+   >>> em = Emoticons({})
+   >>> em.process(u'Cheeky :p')
+   u'Cheeky :p'
+
 """
 import re
-
-DEFAULT_EMOTICONS = {
-    ':angry:':    'angry',
-    ':blink:':    'blink',
-    ':D':         'grin',
-    ':huh:':      'huh',
-    ':lol:':      'lol',
-    ':o':         'ohmy',
-    ':ph34r:':    'ph34r',
-    ':rolleyes:': 'rolleyes',
-    ':(':         'sad',
-    ':)':         'smile',
-    ':p':         'tongue',
-    ':unsure:':   'unsure',
-    ':wacko:':    'wacko',
-    ';)':         'wink',
-    ':wub:':      'wub',
-}
 
 class Emoticons:
     """
     Replacement of multiple string pairs in one go based on
     http://effbot.org/zone/python-replace.htm
     """
-    def __init__ (self, emoticons=None, base_url='', file_extension='gif',
-        xhtml=False):
+    def __init__ (self, emoticons, base_url='', xhtml=False):
         """
         emoticons
-           A dict mapping emoticon symbols to image names.
+           A dict mapping emoticon symbols to image filenames.
 
         base_url
-           The base URL to be prepended to image names to generating
-           image URLs.
-
-        file_extension
-           The file extension to be appended to image names when
+           The base URL to be prepended to image filenames when
            generating image URLs.
 
         xhtml
            If ``True``, a closing slash will be added to image tags.
         """
-        if emoticons is None: emoticons = DEFAULT_EMOTICONS
         self.emoticons = dict(
-            [(k, '<img src="%s%s.%s" alt="%s"%s>' % (base_url, v,
-                                                     file_extension, k,
-                                                     xhtml and ' /' or '')) \
+            [(k, '<img src="%s%s" alt="%s"%s>' % (base_url, v, k,
+                                                  xhtml and ' /' or '')) \
              for k, v in emoticons.items()])
         keys = emoticons.keys()
         keys.sort() # lexical order

@@ -218,12 +218,26 @@ dimensions specified in the ``FORUM_MAX_AVATAR_DIMENSIONS`` setting.
 FORUM_EMOTICONS
 ---------------
 
-Default: ``None``
+Default::
 
-A dict mapping emoticon symbols to the names of image files which they should
-be replaced with when emoticons are enabled while posting. If ``None``, the
-default set of emoticon specified in
-``forum.formatters.emoticons.DEFAULT_EMOTICONS`` will be used.
+    {':angry:':    'angry.gif',
+     ':blink:':    'blink.gif',
+     ':D':         'grin.gif',
+     ':huh:':      'huh.gif',
+     ':lol:':      'lol.gif',
+     ':o':         'ohmy.gif',
+     ':ph34r:':    'ph34r.gif',
+     ':rolleyes:': 'rolleyes.gif',
+     ':(':         'sad.gif',
+     ':)':         'smile.gif',
+     ':p':         'tongue.gif',
+     ':unsure:':   'unsure.gif',
+     ':wacko:':    'wacko.gif',
+     ';)':         'wink.gif',
+     ':wub:':      'wub.gif'}
+
+A dict mapping emoticon symbols to the filenames of images they should be
+replaced with when emoticons are enabled while formatting posts.
 
 
 Post Formatters

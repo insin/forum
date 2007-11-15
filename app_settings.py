@@ -13,4 +13,21 @@ MAX_AVATAR_FILESIZE     = getattr(settings, 'FORUM_MAX_AVATAR_FILESIZE',     512
 ALLOWED_AVATAR_FORMATS  = getattr(settings, 'FORUM_ALLOWED_AVATAR_FORMATS',  ('GIF', 'JPEG', 'PNG'))
 MAX_AVATAR_DIMENSIONS   = getattr(settings, 'FORUM_MAX_AVATAR_DIMENSIONS',   (64, 64))
 FORCE_AVATAR_DIMENSIONS = getattr(settings, 'FORUM_FORCE_AVATAR_DIMENSIONS', True)
-EMOTICONS               = getattr(settings, 'FORUM_EMOTICONS',               None)
+
+EMOTICONS = getattr(settings, 'FORUM_EMOTICONS', {
+        ':angry:':    'angry.gif',
+        ':blink:':    'blink.gif',
+        ':D':         'grin.gif',
+        ':huh:':      'huh.gif',
+        ':lol:':      'lol.gif',
+        ':o':         'ohmy.gif',
+        ':ph34r:':    'ph34r.gif',
+        ':rolleyes:': 'rolleyes.gif',
+        ':(':         'sad.gif',
+        ':)':         'smile.gif',
+        ':p':         'tongue.gif',
+        ':unsure:':   'unsure.gif',
+        ':wacko:':    'wacko.gif',
+        ';)':         'wink.gif',
+        ':wub:':      'wub.gif',
+    })
