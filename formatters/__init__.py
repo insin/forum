@@ -9,6 +9,12 @@ from forum.formatters.emoticons import Emoticons
 quote_post_re = re.compile(r'^', re.MULTILINE)
 
 class PostFormatter(object):
+    """
+    Base post formatting object.
+
+    If used as a post formatter itself, performs basic formatting,
+    preserving linebreaks and converting URLs to links.
+    """
     QUICK_HELP_TEMPLATE = 'forum/help/basic_formatting_quick.html'
     FULL_HELP_TEMPLATE  = 'forum/help/basic_formatting.html'
 
@@ -17,6 +23,10 @@ class PostFormatter(object):
             base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
 
     def format_post(self, body, process_emoticons=True):
+        """
+        Formats the given post body, replacing emoticon symbols with
+        images if ``emoticons`` is ``True``.
+        """
         if process_emoticons:
             return self.emoticon_processor.process(self.format_post_body(body))
         else:
@@ -39,7 +49,7 @@ class PostFormatter(object):
 
 class MarkdownFormatter(PostFormatter):
     """
-    Post formatter which uses Markdown syntax to format posts as HTML.
+    Post formatter which uses Markdown to format posts.
     """
     QUICK_HELP_TEMPLATE = 'forum/help/markdown_formatting_quick.html'
     FULL_HELP_TEMPLATE  = 'forum/help/markdown_formatting.html'
@@ -51,7 +61,8 @@ class MarkdownFormatter(PostFormatter):
 
     def format_post_body(self, body):
         """
-        Formats the given raw post body as HTML using Markdown.
+        Formats the given raw post body as HTML using Markdown
+        formatting.
         """
         self.md.reset()
         return self.md.toString(body).strip()
@@ -59,7 +70,7 @@ class MarkdownFormatter(PostFormatter):
     def quote_post(self, post):
         """
         Returns a raw post body which quotes the given Post using
-        Markdown.
+        Markdown syntax.
         """
         return u'**%s** [wrote](%s "View quoted post"):\n\n%s\n\n' % (
             escape(post.user.username),
@@ -69,7 +80,7 @@ class MarkdownFormatter(PostFormatter):
 
 class BBCodeFormatter(PostFormatter):
     """
-    Post formatter which uses BBCode syntax to format posts as HTML.
+    Post formatter which uses BBCode syntax to format posts.
     """
     QUICK_HELP_TEMPLATE = 'forum/help/bbcode_formatting_quick.html'
     FULL_HELP_TEMPLATE  = 'forum/help/bbcode_formatting.html'
@@ -81,17 +92,21 @@ class BBCodeFormatter(PostFormatter):
 
     def format_post_body(self, body):
         """
-        Formats the given raw post body as HTML using BBCode.
+        Formats the given raw post body as HTML using BBCode formatting.
         """
         return self.pm(body).strip()
 
     def quote_post(self, post):
         """
-        Returns a raw post body which quotes the given Post using BBCode.
+        Returns a raw post body which quotes the given Post using BBCode
+        syntax.
         """
         return u'[quote]%s[/quote]' % post.body
 
 def get_post_formatter():
+    """
+    Creates a post formatting object as specified by current settings.
+    """
     from django.core import exceptions
     from forum import app_settings
     try:
@@ -106,7 +121,9 @@ def get_post_formatter():
     try:
         formatter_class = getattr(mod, classname)
     except AttributeError:
-        raise exceptions.ImproperlyConfigured, 'Post formatting module "%s" does not define a "%s" class' % (module, classname)
+        raise exceptions.ImproperlyConfigured, 'Post formatting module "%s" does not define a "%s" class' % (modulename, classname)
     return formatter_class(emoticons=app_settings.EMOTICONS)
 
+# For convenience, make a single instance of the currently specified post
+# formatter available for reuse.
 post_formatter = get_post_formatter()
