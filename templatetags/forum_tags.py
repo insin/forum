@@ -214,9 +214,10 @@ def has_new_posts(topic):
     Returns ``True`` if the given topic has new posts, based on the
     presence and value of a ``last_read`` attribute.
     """
-    last_read = getattr(topic, 'last_read', False)
-    return last_read is not False and \
-       (last_read is None or topic.last_post_at > last_read)
+    if hasattr(topic, 'last_read'):
+        return topic.last_read is None or topic.last_post_at > topic.last_read
+    else:
+        return False
 
 @register.filter
 def topic_pagination(topic, posts_per_page):
