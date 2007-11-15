@@ -3,11 +3,13 @@ from urlparse import urljoin
 
 from django import template
 from django.conf import settings
+from django.template import loader
 from django.utils import dateformat
 from django.utils.safestring import mark_safe
 
 import pytz
 from forum import auth
+from forum.formatters import post_formatter
 from forum.models import ForumProfile, TopicTracker
 
 register = template.Library()
@@ -23,6 +25,15 @@ def add_last_read_times(topics, user):
     """
     TopicTracker.objects.add_last_read_to_topics(topics, user)
     return mark_safe(u'')
+
+@register.simple_tag
+def emoticon_help():
+    """
+    Creates a help section for the currently configured set of emoticons.
+    """
+    return mark_safe(loader.render_to_string('forum/help/emoticons.html', {
+        'emoticons': post_formatter.emoticon_processor.emoticons
+    }))
 
 ##################
 # Inclusion Tags #

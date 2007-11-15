@@ -1,0 +1,13 @@
+<div class="module emoticon-help">
+  <h2>Emoticons</h2>
+  <table>
+  <tbody>
+    {% for symbol,image in emoticons.iteritems %}
+    <tr class="{% cycle odd,even %}">
+      <td>{{ symbol }}</td>
+      <td>{{ image|safe }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  </table>
+</div>
