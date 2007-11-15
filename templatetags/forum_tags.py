@@ -1,4 +1,3 @@
-import datetime
 from urlparse import urljoin
 
 from django import template
@@ -7,10 +6,10 @@ from django.template import loader
 from django.utils import dateformat
 from django.utils.safestring import mark_safe
 
-import pytz
 from forum import auth
 from forum.formatters import post_formatter
-from forum.models import ForumProfile, TopicTracker
+from forum.models import TopicTracker
+from forum.utils import format_datetime
 
 register = template.Library()
 
@@ -69,9 +68,9 @@ def paginator(context, what, adjacent_pages=3):
         'show_last_divider': show_last and page_numbers[-1] != context['pages'] - 1,
     }
 
-###########
-# Filters #
-###########
+##########################
+# Authentication Filters #
+##########################
 
 @register.filter
 def can_edit_post(user, post):
@@ -120,51 +119,9 @@ def can_see_post_actions(user, topic):
     else:
         return False
 
-@register.filter
-def user_tz(dt, user):
-    """
-    Converts the given datetime to the given User's timezone, if they
-    have one set in their forum profile.
-
-    Adapted from http://www.djangosnippets.org/snippets/183/
-    """
-    tz = settings.TIME_ZONE
-    if user.is_authenticated():
-        profile = ForumProfile.objects.get_for_user(user)
-        if profile.timezone:
-            tz = profile.timezone
-    try:
-        result = dt.astimezone(pytz.timezone(tz))
-    except ValueError:
-        # The datetime was stored without timezone info, so use the
-        # timezone configured in settings.
-        result = dt.replace(tzinfo=pytz.timezone(settings.TIME_ZONE)) \
-                    .astimezone(pytz.timezone(tz))
-    return result
-
-def format_datetime(dt, user, date_format, time_format, separator=' '):
-    """
-    Formats a datetime, using ``'Today'`` or ``'Yesterday'`` instead of
-    the given date format when appropriate.
-
-    If a User is given and they have a timezone set in their profile,
-    the datetime will be translated to their local time.
-    """
-    if user:
-        dt = user_tz(dt, user)
-        today = user_tz(datetime.datetime.now(), user).date()
-    else:
-        today = datetime.date.today()
-    date_part = dt.date()
-    delta = date_part - today
-    if delta.days == 0:
-        date = u'Today'
-    elif delta.days == -1:
-        date = u'Yesterday'
-    else:
-        date = dateformat.format(dt, date_format)
-    return u'%s%s%s' % (date, separator,
-                        dateformat.time_format(dt.time(), time_format))
+#######################
+# Date / Time Filters #
+#######################
 
 @register.filter
 def forum_datetime(st, user=None):
@@ -172,13 +129,6 @@ def forum_datetime(st, user=None):
     Formats a general datetime.
     """
     return mark_safe(format_datetime(st, user, 'M jS Y', 'H:i A', ', '))
-
-@register.filter
-def is_first_post(post):
-    """
-    Determines if the given post is the first post in a topic.
-    """
-    return post.num_in_topic == 1 and not post.meta
 
 @register.filter
 def post_time(posted_at, user=None):
@@ -193,6 +143,17 @@ def joined_date(date):
     Formats a joined date.
     """
     return mark_safe(dateformat.format(date, 'M jS Y'))
+
+########################
+# Topic / Post Filters #
+########################
+
+@register.filter
+def is_first_post(post):
+    """
+    Determines if the given post is the first post in a topic.
+    """
+    return post.num_in_topic == 1 and not post.meta
 
 @register.filter
 def topic_status_image(topic):
@@ -211,8 +172,8 @@ def topic_status_image(topic):
 @register.filter
 def has_new_posts(topic):
     """
-    Returns ``True`` if the given topic has new posts, based on the
-    presence and value of a ``last_read`` attribute.
+    Returns ``True`` if the given topic has new posts for the current
+    User, based on the presence and value of a ``last_read`` attribute.
     """
     if hasattr(topic, 'last_read'):
         return topic.last_read is None or topic.last_post_at > topic.last_read
@@ -222,8 +183,8 @@ def has_new_posts(topic):
 @register.filter
 def topic_pagination(topic, posts_per_page):
     """
-    Creates topic listing page links for the given topic, when the given
-    number of posts are displayed on each page.
+    Creates topic listing page links for the given topic, with the given
+    number of posts per page.
 
     Topics with between 2 and 5 pages will have page links displayed for
     each page.

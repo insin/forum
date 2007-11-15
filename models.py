@@ -669,8 +669,8 @@ class TopicTrackerManager(models.Manager):
     def add_last_read_to_topics(self, topics, user):
         """
         If the given User is authenticated, adds a ``last_read``
-        attribute to the given Topics based on their TopicTrackers. This
-        will be ``None`` if there is no TopicTrackers for a Topic.
+        attribute to the given Topics based on their TopicTrackers - this
+        will be ``None`` if there is no TopicTracker for a Topic.
         """
         if user.is_authenticated():
             queryset = super(TopicTrackerManager, self).get_query_set().filter(
