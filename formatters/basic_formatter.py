@@ -23,7 +23,7 @@ def format_post_body(body, process_emoticons=True):
     """
     result = linebreaks(urlize(escape(body.strip())))
     if process_emoticons:
-        return emoticon_processor.replace(result)
+        return emoticon_processor.process(result)
     return result
 
 def quote_post(post):

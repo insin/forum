@@ -8,7 +8,7 @@ Converts emoticon symbols to images, with the symbols set as their
 Basic usage::
 
    >>> em = Emoticons()
-   >>> em.replace(u'Cheeky :p')
+   >>> em.process(u'Cheeky :p')
    u'Cheeky <img src="tongue.gif" alt=":p">'
 
 Example showing usage of all arguments::
@@ -16,7 +16,7 @@ Example showing usage of all arguments::
    >>> em = Emoticons(emoticons={':p': 'cheeky'},
    ...     base_url='http://localhost/', file_extension='png',
    ...     xhtml=True)
-   >>> em.replace(u'Cheeky :p')
+   >>> em.process(u'Cheeky :p')
    u'Cheeky <img src="http://localhost/cheeky.png" alt=":p" />'
 
 """
@@ -73,8 +73,11 @@ class Emoticons:
         keys.reverse() # use longest match first
         self.pattern = re.compile('|'.join([re.escape(key) for key in keys]))
 
-    def replace(self, text):
+    def process(self, text):
         """
+        Returns a version of the given text with emoticon symbols
+        replaced with HTML for their image equivalents.
+
         text
            The text to be processed.
         """
