@@ -2,6 +2,7 @@ body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-si
 a img { border: none; }
 blockquote { border-left: 2px solid #595979; margin-left: 1em; padding-left: 6px; }
 img { vertical-align: text-bottom; }
+.clickable { cursor: pointer; }
 
 /* Tables */
 table  { border-collapse: collapse; width: 100%; }
@@ -68,11 +69,14 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
   .fast-reply-field { padding: 8px 12px; }
   .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
   #fast-reply .buttons { text-align: center; }
-.post-body-field { margin-right: 1em; margin-bottom: .5em ; }
+.post-body-field { margin-right: 1em; margin-bottom: .5em; }
 .quick-help { float: left; }
   .quick-help table { width: auto; }
   .quick-help ul, .quick-help li { margin: 0 0 0 1em; padding: 0; }
   .quick-help blockquote { margin: 0 0 0 2em; }
+.emoticon-help { float: left; }
+  .emoticon-help table { width: auto; }
+  .emoticon-help th, .emoticon-help td { text-align: center; }
 ul.errorlist { margin: 0; padding: 0; }
   ul.errorlist li { padding: 4px 8px 4px 25px; margin: 0 0 8px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/icon_alert.gif") 5px .3em no-repeat; }
 

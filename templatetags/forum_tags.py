@@ -1,3 +1,4 @@
+from math import ceil
 from urlparse import urljoin
 
 from django import template
@@ -67,6 +68,27 @@ def paginator(context, what, adjacent_pages=3):
         'show_last': show_last,
         'show_last_divider': show_last and page_numbers[-1] != context['pages'] - 1,
     }
+
+###########
+# Filters #
+###########
+
+@register.filter
+def partition(l, n):
+    """
+    Partitions a list into lists of size ``n``.
+
+    From http://www.djangosnippets.org/snippets/6/
+    """
+    try:
+        n = int(n)
+        thelist = list(l)
+    except (ValueError, TypeError):
+        return [l]
+    lists = [list() for i in range(int(ceil(len(l) / float(n))))]
+    for i, item in enumerate(l):
+        lists[i/n].append(item)
+    return lists
 
 ##########################
 # Authentication Filters #

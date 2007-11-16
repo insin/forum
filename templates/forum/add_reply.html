@@ -1,4 +1,7 @@
-{% extends "base_forum.html" %}
+{% extends "base_forum.html" %}{% load forum_tags %}
+{% block extrahead %}
+<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/PostForm.js"></script>
+{% endblock %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
 &raquo; <a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a>
@@ -24,7 +27,7 @@
       <div class="form-field post-body-field">
         {{ form.body }}
       </div>
-      {% include quick_help_template %}
+      {% emoticon_help %}
     </div>
     <div class="form-row checkbox-row">
       {% if form.emoticons.errors %}{{ form.emoticons.errors.as_ul }}{% endif %}
