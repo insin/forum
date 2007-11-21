@@ -46,7 +46,7 @@
 
   {% ifequal user.id forum_user.id %}
   <div class="module forum-settings">
-  <h2><span class="title">Your Forum Settings</span><span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_user_forum_settings forum_user.id %}">Edit</a></span></h2>
+  <h2><span class="title">Your Forum Settings</span><span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_user_forum_settings %}">Edit</a></span></h2>
   <table>
   <tbody>
     <tr>

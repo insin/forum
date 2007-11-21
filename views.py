@@ -56,7 +56,7 @@ class TopicURLs(object):
 def get_topics_per_page(user):
     """
     Gets the number of Topics which should be displayed per page, based
-    on the given user.
+    on the given User.
     """
     if user.is_authenticated():
         forum_profile = ForumProfile.objects.get_for_user(user)
@@ -68,7 +68,7 @@ def get_topics_per_page(user):
 def get_posts_per_page(user):
     """
     Gets the number of Posts which should be displayed per page, based
-    on the given user.
+    on the given User.
     """
     if user.is_authenticated():
         forum_profile = ForumProfile.objects.get_for_user(user)
@@ -79,9 +79,9 @@ def get_posts_per_page(user):
 
 def get_avatar_dimensions():
     """
-    Creates a string specifying dimensons for user avatars. This will be
-    the empty string unless the forum is configured to force avatars to
-    display with particular dimensions.
+    Creates a string specifying dimensons for User forum avatars. This
+    will be the empty string unless the application is configured to
+    force avatars to display with particular dimensions.
     """
     if app_settings.MAX_AVATAR_DIMENSIONS is not None and \
        app_settings.FORCE_AVATAR_DIMENSIONS:
@@ -91,10 +91,11 @@ def get_avatar_dimensions():
 
 def get_page_content_or_404(request, paginator):
     """
-    Uses the page attribute specified in the given request (assuming the
-    first page if none is specified) to retrieve a page of items from the
-    given paginator, returning the current page number and items or
-    raising 404 if an invalid page was specified.
+    Uses the page specified in the query string of the given request
+    (assuming the first page if none is specified) to retrieve a page of
+    items from the given paginator, returning a two-tuple of the current
+    page number and items or raising ``Http404`` if an invalid page was
+    specified.
     """
     page = request.GET.get('page', 1)
     try:
@@ -160,7 +161,7 @@ def search(request):
 @login_required
 def search_results(request, search_id):
     """
-    Displays search results.
+    Displays Search results.
     """
     search = get_object_or_404(Search, pk=search_id)
     if not auth.user_can_view_search_results(request.user, search):
@@ -412,8 +413,8 @@ def delete_forum(request, forum_id):
 @login_required
 def new_posts(request):
     """
-    Displays all Topics hich have had new posts in the last fortnight,
-    those with newest posts first.
+    Displays all Topics which have had new posts in the last fortnight,
+    those with newest Posts first.
     """
     filters = {'last_post_at__gte': \
                datetime.date.today() - datetime.timedelta(days=14)}
@@ -514,11 +515,11 @@ def edit_topic(request, topic_id):
     """
     Edits the given Topic.
 
-    To avoid regular users from being shown non-working links, the
-    Topic's Forum's denormalised last post data is also updated when
+    To avoid regular Users from being shown non-working links, the
+    Topic's Forum's denormalised last Post data is also updated when
     necessary after the moderator has made a change to the Topic's
-    ``hidden`` status. Post counts and topic counts will not be
-    affected by hiding a Topic - it is assumed that this is a temporary
+    ``hidden`` status. Post counts and Topic counts will not be
+    affected by hiding a Topic - it is assumed this is a temporary
     measure which will either lead to a Topic being cleaned up or
     removed altogether.
     """
@@ -597,7 +598,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
     Adds a Post to a Topic.
 
     If ``quote_post`` is given, the form will be prepopulated with a
-    quoted version of the post's body.
+    quoted version of the Post's body.
     """
     filters = {'pk': topic_id}
     if not auth.is_moderator(request.user):
@@ -773,7 +774,7 @@ def delete_post(request, post_id):
     Deletes a Post after deletion is confirmed via POST.
 
     A request to delete the first post in a Topic is interpreted
-    as a request to delete the topic itself.
+    as a request to delete the Topic itself.
     """
     filters = {'pk': post_id}
     if not request.user.is_authenticated() or \
@@ -803,7 +804,7 @@ def delete_post(request, post_id):
 
 def user_profile(request, user_id):
     """
-    Displays the Forum Profile for the user with the given id.
+    Displays the ForumProfile for the user with the given id.
     """
     forum_user = get_object_or_404(User, pk=user_id)
     try:
@@ -825,7 +826,7 @@ def user_profile(request, user_id):
 
 def user_topics(request, user_id):
     """
-    Displays topics created by a given User.
+    Displays Topics created by a given User.
     """
     forum_user = get_object_or_404(User, pk=user_id)
     filters = {'user': forum_user}
@@ -846,7 +847,7 @@ def user_topics(request, user_id):
 @login_required
 def edit_user_forum_profile(request, user_id):
     """
-    Edits public information in a given User's Forum Profile.
+    Edits public information in a given User's ForumProfile.
 
     Only moderators may edit a User's title.
     """
@@ -877,15 +878,11 @@ def edit_user_forum_profile(request, user_id):
     }, context_instance=RequestContext(request))
 
 @login_required
-def edit_user_forum_settings(request, user_id):
+def edit_user_forum_settings(request):
     """
-    Edits private forum settings in a given User's Forum Profile.
+    Edits forum settings in the logged-in User's ForumProfile.
     """
-    user = get_object_or_404(User, pk=user_id)
-    if request.user.id != user.id:
-        return permission_denied(request,
-            message=u'You do not have permission to edit this user\'s forum settings.')
-    user_profile = ForumProfile.objects.get_for_user(user)
+    user_profile = ForumProfile.objects.get_for_user(request.user)
     ForumSettingsForm = forms.form_for_instance(user_profile,
         fields=['timezone', 'topics_per_page', 'posts_per_page',
                 'auto_fast_reply'])
@@ -897,7 +894,7 @@ def edit_user_forum_settings(request, user_id):
     else:
         form = ForumSettingsForm()
     return render_to_response('forum/edit_user_forum_settings.html', {
-        'forum_user': user,
+        'user': request.user,
         'forum_profile': user_profile,
         'form': form,
         'title': u'Edit Forum Settings',

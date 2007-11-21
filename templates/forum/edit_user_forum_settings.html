@@ -1,7 +1,7 @@
 {% extends "base_forum.html" %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ forum_user.username|escape }}</a>
+&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ user.username|escape }}</a>
 &raquo; <strong>{{ title|escape }}</strong>
 {% endblock %}
 {% block main_content %}
