@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from forum import auth
 from forum.formatters import post_formatter
 from forum.models import TopicTracker
-from forum.utils import format_datetime
+from forum.utils.dates import format_datetime
 
 register = template.Library()
 
