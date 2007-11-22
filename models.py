@@ -9,6 +9,7 @@ from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
 from forum.formatters import post_formatter
+from forum.utils import models as model_utils
 from pytz import common_timezones
 
 __all__ = ['ForumProfile', 'Section', 'Forum', 'Topic', 'TopicTracker', 'Post',
@@ -148,14 +149,11 @@ class ForumProfile(models.Model):
 
     def update_post_count(self):
         """
-        Executes a SQL UPDATE to update this ForumProfile's
-        ``post_count`` with the number of Posts associated with its User.
+        Updates this ForumProfile's ``post_count`` with the number of
+        Posts currently associated with its User.
         """
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('post_count').column),
-            qn(opts.pk.column)), [self.user.posts.count(), self.pk])
+        self.post_count = self.user.posts.count()
+        model_utils.update(self, 'post_count')
 
     update_post_count.alters_data = True
 
@@ -334,22 +332,19 @@ class Forum(models.Model):
 
     def update_topic_count(self):
         """
-        Executes a SQL UPDATE to update this Forum's ``topic_count``.
+        Updates this Forum's ``topic_count``.
         """
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('topic_count').column),
-            qn(opts.pk.column)), [self.topics.count(), self.pk])
+        self.topic_count = self.topics.count()
+        model_utils.update(self, 'topic_count')
 
     update_topic_count.alters_data = True
 
     def set_last_post(self, post=None):
         """
-        Executes a SQL UPDATE to update details of this forum's last post.
+        Updates denormalised details about this Forum's last Post.
 
-        It is assumed that any post given is not a metapost and is not in
-        a hidden topic.
+        It is assumed that any Post given is not a metapost and is not in
+        a hidden Topic.
 
         If the last Post is not given, the last non-meta, non-hidden Post
         will be looked up. This method should never set the details of a
@@ -363,24 +358,19 @@ class Forum(models.Model):
                                            topic__forum=self,
                                            topic__hidden=False) \
                                     .order_by('-posted_at', '-id')[0]
-            params = [post.posted_at, post.topic.pk, post.topic.title,
-                      post.user.pk, post.user.username, self.pk]
+            self.last_post_at = post.posted_at
+            self.last_topic_id = post.topic.pk
+            self.last_topic_title = post.topic.title
+            self.last_user_id = post.user.pk
+            self.last_username = post.user.username
         except IndexError:
             # No Post was given and there was no latest, non-hidden
             # Post, so there must not be any eligible Topics in the
             # Forum at the moment.
-            params = [None, None, '', None, '', self.pk]
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute("""
-            UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s, %s=%%s
-            WHERE %s=%%s""" % (
-            qn(opts.db_table), qn(opts.get_field('last_post_at').column),
-            qn(opts.get_field('last_topic_id').column),
-            qn(opts.get_field('last_topic_title').column),
-            qn(opts.get_field('last_user_id').column),
-            qn(opts.get_field('last_username').column),
-            qn(opts.pk.column)), params)
+            self.last_post_at, self.last_topic_id, self.last_user_id = (None, None, None)
+            self.last_topic_title, self.last_username = ('', '')
+        model_utils.update(self, 'last_post_at', 'last_topic_id',
+                           'last_topic_title', 'last_user_id', 'last_username')
 
     set_last_post.alters_data = True
 
@@ -626,22 +616,19 @@ class Topic(models.Model):
 
     def update_post_count(self, meta=False):
         """
-        Executes a SQL UPDATE to update one of this Topic's denormalised
-        Post counts, based on ``meta``.
+        Updates one of this Topic's denormalised Post counts, based on
+        ``meta``.
         """
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table),
-            qn(opts.get_field('%spost_count' % (meta and 'meta' or '',)).column),
-            qn(opts.pk.column)), [self.posts.filter(meta=meta).count(), self.pk])
+        field_name = '%spost_count' % (meta and 'meta' or '',)
+        setattr(self, field_name, self.posts.filter(meta=meta).count())
+        model_utils.update(self, field_name)
 
     update_post_count.alters_data = True
 
     def set_last_post(self, post=None):
         """
-        Executes a SQL UPDATE to set details about this Topic's last Post
-        and update its denormalised ``post_count``.
+        Updates details about this Topic's last Post and its
+        denormalised ``post_count``.
 
         It is assumed that any Post given is not a metapost.
 
@@ -649,29 +636,21 @@ class Topic(models.Model):
         """
         if post is None:
             post = self.posts.filter(meta=False).order_by('-posted_at', '-id')[0]
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s, %s=%%s, %s=%%s, %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('post_count').column),
-            qn(opts.get_field('last_post_at').column),
-            qn(opts.get_field('last_user_id').column),
-            qn(opts.get_field('last_username').column),
-            qn(opts.pk.column)), [self.posts.filter(meta=False).count(),
-                                  post.posted_at, post.user.pk,
-                                  post.user.username, self.pk])
+        self.post_count = self.posts.filter(meta=False).count()
+        self.last_post_at = post.posted_at
+        self.last_user_id = post.user.pk
+        self.last_username = post.user.username
+        model_utils.update(self, 'post_count', 'last_post_at', 'last_user_id',
+                           'last_username')
 
     set_last_post.alters_data = True
 
     def increment_view_count(self):
         """
-        Executes a SQL UPDATE to increment this Topic's ``view_count``.
+        Increment this Topic's ``view_count``.
         """
         self.view_count += 1
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('view_count').column),
-            qn(opts.pk.column)), [self.view_count, self.pk])
+        model_utils.update(self, 'view_count')
 
     increment_view_count.alters_data = True
 
@@ -713,16 +692,10 @@ class TopicTracker(models.Model):
 
     def update_last_read(self, last_read):
         """
-        Executes a SQL UPDATE to update this TopicTracker's ``last_read``.
-
-        This avoids the extra query which would be performed to determine
-        object existance if we were to call save() on the instance instead.
+        Updates this TopicTracker's ``last_read``.
         """
-        opts = self._meta
-        cursor = connection.cursor()
-        cursor.execute('UPDATE %s SET %s=%%s WHERE %s=%%s' % (
-            qn(opts.db_table), qn(opts.get_field('last_read').column),
-            qn(opts.pk.column)), [last_read, self.pk])
+        self.last_read = last_read
+        model_utils.update(self, 'last_read')
 
     update_last_read.alters_data = True
 
