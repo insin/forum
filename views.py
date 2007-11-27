@@ -591,6 +591,61 @@ def delete_topic(request, topic_id):
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
+def topic_post_summary(request, topic_id):
+    """
+    Displays a summary of Users who have posted in the given Topic and
+    the number of posts they have made.
+    """
+    filters = {'pk': topic_id}
+    if not request.user.is_authenticated() or \
+       not auth.is_moderator(request.user):
+        filters['hidden'] = False
+    topic = get_object_or_404(Topic, **filters)
+
+    post_opts = Post._meta
+    post_table = qn(post_opts.db_table)
+    meta = qn(post_opts.get_field('meta').column)
+    topic_fk = qn(post_opts.get_field('topic').column)
+    user_fk = qn(post_opts.get_field('user').column)
+
+    user_opts = User._meta
+    user_table = qn(user_opts.db_table)
+    user_pk = qn(user_opts.pk.column)
+
+    users = User.objects.extra(
+        select={'post_count': """SELECT COUNT(%(post_pk)s)
+            FROM %(post)s
+            WHERE %(topic_fk)s=%%s
+              AND %(user_fk)s=%(user)s.%(user_pk)s
+              AND %(meta)s=%%s""" % {
+                'post_pk':  qn(post_opts.pk.column),
+                'post':     post_table,
+                'topic_fk': topic_fk,
+                'user_fk':  user_fk,
+                'user':     user_table,
+                'user_pk':  user_pk,
+                'meta':     meta,
+            }},
+        where=["""%(user)s.%(user_pk)s IN (
+            SELECT DISTINCT %(user_fk)s
+            FROM %(post)s
+            WHERE %(topic_fk)s=%%s
+            AND %(meta)s=%%s)""" % {
+                'user':     user_table,
+                'user_pk':  user_pk,
+                'user_fk':  user_fk,
+                'post':     post_table,
+                'topic_fk': topic_fk,
+                'meta':     meta,
+            }],
+        params=[topic.pk, False] * 2,
+    ).order_by('-post_count')
+
+    return render_to_response('forum/topic_post_summary.html', {
+        'topic': topic,
+        'users': users,
+    }, context_instance=RequestContext(request))
+
 @login_required
 @transaction.commit_on_success
 def add_reply(request, topic_id, meta=False, quote_post=None):

@@ -1,0 +1,23 @@
+{% extends "base_forum.html" %}
+{% block breadcrumbs %}{% endblock %}
+{% block main_content %}
+<div class="module">
+  <h2>Users who posted in {{ topic.title|escape }}</h2>
+  <table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Posts</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for topic_user in users %}
+    <tr class="{% cycle odd, even %}">
+      <td><a href="{% url forum_user_profile topic_user.id %}">{{ topic_user.username|escape }}</a></td>
+      <td>{{ topic_user.post_count }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  </table>
+</div>
+{% endblock %}
