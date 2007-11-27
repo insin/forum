@@ -1,9 +1,17 @@
 {% extends "base_forum.html" %}
-{% block breadcrumbs %}{% endblock %}
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a>
+&raquo; <a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a>
+&raquo; <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>
+&raquo; <strong>Post Summary</strong>
+{% endblock %}
 {% block main_content %}
 <div class="module">
-  <h2>Users who posted in {{ topic.title|escape }}</h2>
+  <h2>{{ title|escape }}</h2>
   <table>
+  <col width="50%">
+  <col width="50%">
   <thead>
     <tr>
       <th>User</th>

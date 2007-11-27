@@ -594,13 +594,13 @@ def delete_topic(request, topic_id):
 def topic_post_summary(request, topic_id):
     """
     Displays a summary of Users who have posted in the given Topic and
-    the number of posts they have made.
+    the number of Posts they have made.
     """
     filters = {'pk': topic_id}
     if not request.user.is_authenticated() or \
        not auth.is_moderator(request.user):
         filters['hidden'] = False
-    topic = get_object_or_404(Topic, **filters)
+    topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
 
     post_opts = Post._meta
     post_table = qn(post_opts.db_table)
@@ -644,6 +644,7 @@ def topic_post_summary(request, topic_id):
     return render_to_response('forum/topic_post_summary.html', {
         'topic': topic,
         'users': users,
+        'title': u'Users who posted in %s' % topic.title,
     }, context_instance=RequestContext(request))
 
 @login_required
