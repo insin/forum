@@ -69,6 +69,7 @@ fieldset { padding: 0; margin-left: 0; margin-right: 0; }
   .fast-reply-field { padding: 8px 12px; }
   .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
   #fast-reply .buttons { text-align: center; }
+  #fast-reply .checkbox-row { text-align: center; padding-top: 0; }
 .post-body-field { margin-right: 1em; margin-bottom: .5em; }
 .quick-help { float: left; }
   .quick-help table { width: auto; }
