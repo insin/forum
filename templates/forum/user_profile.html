@@ -80,8 +80,8 @@
 <col width="35%">
 <col width="15%">
 <col>
-<col width="1" align="center">
-<col width="1" align="center">
+<col width="1">
+<col width="1">
 <col width="20%">
 <thead>
   <tr>
@@ -104,8 +104,8 @@
     </td>
     <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
     <td>{{ topic.started_at|timesince }} ago</td>
-    <td><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
-    <td>{{ topic.view_count|intcomma }}</td>
+    <td class="posts"><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
+    <td class="views">{{ topic.view_count|intcomma }}</td>
     <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
