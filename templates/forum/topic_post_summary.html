@@ -21,7 +21,7 @@
   <tbody>
     {% for topic_user in users %}
     <tr class="{% cycle odd,even %}">
-      <td><a href="{% url forum_user_profile topic_user.id %}">{{ topic_user.username|escape }}</a></td>
+      <td><a href="{% url forum_user_profile topic_user.id %}">{{ topic_user.username|escape }}</a>{% ifequal topic.user_id topic_user.id %} (Topic Starter){% endifequal %}</td>
       <td>{{ topic_user.post_count }}</td>
     </tr>
     {% endfor %}
