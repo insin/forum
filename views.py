@@ -681,6 +681,8 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
                 post = form.save(commit=False)
                 post.topic = topic
                 post.user = request.user
+                # Only force the meta attribute if posting in meta mode,
+                # as otherwise the user can choose to create a meta post.
                 if meta:
                     post.meta = True
                 post.user_ip = request.META['REMOTE_ADDR']
