@@ -23,6 +23,7 @@
         {{ form.email }}
       </div>
     </div>
+    {% if form.non_field_errors %}{{ form.non_field_errors.as_ul }}{% endif %}
     <div class="form-row">
       {% if form.password1.errors %}{{ form.password1.errors.as_ul }}{% endif %}
       {{ form.password1.label_tag }}
