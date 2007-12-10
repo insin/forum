@@ -6,35 +6,16 @@
   <meta name="Author" content="Jonathan Buchanan">
   <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}forum/css/style.css" media="all">
   <!--[if LT IE 7]><link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}forum/css/ie.css" media="all"><![endif]-->
-  <script type="text/javascript" src="{{ MEDIA_URL }}forum/js/jquery-1.2.1.pack.js"></script>
   {% block extrahead %}{% endblock %}
 </head>
 <body>
 
 <div id="userbar">
-{% if user.is_authenticated %}
-  <div id="authenticated">
-    Logged in as: <a class="user" href="{% url forum_user_profile user.id %}">{{ user.username|escape }}</a> (<a href="{% url auth_logout %}">Log out</a>)
-  </div>
-  <div id="user-tools">
-    <a href="{% url forum_new_posts %}">View New Posts</a> |
-    <a href="{% url forum_search %}">Search</a>
-  </div>
-{% else %}
-  <div id="anonymous">
-    <a href="{% url auth_login %}">Log in</a> or <a href="{% url registration_register %}">Sign up</a>
-  </div>
-{% endif %}
+{% block userbar %}{% endblock %}
 </div>
 
 <div id="breadcrumbs">
-{% block breadcrumbs %}
-<a href="{% url forum_index %}">Forums</a>
-{% if section %}{% ifnotequal section.name title %}&raquo; <a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a>{% endifnotequal %}{% endif %}
-{% if forum %}{% ifnotequal forum.name title %}&raquo; <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>{% endifnotequal %}{% endif %}
-{% if topic %}{% ifnotequal topic.title title %}&raquo; <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a>{% endifnotequal %}{% endif %}
-{% if title %}&raquo; <strong>{{ title|escape }}</strong>{% endif %}
-{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 </div>
 
 <div id="content">

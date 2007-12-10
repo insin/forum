@@ -1,4 +1,4 @@
-{% extends "base_forum.html" %}{% load forum_tags %}
+{% extends "forum/base.html" %}{% load forum_tags %}
 {% block main_content %}
 {% if topic.hidden %}
 <p class="description"><img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden"> This topic is hidden.</p>

@@ -1,4 +1,4 @@
-{% extends "base_forum.html" %}{% load forum_tags %}
+{% extends "forum/base.html" %}{% load forum_tags %}
 {% block main_content %}
 <p class="description">Are you sure you want to delete the <strong>{{ forum.name|escape }}</strong> forum?</p>
 {% if topic_count %}

@@ -1,5 +1,8 @@
-{% extends "base_forum.html" %}{% load forum_tags %}{% load humanize %}
-{% block extrahead %}{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}{% endblock %}
+{% extends "forum/base.html" %}{% load forum_tags %}{% load humanize %}
+{% block extrahead %}
+{{ block.super }}
+{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}
+{% endblock %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
 &raquo; <a href="{% url forum_user_profile forum_user.id %}">Forum Profile for {{ forum_user.username|escape }}</a>

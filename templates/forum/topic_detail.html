@@ -1,9 +1,10 @@
-{% extends "base_forum.html" %}{% load forum_tags %}
+{% extends "forum/base.html" %}{% load forum_tags %}
 
 {% block extrahead %}
-  <script type="text/javascript">var createFastReplyControls = {{ user|can_see_post_actions:topic|yesno:"true,false" }};</script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Topic.js"></script>
-  {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}
+{{ block.super }}
+<script type="text/javascript">var createFastReplyControls = {{ user|can_see_post_actions:topic|yesno:"true,false" }};</script>
+<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Topic.js"></script>
+{% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}
 {% endblock %}
 
 {% block breadcrumbs %}

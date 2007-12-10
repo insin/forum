@@ -1,4 +1,4 @@
-{% extends "base_forum.html" %}
+{% extends "forum/base.html" %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
 &raquo; <a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a>
