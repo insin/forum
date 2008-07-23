@@ -36,7 +36,9 @@ urlpatterns = patterns('forum.views',
 )
 
 if app_settings.STANDALONE:
+    from django.contrib import admin
+    admin.autodiscover()
     urlpatterns += patterns('',
         (r'accounts/', include('registration.urls')),
-        (r'admin/', include('django.contrib.admin.urls')),
+        (r'admin/(.*)', admin.site.root),
     )

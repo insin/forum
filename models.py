@@ -15,8 +15,6 @@ from pytz import common_timezones
 __all__ = ['ForumProfile', 'Section', 'Forum', 'Topic', 'TopicTracker', 'Post',
            'Search']
 
-DENORMALISED_DATA_NOTICE = u'You shouldn\'t need to edit this data manually.'
-
 qn = connection.ops.quote_name
 
 class ForumProfileManager(models.Manager):
@@ -109,26 +107,6 @@ class ForumProfile(models.Model):
     class Meta:
         ordering = ('user',)
 
-    class Admin:
-        list_display = ('user', 'group', 'title', 'location',
-                        'post_count')
-        list_filter = ('group',)
-        fields = (
-            (None, {
-                'fields': ('user', 'group', 'title', 'location', 'avatar',
-                           'website'),
-            }),
-            (u'Board settings', {
-                'fields': ('timezone', 'topics_per_page', 'posts_per_page',
-                           'auto_fast_reply'),
-            }),
-            (u'Denormalised data', {
-                'classes': u'collapse',
-                'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('post_count',),
-            }),
-        )
-
     @models.permalink
     def get_absolute_url(self):
         return ('forum_user_profile', (smart_unicode(self.user_id),))
@@ -154,7 +132,6 @@ class ForumProfile(models.Model):
         """
         self.post_count = self.user.posts.count()
         model_utils.update(self, 'post_count')
-
     update_post_count.alters_data = True
 
 class SectionManager(models.Manager):
@@ -224,9 +201,6 @@ class Section(models.Model):
 
     class Meta:
         ordering = ('order',)
-
-    class Admin:
-        list_display = ('name', 'order')
 
     @models.permalink
     def get_absolute_url(self):
@@ -306,26 +280,6 @@ class Forum(models.Model):
     class Meta:
         ordering = ('order',)
 
-    class Admin:
-        list_display = ('name', 'section', 'description', 'order',
-                        'topic_count', 'locked', 'hidden')
-        list_filter = ('section',)
-        fields = (
-            (None, {
-                'fields': ('name', 'section', 'description', 'order'),
-            }),
-            (u'Administration', {
-                'fields': ('locked', 'hidden'),
-            }),
-            (u'Denormalised data', {
-                'classes': u'collapse',
-                'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('topic_count', 'last_post_at', 'last_topic_id',
-                           'last_topic_title','last_user_id', 'last_username'),
-            }),
-        )
-        search_fields = ('name',)
-
     @models.permalink
     def get_absolute_url(self):
         return ('forum_forum_detail', (smart_unicode(self.pk),))
@@ -336,7 +290,6 @@ class Forum(models.Model):
         """
         self.topic_count = self.topics.count()
         model_utils.update(self, 'topic_count')
-
     update_topic_count.alters_data = True
 
     def set_last_post(self, post=None):
@@ -371,7 +324,6 @@ class Forum(models.Model):
             self.last_topic_title, self.last_username = ('', '')
         model_utils.update(self, 'last_post_at', 'last_topic_id',
                            'last_topic_title', 'last_user_id', 'last_username')
-
     set_last_post.alters_data = True
 
 class TopicManager(models.Manager):
@@ -579,27 +531,6 @@ class Topic(models.Model):
     class Meta:
         ordering = ('-last_post_at', '-started_at')
 
-    class Admin:
-        list_display = ('title', 'forum', 'user', 'started_at', 'post_count',
-                        'metapost_count', 'view_count', 'last_post_at',
-                        'locked', 'pinned', 'hidden')
-        list_filter = ('forum', 'locked', 'pinned', 'hidden')
-        fields = (
-            (None, {
-                'fields': ('title', 'forum', 'user', 'description'),
-            }),
-            (u'Administration', {
-                'fields': ('pinned', 'locked', 'hidden'),
-            }),
-            (u'Denormalised data', {
-                'classes': u'collapse',
-                'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('post_count', 'metapost_count', 'view_count',
-                           'last_post_at', 'last_user_id', 'last_username'),
-            }),
-        )
-        search_fields = ('title',)
-
     @models.permalink
     def get_absolute_url(self):
         return ('forum_topic_detail', (smart_unicode(self.pk),))
@@ -622,7 +553,6 @@ class Topic(models.Model):
         field_name = '%spost_count' % (meta and 'meta' or '',)
         setattr(self, field_name, self.posts.filter(meta=meta).count())
         model_utils.update(self, field_name)
-
     update_post_count.alters_data = True
 
     def set_last_post(self, post=None):
@@ -642,7 +572,6 @@ class Topic(models.Model):
         self.last_username = post.user.username
         model_utils.update(self, 'post_count', 'last_post_at', 'last_user_id',
                            'last_username')
-
     set_last_post.alters_data = True
 
     def increment_view_count(self):
@@ -651,7 +580,6 @@ class Topic(models.Model):
         """
         self.view_count += 1
         model_utils.update(self, 'view_count')
-
     increment_view_count.alters_data = True
 
 class TopicTrackerManager(models.Manager):
@@ -687,16 +615,12 @@ class TopicTracker(models.Model):
     class Meta:
         unique_together = (('user', 'topic'),)
 
-    class Admin:
-        list_display = ('user', 'topic', 'last_read')
-
     def update_last_read(self, last_read):
         """
         Updates this TopicTracker's ``last_read``.
         """
         self.last_read = last_read
         model_utils.update(self, 'last_read')
-
     update_last_read.alters_data = True
 
 class PostManager(models.Manager):
@@ -901,22 +825,6 @@ class Post(models.Model):
     class Meta:
         ordering = ('-posted_at', '-id')
 
-    class Admin:
-        list_display = ('__unicode__', 'user', 'topic', 'meta', 'posted_at',
-                        'edited_at', 'user_ip')
-        list_filter = ('meta',)
-        fields = (
-            (None, {
-                'fields': ('user', 'topic', 'body', 'meta', 'emoticons'),
-            }),
-            (u'Denormalised data', {
-                'classes': u'collapse',
-                'description': DENORMALISED_DATA_NOTICE,
-                'fields': ('num_in_topic',),
-            }),
-        )
-        search_fields = ('body',)
-
     @models.permalink
     def get_absolute_url(self):
         return ('forum_redirect_to_post', (smart_unicode(self.pk),))
@@ -951,10 +859,6 @@ class Search(models.Model):
     class Meta:
         ordering = ('-searched_at',)
         verbose_name_plural = u'searches'
-
-    class Admin:
-        list_display = ('type', 'user', 'searched_at')
-        list_filter = ('type',)
 
     @models.permalink
     def get_absolute_url(self):
