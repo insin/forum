@@ -3,7 +3,7 @@ import datetime
 from django import newforms as forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.paginator import ObjectPaginator, InvalidPage
+from django.core.paginator import Paginator, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection, transaction
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
@@ -89,27 +89,17 @@ def get_avatar_dimensions():
     else:
         return u''
 
-def get_page_content_or_404(request, paginator):
+def get_page_or_404(request, paginator, page_param='page'):
     """
     Uses the page specified in the query string of the given request
-    (assuming the first page if none is specified) to retrieve a page of
-    items from the given paginator, returning a two-tuple of the current
-    page number and items or raising ``Http404`` if an invalid page was
-    specified.
+    (assuming the first page if none is specified) to retrieve a page
+    from the given paginator, returning the current page or raising
+    ``Http404`` if an invalid page was specified.
     """
-    page = request.GET.get('page', 1)
     try:
-        page_number = int(page)
-    except ValueError:
+        return paginator.page(int(request.GET.get(page_param, 1)))
+    except (ValueError, InvalidPage):
         raise Http404
-    try:
-        items = list(paginator.get_page(page_number - 1))
-    except InvalidPage:
-        if page_number == 1:
-            items = []
-        else:
-            raise Http404
-    return page_number, items
 
 ##################
 # View Functions #
@@ -171,27 +161,24 @@ def search_results(request, search_id):
         items_per_page = get_posts_per_page(request.user)
     else:
         items_per_page = get_topics_per_page(request.user)
-    paginator = ObjectPaginator(search.result_ids.split(','), items_per_page)
-    page_number, object_ids = get_page_content_or_404(request, paginator)
+    paginator = Paginator(search.result_ids.split(','), items_per_page)
+    page = get_page_or_404(request, paginator)
     model = search.get_result_model()
     model_name = capfirst(model._meta.verbose_name)
     context = {
         'title': u'%s Search Results' % model_name,
         'search': search,
         'object_list': model.objects.with_standalone_details() \
-                             .filter(pk__in=object_ids).order_by('id'),
+                             .filter(pk__in=page.object_list).order_by('id'),
         'object_name': model_name,
-        'is_paginated': paginator.pages > 1,
-        'results_per_page': paginator.num_per_page,
-        'has_next': paginator.has_next_page(page_number - 1),
-        'has_previous': paginator.has_previous_page(page_number - 1),
-        'page': page_number,
-        'next': page_number + 1,
-        'previous': page_number - 1,
-        'last_on_page': paginator.last_on_page(page_number - 1),
-        'first_on_page': paginator.first_on_page(page_number - 1),
-        'pages': paginator.pages,
-        'hits' : paginator.hits,
+        'is_paginated': paginator.num_pages > 1,
+        'has_next': page.has_next(),
+        'has_previous': page.has_previous(),
+        'page': page.number,
+        'next': page.next_page_number(),
+        'previous': page.previous_page_number(),
+        'pages': paginator.num_pages,
+        'hits' : paginator.count,
     }
     if search.type == Search.TOPIC_SEARCH:
         context['posts_per_page'] = get_posts_per_page(request.user)
@@ -351,37 +338,34 @@ def forum_detail(request, forum_id):
         topic_filters['hidden'] = False
     # Get a page of topics
     topics_per_page = get_topics_per_page(request.user)
-    paginator = ObjectPaginator(
+    paginator = Paginator(
         Topic.objects.with_user_details().filter(**topic_filters),
         topics_per_page)
-    page_number, topics = get_page_content_or_404(request, paginator)
+    page = get_page_or_404(request, paginator)
+    topics = list(page.object_list)
     context = {
         'section': forum.section,
         'forum': forum,
-        'topic_list': list(topics),
+        'topic_list': topics,
         'title': forum.name,
         'posts_per_page': get_posts_per_page(request.user),
-        'is_paginated': paginator.pages > 1,
-        'results_per_page': topics_per_page,
-        'has_next': paginator.has_next_page(page_number - 1),
-        'has_previous': paginator.has_previous_page(page_number - 1),
-        'page': page_number,
-        'next': page_number + 1,
-        'previous': page_number - 1,
-        'last_on_page': paginator.last_on_page(page_number - 1),
-        'first_on_page': paginator.first_on_page(page_number - 1),
-        'pages': paginator.pages,
-        'hits' : paginator.hits,
+        'is_paginated': paginator.num_pages > 1,
+        'has_next': page.has_next(),
+        'has_previous': page.has_previous(),
+        'page': page.number,
+        'next': page.next_page_number(),
+        'previous': page.previous_page_number(),
+        'pages': paginator.num_pages,
+        'hits' : paginator.count,
     }
-    # Get pinned topics too if we're on the first page
-    if page_number == 1:
+    # Get pinned topics too if we're on the first page and add the
+    # current user's last read details to all topics.
+    if page.number == 1:
         topic_filters['pinned'] = True
         pinned_topics = list(Topic.objects.with_user_details() \
                                            .filter(**topic_filters) \
                                             .order_by('-started_at'))
         context['pinned_topics'] = pinned_topics
-    # Add the current user's last read details to topics
-    if page_number == 1:
         TopicTracker.objects.add_last_read_to_topics(topics + pinned_topics,
                                                      request.user)
     else:

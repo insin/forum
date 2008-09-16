@@ -55,7 +55,6 @@ def paginator(context, what, adjacent_pages=3):
     return {
         'what': what,
         'hits': context['hits'],
-        'results_per_page': context['results_per_page'],
         'page': context['page'],
         'pages': context['pages'],
         'page_numbers': page_numbers,
