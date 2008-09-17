@@ -161,7 +161,10 @@ def search_results(request, search_id):
         items_per_page = get_posts_per_page(request.user)
     else:
         items_per_page = get_topics_per_page(request.user)
-    paginator = Paginator(search.result_ids.split(','), items_per_page)
+    search_result_ids = []
+    if search.result_ids:
+        search_result_ids = search.result_ids.split(',')
+    paginator = Paginator(search_result_ids, items_per_page)
     page = get_page_or_404(request, paginator)
     model = search.get_result_model()
     model_name = capfirst(model._meta.verbose_name)
