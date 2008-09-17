@@ -3,7 +3,7 @@ import operator
 import urllib
 
 from django import newforms as forms
-from django.db.models.query import Q, QNot
+from django.db.models.query_utils import Q
 from django.template.defaultfilters import filesizeformat
 from django.utils.text import capfirst, get_text_list, smart_split
 
@@ -221,7 +221,7 @@ class SearchForm(forms.Form):
             if keyword[0] == '+':
                 filters.append(Q(**{'%s__icontains' % text_lookup: keyword[1:]}))
             elif keyword[0] == '-':
-                filters.append(QNot(Q(**{'%s__icontains' % text_lookup: keyword[1:]})))
+                filters.append(~Q(**{'%s__icontains' % text_lookup: keyword[1:]}))
             elif keyword[0] == '"' and keyword[-1] == '"' or \
                  keyword[0] == "'" and keyword[-1] == "'":
                 phrase_filters.append(Q(**{'%s__icontains' % text_lookup: keyword[1:-1]}))
