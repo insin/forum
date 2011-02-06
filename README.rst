@@ -27,10 +27,8 @@ forum in standalone mode:
 
 The following modules are only required in certain circumstances:
 
-- `python-markdown`_ SVN revision 55 or better is required to use the
-  ``forum.formatters.MarkdownFormatter`` class to to format posts using
-  `Markdown`_ syntax, which depends on the ``safe_mode='escape'`` feature
-  introduced in revision 55.
+- `python-markdown2`_ is required to use ``forum.formatters.MarkdownFormatter``
+  to format posts using `Markdown`_ syntax.
 - `postmarkup`_ is required to use the ``forum.formatters.BBCodeFormatter``
   class to format posts using a `BBCode`_-like syntax.
 
