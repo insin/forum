@@ -57,7 +57,7 @@ class MarkdownFormatter(PostFormatter):
 
     def __init__(self, *args, **kwargs):
         super(MarkdownFormatter, self).__init__(*args, **kwargs)
-        from markdown import Markdown
+        from markdown2 import Markdown
         self.md = Markdown(safe_mode='escape')
 
     def format_post_body(self, body):

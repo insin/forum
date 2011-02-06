@@ -2,11 +2,8 @@
 Django Forum
 ============
 
-:author: Jonathan Buchanan
-
 This is a basic forum application which should eventually be usable as a
 pluggable application in a Django project, or by itself as a standalone project.
-
 
 Installation
 ============
@@ -16,9 +13,6 @@ Dependencies
 
 The following must be installed before you can use the forum application:
 
-- `Django`_ is obviously required, but you'll need a recent SVN checkout to use
-  the forum application - it *will not* work with version 0.96, which is the
-  latest Django release at the time of writing.
 - `Python Imaging Library`_ (PIL) is required for validation of user avatars.
 - `pytz`_ is required to perform timezone conversions based on the timezone
   registered users can choose as part of their forum profile.
@@ -44,31 +38,15 @@ The following modules are only required in certain circumstances:
 .. _`Python Imaging Library`: http://www.pythonware.com/products/pil/
 .. _`pytz`: http://pytz.sourceforge.net/
 .. _`django-registration`: http://code.google.com/p/django-registration/
-.. _`python-markdown`: http://www.freewisdom.org/projects/python-markdown/
+.. _`python-markdown2`: http://code.google.com/p/python-markdown2
 .. _`Markdown`: http://daringfireball.net/projects/markdown/
 .. _`postmarkup`: http://code.google.com/p/postmarkup/
 .. _`BBCode`: http://en.wikipedia.org/wiki/BBCode
 
-Get The Code
-------------
-
-The forum application is currently available as a `darcs`_ repository. Execute
-the following command from somewhere on your Python path to grab the codebase::
-
-    darcs get http://www.jonathanbuchanan.plus.com/repos/forum/
-
-Should you wish to update the codebase at a later date with any subsequent
-patches which have added to the repository, navigate to the ``forum`` directory
-from the command-line and execute the following command::
-
-    darcs pull
-
-.. _`darcs`: http://www.darcs.net
-
 Standalone Mode
 ---------------
 
-At the time of writing, the codebase comes with the standard Django
+At the time of typing, the codebase comes with the standard Django
 ``manage.py`` convenience script for administrating projects and a complete
 development ``settings.py`` module which is filesystem agnostic and uses SQLite
 as the project's database engine.
