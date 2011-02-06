@@ -1,5 +1,5 @@
 Django==1.2.4
-django-registration==0.7
+-e hg+https://bitbucket.org/ubernostrum/django-registration#egg=registration
 markdown2==1.0.1.17
 pil==1.1.7
 postmarkup==1.1.4
