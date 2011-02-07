@@ -49,37 +49,10 @@ At the time of typing, the codebase comes with the standard Django
 development ``settings.py`` module which is filesystem agnostic and uses SQLite
 as the project's database engine.
 
-Quick Start
-~~~~~~~~~~~
-
-For a quick start, navigate to the ``forum`` directory from the command-line and
-execute the following commands::
-
-    python manage.py syncdb --noinput
-
-    python create-test-data.py
-
-    python manage.py runserver
-
-Ensure that the application's static media files are accessible - the default
-``MEDIA_URL`` setting points at ``http://localhost/media/``, as the default
-settings assume that you're going to be running a webserver locally to serve up
-static media. If you're running `Apache`_, adding the following line to your
-``httpd.conf`` and restarting the server will ensure that the application's
-media is accessible::
-
-    Alias /media/forum /full/path/to/forum/media
-
-Don't forget to replace ``/full/path/to/`` above with the actual full path to
-your local copy of the codebase, of course.
-
-.. _`Apache`: http://httpd.apache.org
-
 Pluggable Application Mode
 --------------------------
 
-**Note: this has not yet been tested** -- See the `TODO list`_ for more
-information on the testing which is yet to be performed.
+**Note: this has not yet been fully developed or tested yet**
 
 Add ``'forum'`` to your application's ``INSTALLED_APPS`` setting, then execute
 ``python manage.py syncdb`` from the command-line to install the tables it requires.
@@ -96,26 +69,7 @@ like. For example::
 The forum application's URLs are decoupled using Django's `named URL patterns`_
 feature, so it doesn't mind which URL you choose to have it accessible at.
 
-.. _`TODO list`: http://www.jonathanbuchanan.plus.com/repos/forum/TODO.txt
 .. _`named URL patterns`: http://www.djangoproject.com/documentation/url_dispatch/#naming-url-patterns
-
-Additional Configuration
-------------------------
-
-If the server you're running the forum application on is sitting behind a
-reverse proxy, add ``'django.middleware.http.SetRemoteAddrFromForwardedFor'`` to
-the list of ``MIDDLEWARE_CLASSES`` in your settings module to ensure that the
-IP address each post was made from is recorded accurately.
-
-In this situation, without this middleware in place all posts would appear to be
-made from the server's local IP. The forum application does not attempt to use
-the contents of the ``HTTP_X_FORWARDED_FOR`` header manually in this situation
-due to the ease with which this could be exploited to "fake" post IP addresses
-when not sitting behind a trusted reverse proxy, as discussed in the
-`SetRemoteAddrFromForwardedFor documentation`_.
-
-.. _`SetRemoteAddrFromForwardedFor documentation`: http://www.djangoproject.com/documentation/middleware/#django-middleware-http-setremoteaddrfromforwardedfor
-
 
 Settings
 ========
