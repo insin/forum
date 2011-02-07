@@ -24,18 +24,20 @@ forum in standalone mode:
   users when running as a standalone project - it is assumed that when the forum
   is integrated into existing projects, they will already have their own
   registration mechanism in place.
+- `Django Debug Toolbar` - 'nuff said.
 
 The following modules are only required in certain circumstances:
 
 - `python-markdown2`_ is required to use ``forum.formatters.MarkdownFormatter``
   to format posts using `Markdown`_ syntax.
-- `postmarkup`_ is required to use the ``forum.formatters.BBCodeFormatter``
-  class to format posts using a `BBCode`_-like syntax.
+- `postmarkup`_ is required to use ``forum.formatters.BBCodeFormatter``
+  to format posts using a `BBCode`_-like syntax.
 
 .. _`Django`: http://www.djangoproject.com/
 .. _`Python Imaging Library`: http://www.pythonware.com/products/pil/
 .. _`pytz`: http://pytz.sourceforge.net/
 .. _`django-registration`: http://code.google.com/p/django-registration/
+.. _`Django Debug Toolbar`: http://robhudson.github.com/django-debug-toolbar/
 .. _`python-markdown2`: http://code.google.com/p/python-markdown2
 .. _`Markdown`: http://daringfireball.net/projects/markdown/
 .. _`postmarkup`: http://code.google.com/p/postmarkup/
@@ -44,15 +46,14 @@ The following modules are only required in certain circumstances:
 Standalone Mode
 ---------------
 
-At the time of typing, the codebase comes with the standard Django
-``manage.py`` convenience script for administrating projects and a complete
-development ``settings.py`` module which is filesystem agnostic and uses SQLite
-as the project's database engine.
+At the time of typing, the codebase comes with a complete development
+``settings.py`` module which can be used to run the forum in standalone
+mode.
 
 Pluggable Application Mode
 --------------------------
 
-**Note: this has not yet been fully developed or tested yet**
+**Note: this mode has not yet been fully developed or tested**
 
 Add ``'forum'`` to your application's ``INSTALLED_APPS`` setting, then execute
 ``python manage.py syncdb`` from the command-line to install the tables it requires.
