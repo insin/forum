@@ -39,6 +39,7 @@ This Section does not have any Forums yet.
 </div>
 
 <form name="deleteSectionForm" id="deleteSectionForm" action="{% url forum_delete_section section.id %}" method="POST">
+{% csrf_token %}
 <div class="buttons">
   <input type="submit" value="Confirm Deletion">
   <a href="{{ section.get_absolute_url }}">Cancel</a>

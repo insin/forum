@@ -7,6 +7,7 @@
 <p class="description"><img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked"> This topic is locked.</p>
 {% endif %}
 <form name="editTopicForm" id="editTopicForm" action="." method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Topic</h2>
     <div class="form-row">

@@ -34,6 +34,7 @@
 </div>
 
 <form name="deletePostForm" id="deletePostForm" action="." method="POST">
+{% csrf_token %}
 <div class="buttons">
   <input type="submit" value="Confirm Deletion">
   <a href="{{ post.get_absolute_url }}">Cancel</a>

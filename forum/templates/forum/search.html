@@ -1,6 +1,7 @@
 {% extends "forum/base.html" %}
 {% block main_content %}
 <form name="addTopicForm" id="addTopicForm" action="{% url forum_search %}" method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Search Terms</h2>
     <div class="form-row">

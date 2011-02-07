@@ -6,6 +6,7 @@
 {% endblock %}
 {% block main_content %}
 <form name="addForumForm" id="addForumForm" action="." method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Forum</h2>
     <div class="form-row">

@@ -21,6 +21,7 @@
 </div>
 {% endif %}
 <form name="addReplyForm" id="addReplyForm" action="{{ urls.add_reply }}" method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Reply</h2>
     <div class="form-row">

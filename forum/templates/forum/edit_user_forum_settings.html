@@ -6,6 +6,7 @@
 {% endblock %}
 {% block main_content %}
 <form name="editUserForumSettingsForm" id="editUserForumSettingsForm" action="." method="POST">
+{% csrf_token %}
 <fieldset class="module aligned forum-settings">
   <h2>Forum Settings</h2>
   <div class="form-row">

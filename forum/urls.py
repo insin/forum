@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 from forum import app_settings
 
@@ -39,6 +40,11 @@ if app_settings.STANDALONE:
     from django.contrib import admin
     admin.autodiscover()
     urlpatterns += patterns('',
-        (r'accounts/', include('registration.urls')),
-        (r'admin/(.*)', admin.site.root),
+        (r'^accounts/', include('registration.backends.default.urls')),
+        (r'^admin/(.*)', admin.site.root),
     )
+
+    if settings.DEBUG:
+        urlpatterns += patterns('',
+            (r'^media/forum/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+        )

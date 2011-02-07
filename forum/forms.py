@@ -2,14 +2,19 @@ import datetime
 import operator
 import urllib
 
-from django import newforms as forms
+from django import forms
 from django.db.models.query_utils import Q
 from django.template.defaultfilters import filesizeformat
 from django.utils.text import capfirst, get_text_list, smart_split
 
 from forum import app_settings
 from forum.models import Post, Search, Section, Topic
-from PIL import ImageFile
+
+# Try to import PIL in either of the two ways it can end up installed.
+try:
+    from PIL import ImageFile as PILImageFile
+except ImportError:
+    import ImageFile as PILImageFile
 
 #########
 # Forms #
@@ -49,6 +54,7 @@ class ForumForm(forms.Form):
     forum       = forms.ChoiceField(required=False)
 
     def __init__(self, forums, *args, **kwargs):
+        print len(args)
         super(ForumForm, self).__init__(*args, **kwargs)
         self.fields['forum'].choices = [(u'', u'----------')] + \
             [(forum.id, forum.name) for forum in forums]
@@ -284,7 +290,7 @@ def forum_profile_formfield_callback(field, **kwargs):
     """
     if field.name == 'avatar':
         args = {
-            'verify_exists': field.verify_exists,
+            'verify_exists': field.validators[-1].verify_exists, # TODO Make nice
             'max_length': field.max_length,
             'required': not field.blank,
             'label': capfirst(field.verbose_name),
@@ -403,7 +409,7 @@ class ImageURLField(forms.URLField):
         file = urllib.urlopen(url)
         filesize = file.headers.get('content-length')
         if filesize: filesize = int(filesize)
-        p = ImageFile.Parser()
+        p = PILImageFile.Parser()
         while 1:
             data = file.read(1024)
             if not data:

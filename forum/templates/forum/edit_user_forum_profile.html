@@ -6,6 +6,7 @@
 {% endblock %}
 {% block main_content %}
 <form name="editForumProfileForm" id="editForumProfileForm" action="." method="POST">
+{% csrf_token %}
 <fieldset class="module aligned forum-profile">
   <h2>Forum Profile</h2>
   {% if form.title %}<div class="form-row">

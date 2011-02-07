@@ -480,7 +480,7 @@ class Topic(models.Model):
     def __unicode__(self):
         return self.title
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         """
         This method is overridden to implement the following:
 
@@ -495,7 +495,7 @@ class Topic(models.Model):
         if not self.pk:
             self.started_at = datetime.datetime.now()
             is_new = True
-        super(Topic, self).save(**kwargs)
+        super(Topic, self).save(*args, **kwargs)
         if is_new:
             self.forum.update_topic_count()
             transaction.commit_unless_managed()
@@ -591,12 +591,11 @@ class TopicTrackerManager(models.Manager):
         """
         if user.is_authenticated():
             queryset = super(TopicTrackerManager, self).get_query_set().filter(
-                user=user, topic__in=topics)
+                user=user, topic__in=[t.pk for t in topics])
             last_read_dict = dict([(tracker.topic_id, tracker.last_read) \
                                    for tracker in queryset])
             for topic in topics:
                 topic.last_read = last_read_dict.get(topic.pk, None)
-
     add_last_read_to_topics.alters_data = True
 
 class TopicTracker(models.Model):
@@ -753,7 +752,7 @@ class Post(models.Model):
     def __unicode__(self):
         return truncate_words(self.body, 25)
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         """
         This method is overridden to implement the following:
 
@@ -772,7 +771,7 @@ class Post(models.Model):
             is_new = True
         else:
             self.edited_at = datetime.datetime.now()
-        super(Post, self).save(**kwargs)
+        super(Post, self).save(*args, **kwargs)
         if is_new:
             if not self.meta:
                 # Includes a non-metapost post count update
@@ -851,10 +850,10 @@ class Search(models.Model):
         return u'%s searched for %s at %s' % (
             self.user, self.get_type_display(), self.searched_at)
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         if not self.pk:
             self.searched_at = datetime.datetime.now()
-        super(Search, self).save(**kwargs)
+        super(Search, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('-searched_at',)

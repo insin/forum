@@ -1,4 +1,5 @@
 Django==1.2.4
+django-debug-toolbar==0.8.4
 -e hg+https://bitbucket.org/ubernostrum/django-registration#egg=registration
 markdown2==1.0.1.17
 pil==1.1.7

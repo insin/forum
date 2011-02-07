@@ -19,6 +19,7 @@
 </div>
 {% endif %}
 <form name="addTopicForm" id="addTopicForm" action="." method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Topic</h2>
     <div class="form-row">

@@ -98,6 +98,7 @@
 {% if user.is_authenticated and user|can_see_post_actions:topic %}
 <div id="fast-reply"{% if not show_fast_reply %} style="display: none;"{% endif %}>
   <form name="fastReplyForm" id="fastReplyForm" action="{{ urls.add_reply }}" method="POST">
+  {% csrf_token %}
     <fieldset class="module">
       <h2>Fast Reply</h2>
       <div class="fast-reply-field">

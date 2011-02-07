@@ -1,6 +1,7 @@
 {% extends "forum/base.html" %}
 {% block main_content %}
 <form name="editForumForm" id="editForumForm" action="." method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Forum</h2>
     <div class="form-row">

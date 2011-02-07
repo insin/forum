@@ -13,6 +13,7 @@
 </div>
 {% endif %}
 <form name="editPostForm" id="editPostForm" action="." method="POST">
+{% csrf_token %}
   <fieldset class="module aligned">
     <h2>Post</h2>
     <div class="form-row">

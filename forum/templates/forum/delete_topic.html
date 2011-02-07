@@ -41,6 +41,7 @@
 </div>
 
 <form name="deleteTopicForm" id="deleteTopicForm" action="{% url forum_delete_topic topic.id %}" method="POST">
+{% csrf_token %}
 <div class="buttons">
   <input type="submit" value="Confirm Deletion">
   <a href="{{ topic.get_absolute_url }}">Cancel</a>

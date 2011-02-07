@@ -66,7 +66,7 @@ class MarkdownFormatter(PostFormatter):
         formatting.
         """
         self.md.reset()
-        return self.md.toString(body).strip()
+        return self.md.convert(body).strip()
 
     def quote_post(self, post):
         """

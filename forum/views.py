@@ -1,11 +1,12 @@
 import datetime
 
-from django import newforms as forms
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection, transaction
+from django.forms.models import modelform_factory
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import loader, RequestContext
@@ -132,7 +133,7 @@ def search(request):
     Searches Topics or Posts based on given criteria.
     """
     if request.method == 'POST':
-        form = SearchForm(data=request.POST)
+        form = SearchForm(request.POST)
         if form.is_valid():
             results = form.get_queryset().values('id')[:1000]
             search = Search.objects.create(type=form.cleaned_data['search_type'],
@@ -198,7 +199,7 @@ def add_section(request):
         return permission_denied(request)
     sections = list(Section.objects.all())
     if request.method == 'POST':
-        form = SectionForm(sections, data=request.POST)
+        form = SectionForm(sections, request.POST)
         if form.is_valid():
             if not form.cleaned_data['section']:
                 # Add to the end
@@ -228,6 +229,8 @@ def section_detail(request, section_id):
         'title': section.name,
     }, context_instance=RequestContext(request))
 
+EditSectionForm = modelform_factory(Section, form=EditSectionBaseForm, fields=('name',))
+
 @login_required
 @transaction.commit_on_success
 def edit_section(request, section_id):
@@ -237,15 +240,13 @@ def edit_section(request, section_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
-    SectionForm = forms.form_for_instance(section, fields=('name',),
-        form=EditSectionBaseForm)
     if request.method == 'POST':
-        form = SectionForm(data=request.POST)
+        form = EditSectionForm(request.POST, instance=section)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(section.get_absolute_url())
     else:
-        form = SectionForm()
+        form = EditSectionForm(instance=section)
     return render_to_response('forum/edit_section.html', {
         'form': form,
         'section': section,
@@ -282,7 +283,7 @@ def add_forum(request, section_id):
     section = get_object_or_404(Section, pk=section_id)
     forums = list(section.forums.all())
     if request.method == 'POST':
-        form = ForumForm(forums, data=request.POST)
+        form = ForumForm(forums, request.POST)
         if form.is_valid():
             if not form.cleaned_data['forum']:
                 # Add to the end
@@ -303,6 +304,8 @@ def add_forum(request, section_id):
         'title': u'Add Forum to %s' % section.name,
     }, context_instance=RequestContext(request))
 
+EditForumForm = modelform_factory(Forum, fields=('name', 'description'))
+
 @login_required
 @transaction.commit_on_success
 def edit_forum(request, forum_id):
@@ -312,14 +315,13 @@ def edit_forum(request, forum_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
-    ForumForm = forms.form_for_instance(forum, fields=('name', 'description'))
     if request.method == 'POST':
-        form = ForumForm(data=request.POST)
+        form = EditForumForm(request.POST, instance=forum)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
-        form = ForumForm()
+        form = EditForumForm(instance=forum)
     return render_to_response('forum/edit_forum.html', {
         'form': form,
         'forum': forum,
@@ -417,6 +419,11 @@ def new_posts(request):
             'posts_per_page': get_posts_per_page(request.user),
         }, template_object_name='topic')
 
+AddTopicForm = modelform_factory(Topic, fields=('title', 'description'),
+                                 formfield_callback=topic_formfield_callback)
+AddPostForm = modelform_factory(Post, fields=('body', 'emoticons'),
+                                formfield_callback=post_formfield_callback)
+
 @login_required
 @transaction.commit_on_success
 def add_topic(request, forum_id):
@@ -424,14 +431,10 @@ def add_topic(request, forum_id):
     Adds a Topic to a Forum.
     """
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
-    TopicForm = forms.form_for_model(Topic, fields=('title', 'description'),
-        formfield_callback=topic_formfield_callback)
-    PostForm = forms.form_for_model(Post, fields=('body', 'emoticons'),
-        formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        topic_form = TopicForm(data=request.POST)
-        post_form = PostForm(data=request.POST)
+        topic_form = AddTopicForm(request.POST)
+        post_form = AddPostForm(request.POST)
         if topic_form.is_valid() and post_form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -449,8 +452,8 @@ def add_topic(request, forum_id):
                 post.save()
                 return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        topic_form = TopicForm()
-        post_form = PostForm()
+        topic_form = AddTopicForm()
+        post_form = AddPostForm()
     return render_to_response('forum/add_topic.html', {
         'topic_form': topic_form,
         'post_form': post_form,
@@ -522,10 +525,10 @@ def edit_topic(request, topic_id):
     if auth.is_moderator(request.user):
         editable_fields += ['pinned', 'locked', 'hidden']
         was_hidden = topic.hidden
-    TopicForm = forms.form_for_instance(topic, fields=editable_fields,
-        formfield_callback=topic_formfield_callback)
+    EditTopicForm = modelform_factory(Topic, fields=editable_fields,
+                                      formfield_callback=topic_formfield_callback)
     if request.method == 'POST':
-        form = TopicForm(data=request.POST)
+        form = EditTopicForm(request.POST)
         if form.is_valid():
             topic = form.save(commit=True)
             if auth.is_moderator(request.user):
@@ -539,7 +542,7 @@ def edit_topic(request, topic_id):
                     forum.set_last_post()
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        form = TopicForm()
+        form = EditTopicForm()
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
@@ -613,6 +616,7 @@ def topic_post_summary(request, topic_id):
                 'user_pk':  user_pk,
                 'meta':     meta,
             }},
+        select_params=[topic.pk, False],
         where=["""%(user)s.%(user_pk)s IN (
             SELECT DISTINCT %(user_fk)s
             FROM %(post)s
@@ -625,7 +629,7 @@ def topic_post_summary(request, topic_id):
                 'topic_fk': topic_fk,
                 'meta':     meta,
             }],
-        params=[topic.pk, False] * 2,
+        params=[topic.pk, False],
     ).order_by('-post_count')
 
     return render_to_response('forum/topic_post_summary.html', {
@@ -655,11 +659,11 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
     editable_fields = ['body', 'emoticons']
     if not meta:
         editable_fields += ['meta']
-    PostForm = forms.form_for_model(Post, fields=editable_fields,
-        formfield_callback=post_formfield_callback)
+    PostForm = modelform_factory(Post, fields=editable_fields,
+                                 formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        form = PostForm(data=request.POST)
+        form = PostForm(request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -778,11 +782,11 @@ def edit_post(request, post_id):
     if auth.is_moderator(request.user):
         editable_fields += ['meta']
         was_meta = post.meta
-    PostForm = forms.form_for_instance(post, fields=editable_fields,
-        formfield_callback=post_formfield_callback)
+    PostForm = modelform_factory(Post, fields=editable_fields,
+                                 formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        form = PostForm(data=request.POST)
+        form = PostForm(request.POST, instance=post)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -800,7 +804,7 @@ def edit_post(request, post_id):
                     post.save()
                 return redirect_to_post(request, post.id, post)
     else:
-        form = PostForm()
+        form = PostForm(instance=post)
     return render_to_response('forum/edit_post.html', {
         'form': form,
         'post': post,
@@ -904,16 +908,16 @@ def edit_user_forum_profile(request, user_id):
     editable_fields = ['location', 'avatar', 'website']
     if auth.is_moderator(request.user):
         editable_fields.insert(0, 'title')
-    ForumProfileForm = forms.form_for_instance(user_profile,
-        formfield_callback=forum_profile_formfield_callback,
-        fields=editable_fields)
+    ForumProfileForm = modelform_factory(ForumProfile,
+                                         formfield_callback=forum_profile_formfield_callback,
+                                         fields=editable_fields)
     if request.method == 'POST':
-        form = ForumProfileForm(data=request.POST)
+        form = ForumProfileForm(request.POST, instance=user_profile)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
-        form = ForumProfileForm()
+        form = ForumProfileForm(instance=user_profile)
     return render_to_response('forum/edit_user_forum_profile.html', {
         'forum_user': user,
         'forum_profile': user_profile,
@@ -922,22 +926,22 @@ def edit_user_forum_profile(request, user_id):
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
+ForumSettingsForm = modelform_factory(ForumProfile, fields=('timezone', 'topics_per_page',
+                                                            'posts_per_page', 'auto_fast_reply'))
+
 @login_required
 def edit_user_forum_settings(request):
     """
     Edits forum settings in the logged-in User's ForumProfile.
     """
     user_profile = ForumProfile.objects.get_for_user(request.user)
-    ForumSettingsForm = forms.form_for_instance(user_profile,
-        fields=['timezone', 'topics_per_page', 'posts_per_page',
-                'auto_fast_reply'])
     if request.method == 'POST':
-        form = ForumSettingsForm(data=request.POST)
+        form = ForumSettingsForm(request.POST, instance=user_profile)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
-        form = ForumSettingsForm()
+        form = ForumSettingsForm(instance=user_profile)
     return render_to_response('forum/edit_user_forum_settings.html', {
         'user': request.user,
         'forum_profile': user_profile,

@@ -5,6 +5,7 @@
 <p>This will result in the deletion of its {{ topic_count }} topic{{ topic_count|pluralize }} and all {{ topic_count|pluralize:"its,their" }} posts.</p>
 {% endif %}
 <form name="deleteSectionForm" id="deleteForumForm" action="{% url forum_delete_forum forum.id %}" method="POST">
+{% csrf_token %}
 <div class="buttons">
   <input type="submit" value="Confirm Deletion">
   <a href="{{ forum.get_absolute_url }}">Cancel</a>
