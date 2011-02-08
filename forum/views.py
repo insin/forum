@@ -1,12 +1,10 @@
 import datetime
 
-from django import forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection, transaction
-from django.forms.models import modelform_factory
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import loader, RequestContext
@@ -17,19 +15,12 @@ from django.views.generic.list_detail import object_list
 
 from forum import app_settings
 from forum import auth
+from forum import forms
 from forum import moderation
 from forum.formatters import post_formatter
-from forum.forms import (EditSectionBaseForm, ForumForm, SearchForm,
-    SectionForm, forum_profile_formfield_callback, post_formfield_callback,
-    topic_formfield_callback)
-from forum.models import (Forum, ForumProfile, Post, Search, Section, Topic,
-    TopicTracker)
+from forum.models import Forum, ForumProfile, Post, Search, Section, Topic, TopicTracker
 
 qn = connection.ops.quote_name
-
-###################
-# Utility Classes #
-###################
 
 class TopicURLs(object):
     """
@@ -49,10 +40,6 @@ class TopicURLs(object):
     def add_reply(self):
         url_name = self.meta and 'forum_add_meta_reply' or 'forum_add_reply'
         return reverse(url_name, args=(smart_unicode(self.topic.pk),))
-
-#####################
-# Utility Functions #
-#####################
 
 def get_topics_per_page(user):
     """
@@ -86,9 +73,9 @@ def get_avatar_dimensions():
     """
     if app_settings.MAX_AVATAR_DIMENSIONS is not None and \
        app_settings.FORCE_AVATAR_DIMENSIONS:
-        return u' width="%s" height="%s"' % app_settings.MAX_AVATAR_DIMENSIONS
+        return ' width="%s" height="%s"' % app_settings.MAX_AVATAR_DIMENSIONS
     else:
-        return u''
+        return ''
 
 def get_page_or_404(request, paginator, page_param='page'):
     """
@@ -102,12 +89,8 @@ def get_page_or_404(request, paginator, page_param='page'):
     except (ValueError, InvalidPage):
         raise Http404
 
-##################
-# View Functions #
-##################
-
-def permission_denied(request, title=u'Permission denied',
-    message=u'You do not have permission to perform the requested action.'):
+def permission_denied(request, title='Permission denied',
+    message='You do not have permission to perform the requested action.'):
     """
     Returns an HttpResponseForbidden with a permission denied error
     screen.
@@ -124,7 +107,7 @@ def forum_index(request):
     """
     return render_to_response('forum/forum_index.html', {
         'section_list': list(Section.objects.get_forums_by_section()),
-        'title': u'Forum Index',
+        'title': 'Forum Index',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -133,20 +116,20 @@ def search(request):
     Searches Topics or Posts based on given criteria.
     """
     if request.method == 'POST':
-        form = SearchForm(request.POST)
+        form = forms.SearchForm(request.POST)
         if form.is_valid():
             results = form.get_queryset().values('id')[:1000]
             search = Search.objects.create(type=form.cleaned_data['search_type'],
                 user=request.user,
                 criteria_json=simplejson.dumps(form.cleaned_data),
-                result_ids=u','.join([smart_unicode(result['id']) \
+                result_ids=','.join([smart_unicode(result['id']) \
                                       for result in results]))
             return HttpResponseRedirect(search.get_absolute_url())
     else:
-        form = SearchForm()
+        form = forms.SearchForm()
     return render_to_response('forum/search.html', {
         'form': form,
-        'title': u'Search',
+        'title': 'Search',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -157,7 +140,7 @@ def search_results(request, search_id):
     search = get_object_or_404(Search, pk=search_id)
     if not auth.user_can_view_search_results(request.user, search):
         return permission_denied(request,
-            message=u'You may only view your own search results.')
+            message='You may only view your own search results.')
     if search.type == Search.POST_SEARCH:
         items_per_page = get_posts_per_page(request.user)
     else:
@@ -170,7 +153,7 @@ def search_results(request, search_id):
     model = search.get_result_model()
     model_name = capfirst(model._meta.verbose_name)
     context = {
-        'title': u'%s Search Results' % model_name,
+        'title': '%s Search Results' % model_name,
         'search': search,
         'object_list': model.objects.with_standalone_details() \
                              .filter(pk__in=page.object_list).order_by('id'),
@@ -199,7 +182,7 @@ def add_section(request):
         return permission_denied(request)
     sections = list(Section.objects.all())
     if request.method == 'POST':
-        form = SectionForm(sections, request.POST)
+        form = forms.AddSectionForm(sections, request.POST)
         if form.is_valid():
             if not form.cleaned_data['section']:
                 # Add to the end
@@ -212,10 +195,10 @@ def add_section(request):
                                              order=order)
             return HttpResponseRedirect(section.get_absolute_url())
     else:
-        form = SectionForm(sections)
+        form = forms.AddSectionForm(sections)
     return render_to_response('forum/add_section.html', {
         'form': form,
-        'title': u'Add Section',
+        'title': 'Add Section',
     }, context_instance=RequestContext(request))
 
 def section_detail(request, section_id):
@@ -229,8 +212,6 @@ def section_detail(request, section_id):
         'title': section.name,
     }, context_instance=RequestContext(request))
 
-EditSectionForm = modelform_factory(Section, form=EditSectionBaseForm, fields=('name',))
-
 @login_required
 @transaction.commit_on_success
 def edit_section(request, section_id):
@@ -241,16 +222,16 @@ def edit_section(request, section_id):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     if request.method == 'POST':
-        form = EditSectionForm(request.POST, instance=section)
+        form = forms.EditSectionForm(request.POST, instance=section)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(section.get_absolute_url())
     else:
-        form = EditSectionForm(instance=section)
+        form = forms.EditSectionForm(instance=section)
     return render_to_response('forum/edit_section.html', {
         'form': form,
         'section': section,
-        'title': u'Edit Section',
+        'title': 'Edit Section',
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -269,7 +250,7 @@ def delete_section(request, section_id):
         return render_to_response('forum/delete_section.html', {
             'section': section,
             'forum_list': section.forums.all(),
-            'title': u'Delete Topic',
+            'title': 'Delete Section',
         }, context_instance=RequestContext(request))
 
 @login_required
@@ -283,7 +264,7 @@ def add_forum(request, section_id):
     section = get_object_or_404(Section, pk=section_id)
     forums = list(section.forums.all())
     if request.method == 'POST':
-        form = ForumForm(forums, request.POST)
+        form = forms.AddForumForm(forums, request.POST)
         if form.is_valid():
             if not form.cleaned_data['forum']:
                 # Add to the end
@@ -297,14 +278,12 @@ def add_forum(request, section_id):
                 description=form.cleaned_data['description'])
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
-        form = ForumForm(forums)
+        form = forms.AddForumForm(forums)
     return render_to_response('forum/add_forum.html', {
         'form': form,
         'section': section,
-        'title': u'Add Forum to %s' % section.name,
+        'title': 'Add Forum to %s' % section.name,
     }, context_instance=RequestContext(request))
-
-EditForumForm = modelform_factory(Forum, fields=('name', 'description'))
 
 @login_required
 @transaction.commit_on_success
@@ -316,17 +295,17 @@ def edit_forum(request, forum_id):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     if request.method == 'POST':
-        form = EditForumForm(request.POST, instance=forum)
+        form = forms.EditForumForm(request.POST, instance=forum)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
-        form = EditForumForm(instance=forum)
+        form = forms.EditForumForm(instance=forum)
     return render_to_response('forum/edit_forum.html', {
         'form': form,
         'forum': forum,
         'section': forum.section,
-        'title': u'Edit Forum',
+        'title': 'Edit Forum',
     }, context_instance=RequestContext(request))
 
 def forum_detail(request, forum_id):
@@ -396,7 +375,7 @@ def delete_forum(request, forum_id):
             'section': section,
             'forum': forum,
             'topic_count': forum.topics.count(),
-            'title': u'Delete Forum',
+            'title': 'Delete Forum',
         }, context_instance=RequestContext(request))
 
 @login_required
@@ -415,14 +394,9 @@ def new_posts(request):
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
         extra_context={
-            'title': u'New Posts',
+            'title': 'New Posts',
             'posts_per_page': get_posts_per_page(request.user),
         }, template_object_name='topic')
-
-AddTopicForm = modelform_factory(Topic, fields=('title', 'description'),
-                                 formfield_callback=topic_formfield_callback)
-AddPostForm = modelform_factory(Post, fields=('body', 'emoticons'),
-                                formfield_callback=post_formfield_callback)
 
 @login_required
 @transaction.commit_on_success
@@ -433,8 +407,8 @@ def add_topic(request, forum_id):
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     preview = None
     if request.method == 'POST':
-        topic_form = AddTopicForm(request.POST)
-        post_form = AddPostForm(request.POST)
+        topic_form = forms.AddTopicForm(request.POST)
+        post_form = forms.TopicPostForm(request.POST)
         if topic_form.is_valid() and post_form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -452,15 +426,15 @@ def add_topic(request, forum_id):
                 post.save()
                 return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        topic_form = AddTopicForm()
-        post_form = AddPostForm()
+        topic_form = forms.AddTopicForm()
+        post_form = forms.TopicPostForm()
     return render_to_response('forum/add_topic.html', {
         'topic_form': topic_form,
         'post_form': post_form,
         'section': forum.section,
         'forum': forum,
         'preview': preview,
-        'title': u'Add Topic in %s' % forum.name,
+        'title': 'Add Topic in %s' % forum.name,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
@@ -520,15 +494,15 @@ def edit_topic(request, topic_id):
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if not auth.user_can_edit_topic(request.user, topic):
         return permission_denied(request,
-            message=u'You do not have permission to edit this topic.')
+            message='You do not have permission to edit this topic.')
     editable_fields = ['title', 'description']
-    if auth.is_moderator(request.user):
-        editable_fields += ['pinned', 'locked', 'hidden']
+    moderator = auth.is_moderator(request.user)
+    if moderator:
         was_hidden = topic.hidden
     EditTopicForm = modelform_factory(Topic, fields=editable_fields,
                                       formfield_callback=topic_formfield_callback)
     if request.method == 'POST':
-        form = EditTopicForm(request.POST)
+        form = forms.EditTopicForm(moderator, request.POST)
         if form.is_valid():
             topic = form.save(commit=True)
             if auth.is_moderator(request.user):
@@ -542,13 +516,13 @@ def edit_topic(request, topic_id):
                     forum.set_last_post()
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        form = EditTopicForm()
+        form = forms.EditTopicForm(moderator)
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
         'section': forum.section,
         'forum': forum,
-        'title': u'Edit Topic',
+        'title': 'Edit Topic',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
@@ -566,7 +540,7 @@ def delete_topic(request, topic_id):
                                                 num_in_topic=1)
     if not auth.user_can_edit_topic(request.user, topic):
         return permission_denied(request,
-            message=u'You do not have permission to delete this topic.')
+            message='You do not have permission to delete this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     if request.method == 'POST':
         topic.delete()
@@ -577,7 +551,7 @@ def delete_topic(request, topic_id):
             'topic': topic,
             'forum': forum,
             'section': forum.section,
-            'title': u'Delete Topic',
+            'title': 'Delete Topic',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
@@ -635,7 +609,7 @@ def topic_post_summary(request, topic_id):
     return render_to_response('forum/topic_post_summary.html', {
         'topic': topic,
         'users': users,
-        'title': u'Users who posted in %s' % topic.title,
+        'title': 'Users who posted in %s' % topic.title,
     }, context_instance=RequestContext(request))
 
 @login_required
@@ -654,16 +628,11 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
     if topic.locked and \
        not auth.is_moderator(request.user):
         return permission_denied(request,
-            message=u'You do not have permission to post in this topic.')
+            message='You do not have permission to post in this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    editable_fields = ['body', 'emoticons']
-    if not meta:
-        editable_fields += ['meta']
-    PostForm = modelform_factory(Post, fields=editable_fields,
-                                 formfield_callback=post_formfield_callback)
     preview = None
     if request.method == 'POST':
-        form = PostForm(request.POST)
+        form = forms.ReplyForm(meta, request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -683,7 +652,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         initial = {}
         if quote_post is not None:
             initial['body'] = post_formatter.quote_post(quote_post)
-        form = PostForm(initial=initial)
+        form = forms.ReplyForm(meta, initial=initial)
     return render_to_response('forum/add_reply.html', {
         'form': form,
         'topic': topic,
@@ -693,7 +662,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         'preview': preview,
         'meta': meta,
         'urls': TopicURLs(topic, meta),
-        'title': u'Add Reply to %s' % topic.title,
+        'title': 'Add Reply to %s' % topic.title,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
@@ -776,17 +745,16 @@ def edit_post(request, post_id):
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return permission_denied(request,
-            message=u'You do not have permission to edit this post.')
+            message='You do not have permission to edit this post.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    editable_fields = ['body', 'emoticons']
-    if auth.is_moderator(request.user):
-        editable_fields += ['meta']
+
+    meta_editable = auth.is_moderator(request.user)
+    if meta_editable:
         was_meta = post.meta
-    PostForm = modelform_factory(Post, fields=editable_fields,
-                                 formfield_callback=post_formfield_callback)
+
     preview = None
     if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
+        form = forms.ReplyForm(meta_editable, request.POST, instance=post)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -804,7 +772,7 @@ def edit_post(request, post_id):
                     post.save()
                 return redirect_to_post(request, post.id, post)
     else:
-        form = PostForm(instance=post)
+        form = forms.ReplyForm(meta_editable, instance=post)
     return render_to_response('forum/edit_post.html', {
         'form': form,
         'post': post,
@@ -812,7 +780,7 @@ def edit_post(request, post_id):
         'forum': forum,
         'section': forum.section,
         'preview': preview,
-        'title': u'Edit Post',
+        'title': 'Edit Post',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
@@ -833,7 +801,7 @@ def delete_post(request, post_id):
     topic = post.topic
     if not auth.user_can_edit_post(request.user, post, topic):
         return permission_denied(request,
-            message=u'You do not have permission to delete this post.')
+            message='You do not have permission to delete this post.')
     if post.num_in_topic == 1 and not post.meta:
         return delete_topic(request, post.topic_id)
     if request.method == 'POST':
@@ -847,7 +815,7 @@ def delete_post(request, post_id):
             'topic': topic,
             'forum': forum,
             'section': forum.section,
-            'title': u'Delete Post',
+            'title': 'Delete Post',
             'avatar_dimensions': get_avatar_dimensions(),
         }, context_instance=RequestContext(request))
 
@@ -869,7 +837,7 @@ def user_profile(request, user_id):
         'forum_user': forum_user,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': recent_topics,
-        'title': u'Forum Profile for %s' % forum_user,
+        'title': 'Forum Profile for %s' % forum_user,
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
 
@@ -889,7 +857,7 @@ def user_topics(request, user_id):
         template_name='forum/user_topics.html',
         extra_context={
             'forum_user': forum_user,
-            'title': u'Topics Started by %s' % forum_user.username,
+            'title': 'Topics Started by %s' % forum_user.username,
             'posts_per_page': get_posts_per_page(request.user),
         }, template_object_name='topic')
 
@@ -903,31 +871,23 @@ def edit_user_forum_profile(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     if not auth.user_can_edit_user_profile(request.user, user):
         return permission_denied(request,
-            message=u'You do not have permission to edit this user\'s forum profile.')
+            message='You do not have permission to edit this user\'s forum profile.')
     user_profile = ForumProfile.objects.get_for_user(user)
-    editable_fields = ['location', 'avatar', 'website']
-    if auth.is_moderator(request.user):
-        editable_fields.insert(0, 'title')
-    ForumProfileForm = modelform_factory(ForumProfile,
-                                         formfield_callback=forum_profile_formfield_callback,
-                                         fields=editable_fields)
+    can_edit_title = auth.is_moderator(request.user)
     if request.method == 'POST':
-        form = ForumProfileForm(request.POST, instance=user_profile)
+        form = forms.UserProfileForm(can_edit_title, request.POST, instance=user_profile)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
-        form = ForumProfileForm(instance=user_profile)
+        form = forms.UserProfileForm(can_edit_title, instance=user_profile)
     return render_to_response('forum/edit_user_forum_profile.html', {
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
-        'title': u'Edit Forum Profile',
+        'title': 'Edit Forum Profile',
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))
-
-ForumSettingsForm = modelform_factory(ForumProfile, fields=('timezone', 'topics_per_page',
-                                                            'posts_per_page', 'auto_fast_reply'))
 
 @login_required
 def edit_user_forum_settings(request):
@@ -936,15 +896,15 @@ def edit_user_forum_settings(request):
     """
     user_profile = ForumProfile.objects.get_for_user(request.user)
     if request.method == 'POST':
-        form = ForumSettingsForm(request.POST, instance=user_profile)
+        form = forms.ForumSettingsForm(request.POST, instance=user_profile)
         if form.is_valid():
             form.save(commit=True)
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
-        form = ForumSettingsForm(instance=user_profile)
+        form = forms.ForumSettingsForm(instance=user_profile)
     return render_to_response('forum/edit_user_forum_settings.html', {
         'user': request.user,
         'forum_profile': user_profile,
         'form': form,
-        'title': u'Edit Forum Settings',
+        'title': 'Edit Forum Settings',
     }, context_instance=RequestContext(request))

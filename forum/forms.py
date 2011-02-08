@@ -4,11 +4,12 @@ import urllib
 
 from django import forms
 from django.db.models.query_utils import Q
+from django.forms.models import modelform_factory
 from django.template.defaultfilters import filesizeformat
 from django.utils.text import capfirst, get_text_list, smart_split
 
 from forum import app_settings
-from forum.models import Post, Search, Section, Topic
+from forum.models import Forum, ForumProfile, Post, Search, Section, Topic
 
 # Try to import PIL in either of the two ways it can end up installed.
 try:
@@ -16,53 +17,139 @@ try:
 except ImportError:
     import ImageFile as PILImageFile
 
-#########
-# Forms #
-#########
-
-class SectionForm(forms.Form):
+class AddSectionForm(forms.Form):
+    """
+    Form for adding a new Section - takes and existing Section it should
+    be inserted before.
+    """
     name    = forms.CharField(max_length=100)
     section = forms.ChoiceField(required=False)
 
     def __init__(self, sections, *args, **kwargs):
-        super(SectionForm, self).__init__(*args, **kwargs)
+        super(AddSectionForm, self).__init__(*args, **kwargs)
         self.sections = sections
-        self.fields['section'].choices = [(u'', u'----------')] + \
+        self.fields['section'].choices = [('', '----------')] + \
             [(section.id, section.name) for section in sections]
 
     def clean_name(self):
+        """Validates that the section name is unique."""
         for section in self.sections:
             if self.cleaned_data['name'] == section.name:
-                raise forms.ValidationError(
-                    u'A Section with this name already exists.')
+                raise forms.ValidationError('A Section with this name already exists.')
         return self.cleaned_data['name']
 
-class EditSectionBaseForm(forms.BaseForm):
+class EditSectionForm(forms.ModelForm):
+    """Form for editing a Section."""
+    class Meta:
+        model = Section
+        fields = ('name',)
+
     def clean_name(self):
+        """Validates that the section name is unique if it has changed."""
         if self.fields['name'].initial != self.cleaned_data['name']:
             try:
                 Section.objects.get(name=self.cleaned_data['name'])
-                raise forms.ValidationError(
-                    u'A Section with this name already exists.')
+                raise forms.ValidationError('A Section with this name already exists.')
             except Section.DoesNotExist:
                 pass
         return self.cleaned_data['name']
 
-class ForumForm(forms.Form):
+class AddForumForm(forms.Form):
+    """
+    Form for adding a new Forum - takes an existing Forum it should be
+    inserted before.
+    """
     name        = forms.CharField(max_length=100)
     description = forms.CharField(max_length=100, required=False, widget=forms.Textarea())
     forum       = forms.ChoiceField(required=False)
 
     def __init__(self, forums, *args, **kwargs):
-        print len(args)
-        super(ForumForm, self).__init__(*args, **kwargs)
-        self.fields['forum'].choices = [(u'', u'----------')] + \
+        super(AddForumForm, self).__init__(*args, **kwargs)
+        self.fields['forum'].choices = [('', '----------')] + \
             [(forum.id, forum.name) for forum in forums]
+
+class EditForumForm(forms.ModelForm):
+    """Form for editing a Forum."""
+    class Meta:
+        model = Forum
+        fields = ('name', 'description')
+
+def topic_formfield_callback(field, **kwargs):
+    """
+    Callback for Post form field creation.
+
+    Customises the size of the widgets used to edit topic details.
+    """
+    if field.name in ['title', 'description']:
+        formfield = field.formfield(**kwargs)
+        formfield.widget.attrs['size'] = 50
+        return formfield
+    else:
+        return field.formfield(**kwargs)
+
+class AddTopicForm(forms.ModelForm):
+    """Form for adding a new Topic."""
+    formfield_callback = topic_formfield_callback
+
+    class Meta:
+        model = Topic
+        fields = ('name', 'description')
+
+class EditTopicForm(forms.ModelForm):
+    """Form for editing a Topic."""
+    formfield_callback = topic_formfield_callback
+
+    class Meta:
+        model = Topic
+        fields = ('title', 'description', 'pinned', 'locked', 'hidden')
+
+    def __init__(self, moderate, *args, **kwargs):
+        super(EditTopicForm, self).__init__(*args, **kwargs)
+        if not moderate:
+            del self.fields['pinned']
+            del self.fields['locked']
+            del self.fields['hidden']
+
+def post_formfield_callback(field, **kwargs):
+    """
+    Callback for Post form field creation.
+
+    Customises the widget used to edit posts.
+    """
+    if field.name == 'body':
+        formfield = field.formfield(**kwargs)
+        formfield.widget.attrs['rows'] = 14
+        formfield.widget.attrs['cols'] = 70
+        return formfield
+    else:
+        return field.formfield(**kwargs)
+
+class TopicPostForm(forms.ModelForm):
+    """Form for the initial Post in a new Topic."""
+    formfield_callback = post_formfield_callback
+
+    class Meta:
+        model = Post
+        fields = ('body', 'emoticons')
+
+class ReplyForm(forms.ModelForm):
+    """Form for a reply Post."""
+    formfield_callback = post_formfield_callback
+
+    class Meta:
+        model = Post
+        fields = ('body', 'emoticons', 'meta')
+
+    def __init__(self, meta, *args, **kwargs):
+        super(ReplyForm, self).__init__(*args, **kwargs)
+        if not meta:
+            del self.fields['meta']
 
 class SearchForm(forms.Form):
     """
-    Provides criteria for searching Topics or Posts, creates QuerySets
-    based on selected criteria.
+    Criteria for searching Topics or Posts.
+
+    Creates a QuerySet based on selected criteria.
     """
     SEARCH_ALL_FORUMS = 'A'
     SEARCH_IN_SECTION = 'S'
@@ -117,7 +204,7 @@ class SearchForm(forms.Form):
     search_type    = forms.ChoiceField(choices=Search.TYPE_CHOICES, initial=Search.POST_SEARCH, widget=forms.RadioSelect)
     keywords       = forms.CharField()
     username       = forms.CharField(required=False)
-    exact_username = forms.BooleanField(required=False, initial=True, label=u'Match exact username')
+    exact_username = forms.BooleanField(required=False, initial=True, label='Match exact username')
     post_type      = forms.ChoiceField(choices=SEARCH_POST_TYPE_CHOICES, initial=SEARCH_ALL_POSTS, widget=forms.RadioSelect)
     search_in      = forms.MultipleChoiceField(required=False, initial=[SEARCH_ALL_FORUMS])
     search_from    = forms.ChoiceField(choices=SEARCH_FROM_CHOICES)
@@ -126,12 +213,12 @@ class SearchForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
-        choices = [(self.SEARCH_ALL_FORUMS, u'All Forums')]
+        choices = [(self.SEARCH_ALL_FORUMS, 'All Forums')]
         for section, forums in Section.objects.get_forums_by_section():
             choices.append(('%s.%s' % (self.SEARCH_IN_SECTION, section.pk),
                             section.name))
             choices.extend([('%s.%s' % (self.SEARCH_IN_FORUM, forum.pk),
-                            u'|-- %s' % forum.name) \
+                            '|-- %s' % forum.name) \
                             for forum in forums])
         self.fields['search_in'].choices = choices
         self.fields['search_in'].widget.attrs['size'] = 10
@@ -250,64 +337,6 @@ class SearchForm(forms.Form):
         return qs.order_by('%s%s' % (sort_direction_flag, date_lookup),
                            '%sid' % sort_direction_flag)
 
-#######################
-# Formfield Callbacks #
-#######################
-
-def topic_formfield_callback(field, **kwargs):
-    """
-    Callback for Post form field creation.
-
-    Customises the size of the widgets used to edit topic details.
-    """
-    if field.name in ['title', 'description']:
-        formfield = field.formfield(**kwargs)
-        formfield.widget.attrs['size'] = 50
-        return formfield
-    else:
-        return field.formfield(**kwargs)
-
-def post_formfield_callback(field, **kwargs):
-    """
-    Callback for Post form field creation.
-
-    Customises the widget used to edit posts.
-    """
-    if field.name == 'body':
-        formfield = field.formfield(**kwargs)
-        formfield.widget.attrs['rows'] = 14
-        formfield.widget.attrs['cols'] = 70
-        return formfield
-    else:
-        return field.formfield(**kwargs)
-
-def forum_profile_formfield_callback(field, **kwargs):
-    """
-    Callback for forum profile form field creation.
-
-    Generates an ``ImageURLField`` for the ``avatar`` field and default
-    fields for all others.
-    """
-    if field.name == 'avatar':
-        args = {
-            'verify_exists': field.validators[-1].verify_exists, # TODO Make nice
-            'max_length': field.max_length,
-            'required': not field.blank,
-            'label': capfirst(field.verbose_name),
-            'help_text': field.help_text,
-        }
-        if app_settings.MAX_AVATAR_FILESIZE is not None:
-            args['max_filesize'] = app_settings.MAX_AVATAR_FILESIZE
-        if app_settings.ALLOWED_AVATAR_FORMATS is not None:
-            args['image_formats'] = app_settings.ALLOWED_AVATAR_FORMATS
-        if app_settings.MAX_AVATAR_DIMENSIONS is not None:
-            args['max_width'] = app_settings.MAX_AVATAR_DIMENSIONS[0]
-            args['max_height'] = app_settings.MAX_AVATAR_DIMENSIONS[1]
-        args.update(kwargs)
-        return ImageURLField(**args)
-    else:
-        return field.formfield(**kwargs)
-
 class ImageURLField(forms.URLField):
     """
     A URL field specifically for images, which can validate details
@@ -350,10 +379,12 @@ class ImageURLField(forms.URLField):
             max_height is not None or min_height is not None or \
             image_formats is not None
 
-    def clean(self, value):
-        value = super(ImageURLField, self).clean(value)
-        if value == u'' or not self.validate_image:
-            return value
+    def validate(self, value):
+        super(ImageURLField, self).validate(value)
+
+        if value == '' or not self.validate_image:
+            return
+
         try:
             filesize, dimensions, format = self._get_image_details(value)
             if dimensions is None or format is None:
@@ -361,36 +392,36 @@ class ImageURLField(forms.URLField):
                     'Could not retrieve image details from this URL.')
             if self.max_filesize is not None and filesize > self.max_filesize:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s large - it must be at most %s.' % (
+                    'The image at this URL is %s large - it must be at most %s.' % (
                         filesizeformat(filesize), filesizeformat(self.max_filesize)))
             if self.min_filesize is not None and filesize < self.min_filesize:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s large - it must be at least %s.' % (
+                    'The image at this URL is %s large - it must be at least %s.' % (
                         filesizeformat(filesize), filesizeformat(self.min_filesize)))
             if self.max_width is not None and dimensions[0] > self.max_width:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s pixels wide - it must be at most %s pixels.' % (
+                    'The image at this URL is %s pixels wide - it must be at most %s pixels.' % (
                         dimensions[0], self.max_width))
             if self.min_width is not None and dimensions[0] < self.min_width:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s pixels wide - it must be at least %s pixels.' % (
+                    'The image at this URL is %s pixels wide - it must be at least %s pixels.' % (
                         dimensions[0], self.min_width))
             if self.max_height is not None and dimensions[1] > self.max_height:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s pixels high - it must be at most %s pixels.' % (
+                    'The image at this URL is %s pixels high - it must be at most %s pixels.' % (
                         dimensions[1], self.max_height))
             if self.min_height is not None and dimensions[1] < self.min_height:
                 raise forms.ValidationError(
-                    u'The image at this URL is %s pixels high - it must be at least %s pixels.' % (
+                    'The image at this URL is %s pixels high - it must be at least %s pixels.' % (
                         dimensions[1], self.min_height))
             if self.image_formats is not None and format not in self.image_formats:
                 raise forms.ValidationError(
-                    u'The image at this URL is in %s format - %s %s.' % (
+                    'The image at this URL is in %s format - %s %s.' % (
                         format,
-                        len(self.image_formats) == 1 and u'the only accepted format is' or 'accepted formats are',
+                        len(self.image_formats) == 1 and 'the only accepted format is' or 'accepted formats are',
                         get_text_list(self.image_formats)))
         except IOError:
-            raise forms.ValidationError(u'Could not load an image from this URL.')
+            raise forms.ValidationError('Could not load an image from this URL.')
         return value
 
     def _get_image_details(self, url):
@@ -420,3 +451,49 @@ class ImageURLField(forms.URLField):
                 break
         file.close()
         return filesize, None, None
+
+def forum_profile_formfield_callback(field, **kwargs):
+    """
+    Callback for forum profile form field creation.
+
+    Generates an ``ImageURLField`` for the ``avatar`` field and default
+    fields for all others.
+    """
+    if field.name == 'avatar':
+        args = {
+            'verify_exists': field.validators[-1].verify_exists, # TODO Make nice
+            'max_length': field.max_length,
+            'required': not field.blank,
+            'label': capfirst(field.verbose_name),
+            'help_text': field.help_text,
+        }
+        if app_settings.MAX_AVATAR_FILESIZE is not None:
+            args['max_filesize'] = app_settings.MAX_AVATAR_FILESIZE
+        if app_settings.ALLOWED_AVATAR_FORMATS is not None:
+            args['image_formats'] = app_settings.ALLOWED_AVATAR_FORMATS
+        if app_settings.MAX_AVATAR_DIMENSIONS is not None:
+            args['max_width'] = app_settings.MAX_AVATAR_DIMENSIONS[0]
+            args['max_height'] = app_settings.MAX_AVATAR_DIMENSIONS[1]
+        args.update(kwargs)
+        return ImageURLField(**args)
+    else:
+        return field.formfield(**kwargs)
+
+class UserProfileForm(forms.ModelForm):
+    """Form for editing the user profile fields in a ForumProfile."""
+    formfield_callback = forum_profile_formfield_callback
+
+    class Meta:
+        model = ForumProfile
+        fields = ('title', 'location', 'avatar', 'website')
+
+    def __init__(self, can_edit_title, *args, **kwargs):
+        super(UserProfileForm, self).__init__(*args, **kwargs)
+        if not can_edit_title:
+            del self.fields['title']
+
+class ForumSettingsForm(forms.ModelForm):
+    """Form for editing the board setting fields in a ForumProfile."""
+    class Meta:
+        model = ForumProfile
+        fields = ('timezone', 'topics_per_page', 'posts_per_page', 'auto_fast_reply')
