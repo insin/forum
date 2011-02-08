@@ -37,6 +37,7 @@
 {% csrf_token %}
 <div class="buttons">
   <input type="submit" value="Confirm Deletion">
+  or
   <a href="{{ post.get_absolute_url }}">Cancel</a>
 </form>
 {% endblock %}
