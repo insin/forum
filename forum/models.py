@@ -56,31 +56,31 @@ class ForumProfileManager(models.Manager):
 TIMEZONE_CHOICES = tuple([(tz, tz) for tz in common_timezones])
 
 TOPICS_PER_PAGE_CHOICES = (
-    (10, u'10'),
-    (20, u'20'),
-    (30, u'30'),
-    (40, u'40'),
+    (10, '10'),
+    (20, '20'),
+    (30, '30'),
+    (40, '40'),
 )
 
 POSTS_PER_PAGE_CHOICES = (
-    (10, u'10'),
-    (20, u'20'),
-    (30, u'30'),
-    (40, u'40'),
+    (10, '10'),
+    (20, '20'),
+    (30, '30'),
+    (40, '40'),
 )
 
 class ForumProfile(models.Model):
     """
     Forum-specific information and configuration details for a User.
     """
-    USER_GROUP      = u'U'
-    MODERATOR_GROUP = u'M'
-    ADMIN_GROUP     = u'A'
+    USER_GROUP      = 'U'
+    MODERATOR_GROUP = 'M'
+    ADMIN_GROUP     = 'A'
 
     GROUP_CHOICES = (
-        (USER_GROUP, u'Users'),
-        (MODERATOR_GROUP, u'Moderators'),
-        (ADMIN_GROUP, u'Admins'),
+        (USER_GROUP, 'Users'),
+        (MODERATOR_GROUP, 'Moderators'),
+        (ADMIN_GROUP, 'Admins'),
     )
 
     user     = models.ForeignKey(User, unique=True, related_name='forum_profile')
@@ -102,7 +102,7 @@ class ForumProfile(models.Model):
     objects = ForumProfileManager()
 
     def __unicode__(self):
-        return u'Forum profile for %s' % self.user
+        return 'Forum profile for %s' % self.user
 
     class Meta:
         ordering = ('user',)
@@ -609,7 +609,7 @@ class TopicTracker(models.Model):
     objects = TopicTrackerManager()
 
     def __unicode__(self):
-        return u'%s read "%s" at %s' % (self.user, self.topic, self.last_read)
+        return '%s read "%s" at %s' % (self.user, self.topic, self.last_read)
 
     class Meta:
         unique_together = (('user', 'topic'),)
@@ -833,11 +833,11 @@ class Search(models.Model):
     Caches search criteria and a limited number of results to avoid
     repitition of expensive searches when paginating results.
     """
-    POST_SEARCH  = u'P'
-    TOPIC_SEARCH = u'T'
+    POST_SEARCH  = 'P'
+    TOPIC_SEARCH = 'T'
     TYPE_CHOICES = (
-        (POST_SEARCH, u'Posts'),
-        (TOPIC_SEARCH, u'Topics'),
+        (POST_SEARCH, 'Posts'),
+        (TOPIC_SEARCH, 'Topics'),
     )
 
     type          = models.CharField(max_length=1, choices=TYPE_CHOICES)
@@ -847,7 +847,7 @@ class Search(models.Model):
     result_ids    = models.TextField()
 
     def __unicode__(self):
-        return u'%s searched for %s at %s' % (
+        return '%s searched for %s at %s' % (
             self.user, self.get_type_display(), self.searched_at)
 
     def save(self, *args, **kwargs):
@@ -857,7 +857,7 @@ class Search(models.Model):
 
     class Meta:
         ordering = ('-searched_at',)
-        verbose_name_plural = u'searches'
+        verbose_name_plural = 'searches'
 
     @models.permalink
     def get_absolute_url(self):
