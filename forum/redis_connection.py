@@ -19,7 +19,7 @@ def get_instance():
 r = get_instance()
 
 def increment_viewcount(topic):
-    r.incr('views%s' % topic.pk, 1)
+    r.incr('views%s' % topic.pk)
 
 def get_viewcounts(topics):
     for view_count in r.mget(['views%s' % t.pk for t in topics]):
@@ -38,7 +38,6 @@ def set_tracker(user, topic):
 def get_tracker(user, topic_id):
     last_read = r.get('u%st%s' % (user.pk, topic_id))
     if last_read:
-        print(last_read)
         return datetime.datetime.strptime(last_read, TIMESTAMP_FORMAT)
     return None
 
