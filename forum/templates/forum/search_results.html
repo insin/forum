@@ -48,6 +48,7 @@
 {% endfor %}
 {% else %}
 {% load humanize %}
+{% add_view_counts topic_list %}
 {% add_last_read_times object_list user %}
 <table>
 <col width="1">

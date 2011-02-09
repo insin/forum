@@ -13,6 +13,7 @@
 <div class="module no-margin">
 <h2>{{ title|escape }}</h2>
 {% if topic_list %}
+{% add_view_counts topic_list %}
 {% add_last_read_times topic_list user %}
 <table>
 <col width="1">

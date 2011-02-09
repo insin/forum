@@ -18,7 +18,8 @@ from forum import auth
 from forum import forms
 from forum import moderation
 from forum.formatters import post_formatter
-from forum.models import Forum, ForumProfile, Post, Search, Section, Topic, TopicTracker
+from forum.models import Forum, ForumProfile, Post, Search, Section, Topic
+from forum import redis_connection as redis
 
 qn = connection.ops.quote_name
 
@@ -350,10 +351,11 @@ def forum_detail(request, forum_id):
                                            .filter(**topic_filters) \
                                             .order_by('-started_at'))
         context['pinned_topics'] = pinned_topics
-        TopicTracker.objects.add_last_read_to_topics(topics + pinned_topics,
-                                                     request.user)
+        Topic.objects.add_last_read_times(topics + pinned_topics, request.user)
+        Topic.objects.add_view_counts(topics + pinned_topics)
     else:
-        TopicTracker.objects.add_last_read_to_topics(topics, request.user)
+        Topic.objects.add_last_read_times(topics, request.user)
+        Topic.objects.add_view_counts(topics)
     return render_to_response('forum/forum_detail.html', context,
         context_instance=RequestContext(request))
 
@@ -438,7 +440,6 @@ def add_topic(request, forum_id):
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
     }, context_instance=RequestContext(request))
 
-@transaction.commit_manually
 def topic_detail(request, topic_id, meta=False):
     """
     Displays a Topic's Posts.
@@ -448,15 +449,9 @@ def topic_detail(request, topic_id, meta=False):
        not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
-    topic.increment_view_count()
+    redis.increment_viewcount(topic)
     if request.user.is_authenticated():
-        last_read = datetime.datetime.now()
-        tracker, created = \
-            TopicTracker.objects.get_or_create(user=request.user, topic=topic,
-                                               defaults={'last_read': last_read})
-        if not created:
-            tracker.update_last_read(last_read)
-    transaction.commit()
+        redis.set_tracker(request.user, topic)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta) \
                                          .order_by('posted_at', 'num_in_topic'),
@@ -720,15 +715,16 @@ def redirect_to_unread_post(request, topic_id):
     deleted in the interim period, for example), redirects to the Topic's
     last post instead.
     """
+    last_read = redis.get_tracker(request.user, topic_id)
+    if not last_read:
+        return topic_detail(request, topic_id)
+
     try:
-        tracker = TopicTracker.objects.get(user=request.user, topic=topic_id)
         unread_post = \
             Post.objects.filter(topic=topic_id, meta=False,
-                                posted_at__gt=tracker.last_read) \
+                                posted_at__gt=last_read) \
                          .order_by('posted_at', 'id')[0]
         return redirect_to_post(request, unread_post.pk, unread_post)
-    except TopicTracker.DoesNotExist:
-        return topic_detail(request, topic_id)
     except IndexError:
         return redirect_to_last_post(request, topic_id)
 
@@ -836,7 +832,7 @@ def user_profile(request, user_id):
     return render_to_response('forum/user_profile.html', {
         'forum_user': forum_user,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
-        'recent_topics': recent_topics,
+        'recent_topics': Topic.objects.add_view_counts(recent_topics),
         'title': 'Forum Profile for %s' % forum_user,
         'avatar_dimensions': get_avatar_dimensions(),
     }, context_instance=RequestContext(request))

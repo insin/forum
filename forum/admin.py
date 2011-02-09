@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from forum.models import (ForumProfile, Section, Forum, Topic, TopicTracker,
-    Post, Search)
+from forum.models import ForumProfile, Section, Forum, Topic, Post, Search
 
 DENORMALISED_DATA_NOTICE = 'You shouldn\'t need to edit this data manually.'
 
@@ -50,8 +49,8 @@ class ForumAdmin(admin.ModelAdmin):
 
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('title', 'forum', 'user', 'started_at', 'post_count',
-                    'metapost_count', 'view_count', 'last_post_at',
-                    'locked', 'pinned', 'hidden')
+                    'metapost_count', 'last_post_at', 'locked', 'pinned',
+                    'hidden')
     list_filter = ('forum', 'locked', 'pinned', 'hidden')
     fieldsets = (
         (None, {
@@ -63,14 +62,11 @@ class TopicAdmin(admin.ModelAdmin):
         ('Denormalised data', {
             'classes': ('collapse',),
             'description': DENORMALISED_DATA_NOTICE,
-            'fields': ('post_count', 'metapost_count', 'view_count',
-                       'last_post_at', 'last_user_id', 'last_username'),
+            'fields': ('post_count', 'metapost_count', 'last_post_at',
+                       'last_user_id', 'last_username'),
         }),
     )
     search_fields = ('title',)
-
-class TopicTrackerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'topic', 'last_read')
 
 class PostAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'user', 'topic', 'meta', 'posted_at',
@@ -96,6 +92,5 @@ admin.site.register(ForumProfile, ForumProfileAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(Topic, TopicAdmin)
-admin.site.register(TopicTracker, TopicTrackerAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Search, SearchAdmin)

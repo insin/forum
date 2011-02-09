@@ -2,18 +2,19 @@
 Models for a discussion forum.
 """
 import datetime
+from itertools import izip
 
 from django.contrib.auth.models import User
 from django.db import connection, models, transaction
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
+from forum import redis_connection as redis
 from forum.formatters import post_formatter
 from forum.utils import models as model_utils
 from pytz import common_timezones
 
-__all__ = ['ForumProfile', 'Section', 'Forum', 'Topic', 'TopicTracker', 'Post',
-           'Search']
+__all__ = ['ForumProfile', 'Section', 'Forum', 'Topic',  'Post', 'Search']
 
 qn = connection.ops.quote_name
 
@@ -452,6 +453,24 @@ class TopicManager(models.Manager):
             ]
         )
 
+    def add_last_read_times(self, topics, user):
+        """
+        If the given User is authenticated, adds a ``last_read`` attribute
+        to the given Topics.
+        """
+        if user.is_authenticated():
+            for topic, last_read in izip(topics, redis.get_trackers(user, topics)):
+                topic.last_read = last_read
+        return topics
+
+    def add_view_counts(self, topics):
+        """
+        Adds view counts to the given topics.
+        """
+        for topic, view_count in izip(topics, redis.get_viewcounts(topics)):
+            topic.view_count = view_count
+        return topics
+
 class Topic(models.Model):
     """
     A discussion topic.
@@ -470,7 +489,6 @@ class Topic(models.Model):
     # Denormalised data
     post_count     = models.PositiveIntegerField(default=0)
     metapost_count = models.PositiveIntegerField(default=0)
-    view_count     = models.PositiveIntegerField(default=0)
     last_post_at   = models.DateTimeField(null=True, blank=True)
     last_user_id   = models.PositiveIntegerField(null=True, blank=True)
     last_username  = models.CharField(max_length=30, blank=True)
@@ -573,54 +591,6 @@ class Topic(models.Model):
         model_utils.update(self, 'post_count', 'last_post_at', 'last_user_id',
                            'last_username')
     set_last_post.alters_data = True
-
-    def increment_view_count(self):
-        """
-        Increment this Topic's ``view_count``.
-        """
-        self.view_count += 1
-        model_utils.update(self, 'view_count')
-    increment_view_count.alters_data = True
-
-class TopicTrackerManager(models.Manager):
-    def add_last_read_to_topics(self, topics, user):
-        """
-        If the given User is authenticated, adds a ``last_read``
-        attribute to the given Topics based on their TopicTrackers - this
-        will be ``None`` if there is no TopicTracker for a Topic.
-        """
-        if user.is_authenticated():
-            queryset = super(TopicTrackerManager, self).get_query_set().filter(
-                user=user, topic__in=[t.pk for t in topics])
-            last_read_dict = dict([(tracker.topic_id, tracker.last_read) \
-                                   for tracker in queryset])
-            for topic in topics:
-                topic.last_read = last_read_dict.get(topic.pk, None)
-    add_last_read_to_topics.alters_data = True
-
-class TopicTracker(models.Model):
-    """
-    Tracks the last time a user read a particular topic.
-    """
-    user      = models.ForeignKey(User, related_name='topic_trackers')
-    topic     = models.ForeignKey(Topic, related_name='trackers')
-    last_read = models.DateTimeField()
-
-    objects = TopicTrackerManager()
-
-    def __unicode__(self):
-        return '%s read "%s" at %s' % (self.user, self.topic, self.last_read)
-
-    class Meta:
-        unique_together = (('user', 'topic'),)
-
-    def update_last_read(self, last_read):
-        """
-        Updates this TopicTracker's ``last_read``.
-        """
-        self.last_read = last_read
-        model_utils.update(self, 'last_read')
-    update_last_read.alters_data = True
 
 class PostManager(models.Manager):
     def with_user_details(self):

@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 from forum import auth
 from forum.formatters import post_formatter
-from forum.models import TopicTracker
+from forum.models import Topic
 from forum.utils.dates import format_datetime
 
 register = template.Library()
@@ -21,9 +21,17 @@ register = template.Library()
 @register.simple_tag
 def add_last_read_times(topics, user):
     """
-    Adds last read details to the given topics for the given user.
+    Adds last read times to the given Topics for the given User.
     """
-    TopicTracker.objects.add_last_read_to_topics(topics, user)
+    Topic.objects.add_last_read_times(topics, user)
+    return mark_safe(u'')
+
+@register.simple_tag
+def add_view_counts(topics):
+    """
+    Adds view count details to the given Topics.
+    """
+    Topic.objects.add_view_counts(topics)
     return mark_safe(u'')
 
 @register.simple_tag
