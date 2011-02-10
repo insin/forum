@@ -102,8 +102,12 @@ INSTALLED_APPS = [
 ]
 
 if DEBUG:
-    MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
-    INSTALLED_APPS.append('debug_toolbar')
+    try:
+        import debug_toolbar
+        MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+        INSTALLED_APPS.append('debug_toolbar')
+    except ImportError:
+        pass
 
 # Auth settings
 LOGIN_URL = '/accounts/login/'

@@ -102,7 +102,7 @@ class BBCodeFormatter(PostFormatter):
         Returns a raw post body which quotes the given Post using BBCode
         syntax.
         """
-        return u'[quote]%s[/quote]' % post.body
+        return u'[quote="%s"]%s[/quote]' % (escape(post.user.username), post.body)
 
 def get_post_formatter():
     """

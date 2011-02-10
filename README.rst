@@ -14,7 +14,7 @@ Dependencies
 
 The following must be installed before you can use the forum application:
 
-- `Redis`_ and `redis-py` are required for real-time tracking fun.
+- `Redis`_ and `redis-py`_ are required for real-time tracking fun.
   For Windows users, there are `native redis binaries`_ available.
 - `Python Imaging Library`_ (PIL) is required for validation of user avatars.
 - `pytz`_ is required to perform timezone conversions based on the timezone
@@ -27,16 +27,16 @@ forum in standalone mode:
   users when running as a standalone project - it is assumed that when the forum
   is integrated into existing projects, they will already have their own
   registration mechanism in place.
-- `Django Debug Toolbar`_ - 'nuff said.
 
 The following modules are only required in certain circumstances:
 
+- `Django Debug Toolbar`_ will be used if available when ``DEBUG == True``.
 - `python-markdown2`_ is required to use ``forum.formatters.MarkdownFormatter``
   to format posts using `Markdown`_ syntax.
 - `postmarkup`_ is required to use ``forum.formatters.BBCodeFormatter``
   to format posts using a `BBCode`_-like syntax.
 
-  - `_Pygments`_ is required by postmarkup.
+  - `Pygments`_ is required by postmarkup.
 
 .. _`Redis`: http://redis.io
 .. _`redis-py`: https://github.com/andymccurdy/redis-py
