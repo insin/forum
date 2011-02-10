@@ -212,7 +212,8 @@ def section_detail(request, section_id):
     Displays a particular Section's Forums.
     """
     section = get_object_or_404(Section, pk=section_id)
-    redis.seen_user(request.user, 'Viewing:', section)
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing:', section)
     return render_to_response('forum/section_detail.html', {
         'section': section,
         'forum_list': section.forums.all(),
@@ -366,7 +367,8 @@ def forum_detail(request, forum_id):
     else:
         Topic.objects.add_last_read_times(topics, request.user)
         Topic.objects.add_view_counts(topics)
-    redis.seen_user(request.user, 'Viewing:', forum)
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing:', forum)
     return render_to_response('forum/forum_detail.html', context,
         context_instance=RequestContext(request))
 
@@ -617,7 +619,8 @@ def topic_post_summary(request, topic_id):
         params=[topic.pk, False],
     ).order_by('-post_count')
 
-    redis.seen_user(request.user, 'Viewing Post Summary for:', topic)
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing Post Summary for:', topic)
     return render_to_response('forum/topic_post_summary.html', {
         'topic': topic,
         'users': users,
