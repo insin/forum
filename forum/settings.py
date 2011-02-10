@@ -113,6 +113,9 @@ if DEBUG:
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 
+# Session settings
+SESSION_ENGINE = 'forum.sessions.redis_session_backend'
+
 # Registration settings
 ACCOUNT_ACTIVATION_DAYS = 10
 
