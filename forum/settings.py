@@ -113,9 +113,9 @@ if DEBUG:
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 
+# Registration settings
+ACCOUNT_ACTIVATION_DAYS = 10
+
 # Forum settings
 FORUM_STANDALONE = True
 FORUM_POST_FORMATTER = 'forum.formatters.BBCodeFormatter'
-
-# Registration settings
-ACCOUNT_ACTIVATION_DAYS = 10
