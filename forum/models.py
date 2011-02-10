@@ -459,15 +459,16 @@ class TopicManager(models.Manager):
         to the given Topics.
         """
         if user.is_authenticated():
-            for topic, last_read in izip(topics, redis.get_trackers(user, topics)):
+            for topic, last_read in izip(topics,
+                                         redis.get_last_read_times(user, topics)):
                 topic.last_read = last_read
         return topics
 
     def add_view_counts(self, topics):
         """
-        Adds view counts to the given topics.
+        Adds view counts to the given Topics.
         """
-        for topic, view_count in izip(topics, redis.get_viewcounts(topics)):
+        for topic, view_count in izip(topics, redis.get_view_counts(topics)):
             topic.view_count = view_count
         return topics
 
@@ -648,7 +649,6 @@ class PostManager(models.Manager):
             select={
                 'topic_title': '%s.%s' % (topic_table, qn(topic_opts.get_field('title').column)),
                 'topic_post_count': '%s.%s' % (topic_table, qn(topic_opts.get_field('post_count').column)),
-                'topic_view_count': '%s.%s' % (topic_table, qn(topic_opts.get_field('view_count').column)),
                 'forum_id': '%s.%s' % (topic_table, qn(topic_opts.get_field('forum').column)),
                 'forum_name': '%s.%s' % (forum_table, qn(forum_opts.get_field('name').column)),
                 'section_id': '%s.%s' % (forum_table, qn(forum_opts.get_field('section').column)),

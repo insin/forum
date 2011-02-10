@@ -111,7 +111,7 @@ LOGIN_REDIRECT_URL = '/'
 
 # Forum settings
 FORUM_STANDALONE = True
-FORUM_POST_FORMATTER = 'forum.formatters.MarkdownFormatter'
+FORUM_POST_FORMATTER = 'forum.formatters.BBCodeFormatter'
 
 # Registration settings
 ACCOUNT_ACTIVATION_DAYS = 10

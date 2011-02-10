@@ -40,6 +40,14 @@
       <th>Website</th>
       <td>{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</td>
     </tr>
+    <tr>
+      <th>Last Seen</th>
+      <td>{{ last_seen|timesince }}</td>
+    </tr>
+    <tr>
+      <th>Doing</th>
+      <td>{{ doing|safe }}</td>
+    </tr>
   </tbody>
   </table>
   </div>

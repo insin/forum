@@ -3,7 +3,8 @@ Django Forum
 ============
 
 This is a basic forum application which should eventually be usable as a
-pluggable application in a Django project, or by itself as a standalone project.
+pluggable application in a Django project, or by itself as a standalone
+project.
 
 Installation
 ============
@@ -13,6 +14,8 @@ Dependencies
 
 The following must be installed before you can use the forum application:
 
+- `Redis`_ and `redis-py` are required for real-time tracking fun.
+  For Windows users, there are `native redis binaries`_ available.
 - `Python Imaging Library`_ (PIL) is required for validation of user avatars.
 - `pytz`_ is required to perform timezone conversions based on the timezone
   registered users can choose as part of their forum profile.
@@ -24,7 +27,7 @@ forum in standalone mode:
   users when running as a standalone project - it is assumed that when the forum
   is integrated into existing projects, they will already have their own
   registration mechanism in place.
-- `Django Debug Toolbar` - 'nuff said.
+- `Django Debug Toolbar`_ - 'nuff said.
 
 The following modules are only required in certain circumstances:
 
@@ -33,7 +36,11 @@ The following modules are only required in certain circumstances:
 - `postmarkup`_ is required to use ``forum.formatters.BBCodeFormatter``
   to format posts using a `BBCode`_-like syntax.
 
-.. _`Django`: http://www.djangoproject.com/
+  - `_Pygments`_ is required by postmarkup.
+
+.. _`Redis`: http://redis.io
+.. _`redis-py`: https://github.com/andymccurdy/redis-py
+.. _`native redis binaries`: https://github.com/dmajkic/redis/downloads
 .. _`Python Imaging Library`: http://www.pythonware.com/products/pil/
 .. _`pytz`: http://pytz.sourceforge.net/
 .. _`django-registration`: http://code.google.com/p/django-registration/
@@ -42,6 +49,7 @@ The following modules are only required in certain circumstances:
 .. _`Markdown`: http://daringfireball.net/projects/markdown/
 .. _`postmarkup`: http://code.google.com/p/postmarkup/
 .. _`BBCode`: http://en.wikipedia.org/wiki/BBCode
+.. _`Pygments`: http://pygments.org
 
 Standalone Mode
 ---------------
@@ -87,8 +95,8 @@ Whether or not the forum is being used in standalone mode. If ``True``,
 URL configurations for the django.contrib.admin and django-registration
 applications will be included in the application's main URLConf.
 
-FORUM_POST_FORMATTING_MODULE
-----------------------------
+FORUM_POST_FORMATTER
+--------------------
 
 Default: ``'forum.formatters.PostFormatter'``
 
@@ -170,6 +178,20 @@ Default::
 A dict mapping emoticon symbols to the filenames of images they should be
 replaced with when emoticons are enabled while formatting posts.
 
+FORUM_REDIS_HOST
+----------------
+
+Default: ``'localhost``
+
+FORUM_REDIS_PORT
+----------------
+
+Default: ``6379``
+
+FORUM_REDIS_DB
+--------------
+
+Default: ``0``
 
 Post Formatters
 ===============

@@ -106,6 +106,8 @@ def forum_index(request):
     """
     Displays a list of Sections and their Forums.
     """
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing forum index')
     return render_to_response('forum/forum_index.html', {
         'section_list': list(Section.objects.get_forums_by_section()),
         'title': 'Forum Index',
@@ -128,6 +130,7 @@ def search(request):
             return HttpResponseRedirect(search.get_absolute_url())
     else:
         form = forms.SearchForm()
+    redis.seen_user(request.user, 'Searching...')
     return render_to_response('forum/search.html', {
         'form': form,
         'title': 'Search',
@@ -170,6 +173,7 @@ def search_results(request, search_id):
     }
     if search.type == Search.TOPIC_SEARCH:
         context['posts_per_page'] = get_posts_per_page(request.user)
+    redis.seen_user(request.user, 'Viewing search results')
     return render_to_response('forum/search_results.html', context,
         context_instance=RequestContext(request))
 
@@ -182,6 +186,7 @@ def add_section(request):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     sections = list(Section.objects.all())
+    redis.seen_user(request.user, 'Adding a new section')
     if request.method == 'POST':
         form = forms.AddSectionForm(sections, request.POST)
         if form.is_valid():
@@ -207,6 +212,7 @@ def section_detail(request, section_id):
     Displays a particular Section's Forums.
     """
     section = get_object_or_404(Section, pk=section_id)
+    redis.seen_user(request.user, 'Viewing:', section)
     return render_to_response('forum/section_detail.html', {
         'section': section,
         'forum_list': section.forums.all(),
@@ -222,6 +228,7 @@ def edit_section(request, section_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
+    redis.seen_user(request.user, 'Editing a section')
     if request.method == 'POST':
         form = forms.EditSectionForm(request.POST, instance=section)
         if form.is_valid():
@@ -244,6 +251,7 @@ def delete_section(request, section_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
+    redis.seen_user(request.user, 'Deleting a section')
     if request.method == 'POST':
         section.delete()
         return HttpResponseRedirect(reverse('forum_index'))
@@ -264,6 +272,7 @@ def add_forum(request, section_id):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     forums = list(section.forums.all())
+    redis.seen_user(request.user, 'Adding a new forum')
     if request.method == 'POST':
         form = forms.AddForumForm(forums, request.POST)
         if form.is_valid():
@@ -295,6 +304,7 @@ def edit_forum(request, forum_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
+    redis.seen_user(request.user, 'Editing a forum')
     if request.method == 'POST':
         form = forms.EditForumForm(request.POST, instance=forum)
         if form.is_valid():
@@ -356,6 +366,7 @@ def forum_detail(request, forum_id):
     else:
         Topic.objects.add_last_read_times(topics, request.user)
         Topic.objects.add_view_counts(topics)
+    redis.seen_user(request.user, 'Viewing:', forum)
     return render_to_response('forum/forum_detail.html', context,
         context_instance=RequestContext(request))
 
@@ -369,6 +380,7 @@ def delete_forum(request, forum_id):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     section = forum.section
+    redis.seen_user(request.user, 'Deleting a forum')
     if request.method == 'POST':
         forum.delete()
         return HttpResponseRedirect(section.get_absolute_url())
@@ -392,6 +404,8 @@ def new_posts(request):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_and_user_details().filter(
         **filters).order_by('-last_post_at')
+    redis.seen_user(request.user,
+                    'Viewing: <a href="%s">New Posts</a>' % reverse('forum_new_posts'))
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
@@ -408,6 +422,7 @@ def add_topic(request, forum_id):
     """
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     preview = None
+    redis.seen_user(request.user, 'Adding a new topic')
     if request.method == 'POST':
         topic_form = forms.AddTopicForm(request.POST)
         post_form = forms.TopicPostForm(request.POST)
@@ -449,9 +464,10 @@ def topic_detail(request, topic_id, meta=False):
        not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
-    redis.increment_viewcount(topic)
+    redis.increment_view_count(topic)
     if request.user.is_authenticated():
-        redis.set_tracker(request.user, topic)
+        redis.update_last_read_time(request.user, topic)
+        redis.seen_user(request.user, 'Viewing Topic:', topic)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta) \
                                          .order_by('posted_at', 'num_in_topic'),
@@ -494,10 +510,9 @@ def edit_topic(request, topic_id):
     moderator = auth.is_moderator(request.user)
     if moderator:
         was_hidden = topic.hidden
-    EditTopicForm = modelform_factory(Topic, fields=editable_fields,
-                                      formfield_callback=topic_formfield_callback)
+    redis.seen_user(request.user, 'Editing Topic:', topic)
     if request.method == 'POST':
-        form = forms.EditTopicForm(moderator, request.POST)
+        form = forms.EditTopicForm(moderator, request.POST, instance=topic)
         if form.is_valid():
             topic = form.save(commit=True)
             if auth.is_moderator(request.user):
@@ -511,7 +526,7 @@ def edit_topic(request, topic_id):
                     forum.set_last_post()
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        form = forms.EditTopicForm(moderator)
+        form = forms.EditTopicForm(moderator, instance=topic)
     return render_to_response('forum/edit_topic.html', {
         'topic': topic,
         'form': form,
@@ -537,6 +552,7 @@ def delete_topic(request, topic_id):
         return permission_denied(request,
             message='You do not have permission to delete this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
+    redis.seen_user(request.user, 'Deleting a Topic')
     if request.method == 'POST':
         topic.delete()
         return HttpResponseRedirect(forum.get_absolute_url())
@@ -601,6 +617,7 @@ def topic_post_summary(request, topic_id):
         params=[topic.pk, False],
     ).order_by('-post_count')
 
+    redis.seen_user(request.user, 'Viewing Post Summary for:', topic)
     return render_to_response('forum/topic_post_summary.html', {
         'topic': topic,
         'users': users,
@@ -626,8 +643,9 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
             message='You do not have permission to post in this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     preview = None
+    redis.seen_user(request.user, 'Posting in topic:', topic)
     if request.method == 'POST':
-        form = forms.ReplyForm(meta, request.POST)
+        form = forms.ReplyForm(not meta, request.POST)
         if form.is_valid():
             if 'preview' in request.POST:
                 preview = post_formatter.format_post(
@@ -647,7 +665,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         initial = {}
         if quote_post is not None:
             initial['body'] = post_formatter.quote_post(quote_post)
-        form = forms.ReplyForm(meta, initial=initial)
+        form = forms.ReplyForm(not meta, initial=initial)
     return render_to_response('forum/add_reply.html', {
         'form': form,
         'topic': topic,
@@ -715,7 +733,7 @@ def redirect_to_unread_post(request, topic_id):
     deleted in the interim period, for example), redirects to the Topic's
     last post instead.
     """
-    last_read = redis.get_tracker(request.user, topic_id)
+    last_read = redis.get_last_read_time(request.user, topic_id)
     if not last_read:
         return topic_detail(request, topic_id)
 
@@ -743,12 +761,11 @@ def edit_post(request, post_id):
         return permission_denied(request,
             message='You do not have permission to edit this post.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-
     meta_editable = auth.is_moderator(request.user)
     if meta_editable:
         was_meta = post.meta
-
     preview = None
+    redis.seen_user(request.user, 'Editing a post in:', topic)
     if request.method == 'POST':
         form = forms.ReplyForm(meta_editable, request.POST, instance=post)
         if form.is_valid():
@@ -800,6 +817,7 @@ def delete_post(request, post_id):
             message='You do not have permission to delete this post.')
     if post.num_in_topic == 1 and not post.meta:
         return delete_topic(request, post.topic_id)
+    redis.seen_user(request.user, 'Deleting a post in:', topic)
     if request.method == 'POST':
         post.delete()
         url = post.meta and topic.get_meta_url() or topic.get_absolute_url()
@@ -820,6 +838,7 @@ def user_profile(request, user_id):
     Displays the ForumProfile for the user with the given id.
     """
     forum_user = get_object_or_404(User, pk=user_id)
+    last_seen, doing = redis.get_last_seen(forum_user)
     try:
         filters = {'user': forum_user}
         if not request.user.is_authenticated() or \
@@ -829,8 +848,12 @@ def user_profile(request, user_id):
             **filters).order_by('-started_at')[:5]
     except IndexError:
         recent_topics = []
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing user profile:', forum_user)
     return render_to_response('forum/user_profile.html', {
         'forum_user': forum_user,
+        'last_seen': last_seen,
+        'doing': doing,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': Topic.objects.add_view_counts(recent_topics),
         'title': 'Forum Profile for %s' % forum_user,
@@ -848,6 +871,8 @@ def user_topics(request, user_id):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_details().filter(
         **filters).order_by('-started_at')
+    if request.user.is_authenticated():
+        redis.seen_user(request.user, 'Viewing topics by:', forum_user)
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/user_topics.html',
@@ -870,6 +895,7 @@ def edit_user_forum_profile(request, user_id):
             message='You do not have permission to edit this user\'s forum profile.')
     user_profile = ForumProfile.objects.get_for_user(user)
     can_edit_title = auth.is_moderator(request.user)
+    redis.seen_user(request.user, 'Editing User Profile')
     if request.method == 'POST':
         form = forms.UserProfileForm(can_edit_title, request.POST, instance=user_profile)
         if form.is_valid():
@@ -891,6 +917,7 @@ def edit_user_forum_settings(request):
     Edits forum settings in the logged-in User's ForumProfile.
     """
     user_profile = ForumProfile.objects.get_for_user(request.user)
+    redis.seen_user(request.user, 'Editing Forum Settings')
     if request.method == 'POST':
         form = forms.ForumSettingsForm(request.POST, instance=user_profile)
         if form.is_valid():

@@ -93,7 +93,7 @@ class AddTopicForm(forms.ModelForm):
 
     class Meta:
         model = Topic
-        fields = ('name', 'description')
+        fields = ('title', 'description')
 
 class EditTopicForm(forms.ModelForm):
     """Form for editing a Topic."""
