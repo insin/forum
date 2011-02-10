@@ -642,7 +642,6 @@ class ManagerTestCase(TestCase):
         self.assertEquals(post.user_website, forum_profile.website)
         self.assertEquals(post.topic_title, topic.title)
         self.assertEquals(post.topic_post_count, topic.post_count)
-        self.assertEquals(post.topic_view_count, topic.view_count)
         self.assertEquals(post.forum_id, forum.pk)
         self.assertEquals(post.forum_name, forum.name)
         self.assertEquals(post.section_id, section.pk)
