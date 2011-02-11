@@ -468,7 +468,8 @@ class TopicManager(models.Manager):
         """
         Adds view counts to the given Topics.
         """
-        for topic, view_count in izip(topics, redis.get_view_counts(topics)):
+        for topic, view_count in izip(topics,
+                                      redis.get_view_counts([t.pk for t in topics])):
             topic.view_count = view_count
         return topics
 
@@ -699,6 +700,15 @@ class PostManager(models.Manager):
                 'operator': operator,
                 'topic_fk': qn(opts.get_field('topic').column),
             }, [topic.pk, meta, start_at])
+
+    def add_topic_view_counts(self, posts):
+        """
+        Adds view counts for the Topics of the given Posts.
+        """
+        for post, view_count in izip(posts,
+                                     redis.get_view_counts([p.topic_id for p in posts])):
+            post.topic_view_count = view_count
+        return posts
 
 class Post(models.Model):
     """

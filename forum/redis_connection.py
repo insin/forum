@@ -25,9 +25,9 @@ def increment_view_count(topic):
     """Increments the view count for a Topic."""
     r.incr('topic:%s:views' % topic.pk)
 
-def get_view_counts(topics):
+def get_view_counts(topic_ids):
     """Yields viewcounts for the given Topics."""
-    for view_count in r.mget(['topic:%s:views' % t.pk for t in topics]):
+    for view_count in r.mget(['topic:%s:views' % id for id in topic_ids]):
         if view_count:
             yield int(view_count)
         else:

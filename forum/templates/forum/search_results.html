@@ -1,4 +1,4 @@
-{% extends "forum/base.html" %}{% load forum_tags %}
+{% extends "forum/base.html" %}{% load forum_tags %}{% load humanize %}
 
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
@@ -12,9 +12,12 @@
 {% if is_paginated %}<div class="paginator">{% paginator object_name %}</div>{% endif %}
 </div>
 {% if search.is_post_search %}
+{% if redis %}
+{% add_topic_view_counts object_list %}
+{% endif %}
 {% for post in object_list %}
 <div class="module">
-<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count }} Post{{ post.topic_post_count|pluralize }}, {{ post.topic_view_count }} View{{ post.topic_view_count|pluralize }}</h2>
+<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count|intcomma }} Post{{ post.topic_post_count|pluralize }}{% if redis %}, {{ post.topic_view_count|intcomma }} View{{ post.topic_view_count|pluralize }}{% endif %}</h2>
 <div class="post" id="post{{ post.id }}">
   <div class="postbody">
     <div class="body">
@@ -47,9 +50,8 @@
 </div>
 {% endfor %}
 {% else %}
-{% load humanize %}
 {% if redis %}
-{% add_view_counts topic_list %}
+{% add_view_counts object_list %}
 {% add_last_read_times object_list user %}
 {% endif %}
 <table>

@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 from forum import auth
 from forum.formatters import post_formatter
-from forum.models import Topic
+from forum.models import Topic, Post
 from forum.utils.dates import format_datetime
 
 register = template.Library()
@@ -32,6 +32,14 @@ def add_view_counts(topics):
     Adds view count details to the given Topics.
     """
     Topic.objects.add_view_counts(topics)
+    return mark_safe(u'')
+
+@register.simple_tag
+def add_topic_view_counts(posts):
+    """
+    Adds view count details to the given Topics.
+    """
+    Post.objects.add_topic_view_counts(posts)
     return mark_safe(u'')
 
 @register.simple_tag
