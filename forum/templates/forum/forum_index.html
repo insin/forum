@@ -46,11 +46,13 @@ This Section does not have any Forums yet.
 {% endfor %}
 
 {% if redis and active_users %}
-<div class="module module-body" id="active-users">
+<div class="module module-body" id="stats">
+<div id="active-users">
 <h3>{{ active_users|length }} active user{{ active_users|length|pluralize }} <span class="since">(in the last 30 minutes)</span></h3>
 <p>{% for active_user, last_seen in active_users %}
 <a href="{% url forum_user_profile active_user.id  %}" title="{{ last_seen|time:"g:i A"}}">{{ active_user.username }}</a>{% if not forloop.last %}, {% endif %}
 {% endfor %}</p>
+</div>
 </div>
 {% endif %}
 {% endblock %}

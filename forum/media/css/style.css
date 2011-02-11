@@ -27,7 +27,8 @@ a.unread img { vertical-align: middle; }
 .module h2 span.controls { float: right; }
   .module h2 span.controls a { color: #ff0; }
 .module h2 span.separator { display: none; }
-.module h3 { margin: 0; }
+.module h3 { margin: 0 0 8px 0; }
+  .module h3 span { font-weight: normal; }
 .module p.message { text-align: center; margin: 1em; }
 .clear { clear: both; }
 
@@ -87,6 +88,8 @@ ul.errorlist { margin: 0; padding: 0; }
   .forum-profile th, .forum-settings th { width: 30%; }
 .col-r { float: right; width: 70%; }
   .col-r .last-topics-started { margin-left: 1em; }
+
+#active-users p { margin: 0; }
 
 #footer { clear: both; margin-top: 1em; padding: 4px 0; }
 
