@@ -40,6 +40,7 @@
       <th>Website</th>
       <td>{% if forum_profile.website %}<a href="{{ forum_profile.website|escape }}">{{ forum_profile.website|escape }}</a>{% else %}None{% endif %}</td>
     </tr>
+    {% if redis %}
     <tr>
       <th>Last Seen</th>
       <td>{{ last_seen|timesince }}</td>
@@ -48,6 +49,7 @@
       <th>Doing</th>
       <td>{{ doing|safe }}</td>
     </tr>
+    {% endif %}
   </tbody>
   </table>
   </div>
@@ -89,7 +91,7 @@
 <col width="15%">
 <col>
 <col width="1">
-<col width="1">
+{% if redis %}<col width="1">{% endif %}
 <col width="20%">
 <thead>
   <tr>
@@ -97,7 +99,7 @@
     <th>In Forum</th>
     <th>Started</th>
     <th>Posts</th>
-    <th>Views</th>
+    {% if redis %}<th>Views</th>{% endif %}
     <th>Last Post</th>
   </tr>
 </thead>
@@ -113,7 +115,7 @@
     <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
     <td>{{ topic.started_at|timesince }} ago</td>
     <td class="posts"><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
-    <td class="views">{{ topic.view_count|intcomma }}</td>
+    {% if redis %}<td class="views">{{ topic.view_count|intcomma }}</td>{% endif %}
     <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>

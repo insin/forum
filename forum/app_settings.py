@@ -32,6 +32,7 @@ EMOTICONS = getattr(settings, 'FORUM_EMOTICONS', {
         ':wub:':      'wub.gif',
     })
 
+USE_REDIS =  getattr(settings, 'FORUM_USE_REDIS',  False)
 REDIS_HOST = getattr(settings, 'FORUM_REDIS_HOST', 'localhost')
 REDIS_PORT = getattr(settings, 'FORUM_REDIS_PORT', 6379)
 REDIS_DB = getattr(settings,   'FORUM_REDIS_DB',   0)

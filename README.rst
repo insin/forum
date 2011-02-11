@@ -91,9 +91,42 @@ FORUM_STANDALONE
 
 Default: ``False``
 
-Whether or not the forum is being used in standalone mode. If ``True``,
-URL configurations for the django.contrib.admin and django-registration
-applications will be included in the application's main URLConf.
+Whether or not the forum is being used in standalone mode. If set to
+``True``, URL configurations for the django.contrib.admin and
+django-registration apps will be included in the application's main
+URLConf.
+
+FORUM_USE_REDIS
+----------------
+
+Default: ``True``
+
+Whether or not the forum should use `Redis`_ to track real-time information
+such as topic view counts, active users and user locations on the forum. If
+set to ``False``, these details will not be displayed.
+
+.. _`Redis`: http://redis.io
+
+FORUM_REDIS_HOST
+----------------
+
+Default: ``'localhost``
+
+Redis host.
+
+FORUM_REDIS_PORT
+----------------
+
+Default: ``6379``
+
+Redis port.
+
+FORUM_REDIS_DB
+--------------
+
+Default: ``0``
+
+Redis database number, ``0``-``16``.
 
 FORUM_POST_FORMATTER
 --------------------
@@ -177,21 +210,6 @@ Default::
 
 A dict mapping emoticon symbols to the filenames of images they should be
 replaced with when emoticons are enabled while formatting posts.
-
-FORUM_REDIS_HOST
-----------------
-
-Default: ``'localhost``
-
-FORUM_REDIS_PORT
-----------------
-
-Default: ``6379``
-
-FORUM_REDIS_DB
---------------
-
-Default: ``0``
 
 Post Formatters
 ===============

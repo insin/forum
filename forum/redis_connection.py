@@ -67,22 +67,27 @@ def seen_user(user, doing, item=None):
     """
     last_seen = int(time.mktime(datetime.datetime.now().timetuple()))
     r.zadd('activeusers', user.pk, last_seen)
+    r.setnx('user:%s:username' % user.pk, user.username)
     r.set('user:%s:lastseen' % user.pk, last_seen)
     if item:
         doing = '%s <a href="%s">%s</a>' % (
             doing, item.get_absolute_url(), escape(str(item)))
-    r.set('user:%s:lastseendoing' % user.pk, doing)
+    r.set('user:%s:doing' % user.pk, doing)
 
 def get_active_users(minutes_ago=30):
     """
     Yields active Users in the last ``minutes_ago`` minutes, returning
-    2-tuples of (user_id, last_seen_time) in low-to-high order by time.
+    2-tuples of (user_detail_dict, last_seen_time) in low-to-high order
+    by time.
     """
     since = datetime.datetime.now() - datetime.timedelta(minutes=minutes_ago)
     since_time = int(time.mktime(since.timetuple()))
-    for user_id, last_seen in r.zrangebyscore('activeusers', since_time,
-                                              'max', withscores=True):
-        yield user_id, datetime.datetime.fromtimestamp(int(last_read))
+    for user_id, last_seen in reversed(r.zrangebyscore('activeusers', since_time,
+                                                       'inf', withscores=True)):
+        yield (
+            {'id': int(user_id), 'username': r.get('user:%s:username' % user_id)},
+            datetime.datetime.fromtimestamp(int(last_seen)),
+        )
 
 def get_last_seen(user):
     """
@@ -94,5 +99,5 @@ def get_last_seen(user):
         last_seen = datetime.datetime.fromtimestamp(int(last_seen))
     else:
         last_seen = user.date_joined
-    doing = r.get('user:%s:lastseendoing' % user.pk)
+    doing = r.get('user:%s:doing' % user.pk)
     return last_seen, doing

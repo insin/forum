@@ -100,18 +100,33 @@ def permission_denied(request, title='Permission denied',
         'forum/permission_denied.html', {
             'title': title,
             'message': message,
-        }, context_instance=RequestContext(request)))
+        }))
+
+def render(request, template, context, *args, **kwargs):
+    """
+    Wrapper for ``render_to_response`` which which patches forum context
+    variables into template contexts, in lieu of being able to detect
+    ``current_app`` in context processors, and always uses
+    ``RequestContext``.
+    """
+    context['redis'] = app_settings.USE_REDIS
+    return render_to_response(template, context,
+                              context_instance=RequestContext(request))
 
 def forum_index(request):
     """
     Displays a list of Sections and their Forums.
     """
-    if request.user.is_authenticated():
-        redis.seen_user(request.user, 'Viewing forum index')
-    return render_to_response('forum/forum_index.html', {
+    active_users = None
+    if app_settings.USE_REDIS:
+        if request.user.is_authenticated():
+            redis.seen_user(request.user, 'Viewing forum index')
+        active_users = list(redis.get_active_users())
+    return render(request, 'forum/forum_index.html', {
         'section_list': list(Section.objects.get_forums_by_section()),
         'title': 'Forum Index',
-    }, context_instance=RequestContext(request))
+        'active_users': active_users,
+    })
 
 @login_required
 def search(request):
@@ -130,11 +145,12 @@ def search(request):
             return HttpResponseRedirect(search.get_absolute_url())
     else:
         form = forms.SearchForm()
-    redis.seen_user(request.user, 'Searching...')
-    return render_to_response('forum/search.html', {
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Searching...')
+    return render(request, 'forum/search.html', {
         'form': form,
         'title': 'Search',
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 def search_results(request, search_id):
@@ -173,9 +189,9 @@ def search_results(request, search_id):
     }
     if search.type == Search.TOPIC_SEARCH:
         context['posts_per_page'] = get_posts_per_page(request.user)
-    redis.seen_user(request.user, 'Viewing search results')
-    return render_to_response('forum/search_results.html', context,
-        context_instance=RequestContext(request))
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Viewing search results')
+    return render(request, 'forum/search_results.html', context)
 
 @login_required
 @transaction.commit_on_success
@@ -186,7 +202,8 @@ def add_section(request):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     sections = list(Section.objects.all())
-    redis.seen_user(request.user, 'Adding a new section')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Adding a new section')
     if request.method == 'POST':
         form = forms.AddSectionForm(sections, request.POST)
         if form.is_valid():
@@ -202,23 +219,23 @@ def add_section(request):
             return HttpResponseRedirect(section.get_absolute_url())
     else:
         form = forms.AddSectionForm(sections)
-    return render_to_response('forum/add_section.html', {
+    return render(request, 'forum/add_section.html', {
         'form': form,
         'title': 'Add Section',
-    }, context_instance=RequestContext(request))
+    })
 
 def section_detail(request, section_id):
     """
     Displays a particular Section's Forums.
     """
     section = get_object_or_404(Section, pk=section_id)
-    if request.user.is_authenticated():
+    if app_settings.USE_REDIS and request.user.is_authenticated():
         redis.seen_user(request.user, 'Viewing:', section)
-    return render_to_response('forum/section_detail.html', {
+    return render(request, 'forum/section_detail.html', {
         'section': section,
         'forum_list': section.forums.all(),
         'title': section.name,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -229,7 +246,8 @@ def edit_section(request, section_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
-    redis.seen_user(request.user, 'Editing a section')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing a section')
     if request.method == 'POST':
         form = forms.EditSectionForm(request.POST, instance=section)
         if form.is_valid():
@@ -237,11 +255,11 @@ def edit_section(request, section_id):
             return HttpResponseRedirect(section.get_absolute_url())
     else:
         form = forms.EditSectionForm(instance=section)
-    return render_to_response('forum/edit_section.html', {
+    return render(request, 'forum/edit_section.html', {
         'form': form,
         'section': section,
         'title': 'Edit Section',
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -252,16 +270,17 @@ def delete_section(request, section_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
-    redis.seen_user(request.user, 'Deleting a section')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Deleting a section')
     if request.method == 'POST':
         section.delete()
         return HttpResponseRedirect(reverse('forum_index'))
     else:
-        return render_to_response('forum/delete_section.html', {
+        return render(request, 'forum/delete_section.html', {
             'section': section,
             'forum_list': section.forums.all(),
             'title': 'Delete Section',
-        }, context_instance=RequestContext(request))
+        })
 
 @login_required
 @transaction.commit_on_success
@@ -273,7 +292,8 @@ def add_forum(request, section_id):
         return permission_denied(request)
     section = get_object_or_404(Section, pk=section_id)
     forums = list(section.forums.all())
-    redis.seen_user(request.user, 'Adding a new forum')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Adding a new forum')
     if request.method == 'POST':
         form = forms.AddForumForm(forums, request.POST)
         if form.is_valid():
@@ -290,11 +310,11 @@ def add_forum(request, section_id):
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
         form = forms.AddForumForm(forums)
-    return render_to_response('forum/add_forum.html', {
+    return render(request, 'forum/add_forum.html', {
         'form': form,
         'section': section,
         'title': 'Add Forum to %s' % section.name,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -305,7 +325,8 @@ def edit_forum(request, forum_id):
     if not auth.is_admin(request.user):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
-    redis.seen_user(request.user, 'Editing a forum')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing a forum')
     if request.method == 'POST':
         form = forms.EditForumForm(request.POST, instance=forum)
         if form.is_valid():
@@ -313,12 +334,12 @@ def edit_forum(request, forum_id):
             return HttpResponseRedirect(forum.get_absolute_url())
     else:
         form = forms.EditForumForm(instance=forum)
-    return render_to_response('forum/edit_forum.html', {
+    return render(request, 'forum/edit_forum.html', {
         'form': form,
         'forum': forum,
         'section': forum.section,
         'title': 'Edit Forum',
-    }, context_instance=RequestContext(request))
+    })
 
 def forum_detail(request, forum_id):
     """
@@ -362,15 +383,15 @@ def forum_detail(request, forum_id):
                                            .filter(**topic_filters) \
                                             .order_by('-started_at'))
         context['pinned_topics'] = pinned_topics
-        Topic.objects.add_last_read_times(topics + pinned_topics, request.user)
-        Topic.objects.add_view_counts(topics + pinned_topics)
-    else:
+        if app_settings.USE_REDIS:
+            Topic.objects.add_last_read_times(topics + pinned_topics, request.user)
+            Topic.objects.add_view_counts(topics + pinned_topics)
+    elif app_settings.USE_REDIS:
         Topic.objects.add_last_read_times(topics, request.user)
         Topic.objects.add_view_counts(topics)
-    if request.user.is_authenticated():
+    if app_settings.USE_REDIS and request.user.is_authenticated():
         redis.seen_user(request.user, 'Viewing:', forum)
-    return render_to_response('forum/forum_detail.html', context,
-        context_instance=RequestContext(request))
+    return render(request, 'forum/forum_detail.html', context)
 
 @login_required
 @transaction.commit_on_success
@@ -382,17 +403,18 @@ def delete_forum(request, forum_id):
         return permission_denied(request)
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     section = forum.section
-    redis.seen_user(request.user, 'Deleting a forum')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Deleting a forum')
     if request.method == 'POST':
         forum.delete()
         return HttpResponseRedirect(section.get_absolute_url())
     else:
-        return render_to_response('forum/delete_forum.html', {
+        return render(request, 'forum/delete_forum.html', {
             'section': section,
             'forum': forum,
             'topic_count': forum.topics.count(),
             'title': 'Delete Forum',
-        }, context_instance=RequestContext(request))
+        })
 
 @login_required
 def new_posts(request):
@@ -406,8 +428,9 @@ def new_posts(request):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_and_user_details().filter(
         **filters).order_by('-last_post_at')
-    redis.seen_user(request.user,
-                    'Viewing: <a href="%s">New Posts</a>' % reverse('forum_new_posts'))
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user,
+                        'Viewing: <a href="%s">New Posts</a>' % reverse('forum_new_posts'))
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
         template_name='forum/new_posts.html',
@@ -424,7 +447,8 @@ def add_topic(request, forum_id):
     """
     forum = get_object_or_404(Forum.objects.select_related(), pk=forum_id)
     preview = None
-    redis.seen_user(request.user, 'Adding a new topic')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Adding a new topic')
     if request.method == 'POST':
         topic_form = forms.AddTopicForm(request.POST)
         post_form = forms.TopicPostForm(request.POST)
@@ -447,7 +471,7 @@ def add_topic(request, forum_id):
     else:
         topic_form = forms.AddTopicForm()
         post_form = forms.TopicPostForm()
-    return render_to_response('forum/add_topic.html', {
+    return render(request, 'forum/add_topic.html', {
         'topic_form': topic_form,
         'post_form': post_form,
         'section': forum.section,
@@ -455,7 +479,7 @@ def add_topic(request, forum_id):
         'preview': preview,
         'title': 'Add Topic in %s' % forum.name,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
-    }, context_instance=RequestContext(request))
+    })
 
 def topic_detail(request, topic_id, meta=False):
     """
@@ -466,10 +490,11 @@ def topic_detail(request, topic_id, meta=False):
        not auth.is_moderator(request.user):
         filters['hidden'] = False
     topic = get_object_or_404(Topic.objects.with_display_details(), **filters)
-    redis.increment_view_count(topic)
-    if request.user.is_authenticated():
-        redis.update_last_read_time(request.user, topic)
-        redis.seen_user(request.user, 'Viewing Topic:', topic)
+    if app_settings.USE_REDIS:
+        redis.increment_view_count(topic)
+        if request.user.is_authenticated():
+            redis.update_last_read_time(request.user, topic)
+            redis.seen_user(request.user, 'Viewing Topic:', topic)
     return object_list(request,
         Post.objects.with_user_details().filter(topic=topic, meta=meta) \
                                          .order_by('posted_at', 'num_in_topic'),
@@ -512,7 +537,8 @@ def edit_topic(request, topic_id):
     moderator = auth.is_moderator(request.user)
     if moderator:
         was_hidden = topic.hidden
-    redis.seen_user(request.user, 'Editing Topic:', topic)
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing Topic:', topic)
     if request.method == 'POST':
         form = forms.EditTopicForm(moderator, request.POST, instance=topic)
         if form.is_valid():
@@ -529,14 +555,14 @@ def edit_topic(request, topic_id):
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
         form = forms.EditTopicForm(moderator, instance=topic)
-    return render_to_response('forum/edit_topic.html', {
+    return render(request, 'forum/edit_topic.html', {
         'topic': topic,
         'form': form,
         'section': forum.section,
         'forum': forum,
         'title': 'Edit Topic',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -554,19 +580,20 @@ def delete_topic(request, topic_id):
         return permission_denied(request,
             message='You do not have permission to delete this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
-    redis.seen_user(request.user, 'Deleting a Topic')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Deleting a Topic')
     if request.method == 'POST':
         topic.delete()
         return HttpResponseRedirect(forum.get_absolute_url())
     else:
-        return render_to_response('forum/delete_topic.html', {
+        return render(request, 'forum/delete_topic.html', {
             'post': post,
             'topic': topic,
             'forum': forum,
             'section': forum.section,
             'title': 'Delete Topic',
             'avatar_dimensions': get_avatar_dimensions(),
-        }, context_instance=RequestContext(request))
+        })
 
 def topic_post_summary(request, topic_id):
     """
@@ -619,13 +646,13 @@ def topic_post_summary(request, topic_id):
         params=[topic.pk, False],
     ).order_by('-post_count')
 
-    if request.user.is_authenticated():
+    if app_settings.USE_REDIS and request.user.is_authenticated():
         redis.seen_user(request.user, 'Viewing Post Summary for:', topic)
-    return render_to_response('forum/topic_post_summary.html', {
+    return render(request, 'forum/topic_post_summary.html', {
         'topic': topic,
         'users': users,
         'title': 'Users who posted in %s' % topic.title,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -646,7 +673,8 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
             message='You do not have permission to post in this topic.')
     forum = Forum.objects.select_related().get(pk=topic.forum_id)
     preview = None
-    redis.seen_user(request.user, 'Posting in topic:', topic)
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Posting in topic:', topic)
     if request.method == 'POST':
         form = forms.ReplyForm(not meta, request.POST)
         if form.is_valid():
@@ -669,7 +697,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         if quote_post is not None:
             initial['body'] = post_formatter.quote_post(quote_post)
         form = forms.ReplyForm(not meta, initial=initial)
-    return render_to_response('forum/add_reply.html', {
+    return render(request, 'forum/add_reply.html', {
         'form': form,
         'topic': topic,
         'section': forum.section,
@@ -680,7 +708,7 @@ def add_reply(request, topic_id, meta=False, quote_post=None):
         'urls': TopicURLs(topic, meta),
         'title': 'Add Reply to %s' % topic.title,
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 def quote_post(request, post_id):
@@ -736,7 +764,9 @@ def redirect_to_unread_post(request, topic_id):
     deleted in the interim period, for example), redirects to the Topic's
     last post instead.
     """
-    last_read = redis.get_last_read_time(request.user, topic_id)
+    last_read = None
+    if app_settings.USE_REDIS:
+        last_read = redis.get_last_read_time(request.user, topic_id)
     if not last_read:
         return topic_detail(request, topic_id)
 
@@ -768,7 +798,8 @@ def edit_post(request, post_id):
     if meta_editable:
         was_meta = post.meta
     preview = None
-    redis.seen_user(request.user, 'Editing a post in:', topic)
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing a post in:', topic)
     if request.method == 'POST':
         form = forms.ReplyForm(meta_editable, request.POST, instance=post)
         if form.is_valid():
@@ -789,7 +820,7 @@ def edit_post(request, post_id):
                 return redirect_to_post(request, post.id, post)
     else:
         form = forms.ReplyForm(meta_editable, instance=post)
-    return render_to_response('forum/edit_post.html', {
+    return render(request, 'forum/edit_post.html', {
         'form': form,
         'post': post,
         'topic': topic,
@@ -798,7 +829,7 @@ def edit_post(request, post_id):
         'preview': preview,
         'title': 'Edit Post',
         'quick_help_template': post_formatter.QUICK_HELP_TEMPLATE,
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 @transaction.commit_on_success
@@ -820,28 +851,28 @@ def delete_post(request, post_id):
             message='You do not have permission to delete this post.')
     if post.num_in_topic == 1 and not post.meta:
         return delete_topic(request, post.topic_id)
-    redis.seen_user(request.user, 'Deleting a post in:', topic)
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Deleting a post in:', topic)
     if request.method == 'POST':
         post.delete()
         url = post.meta and topic.get_meta_url() or topic.get_absolute_url()
         return HttpResponseRedirect(url)
     else:
         forum = Forum.objects.select_related().get(pk=topic.forum_id)
-        return render_to_response('forum/delete_post.html', {
+        return render(request, 'forum/delete_post.html', {
             'post': post,
             'topic': topic,
             'forum': forum,
             'section': forum.section,
             'title': 'Delete Post',
             'avatar_dimensions': get_avatar_dimensions(),
-        }, context_instance=RequestContext(request))
+        })
 
 def user_profile(request, user_id):
     """
     Displays the ForumProfile for the user with the given id.
     """
     forum_user = get_object_or_404(User, pk=user_id)
-    last_seen, doing = redis.get_last_seen(forum_user)
     try:
         filters = {'user': forum_user}
         if not request.user.is_authenticated() or \
@@ -851,17 +882,20 @@ def user_profile(request, user_id):
             **filters).order_by('-started_at')[:5]
     except IndexError:
         recent_topics = []
-    if request.user.is_authenticated():
-        redis.seen_user(request.user, 'Viewing user profile:', forum_user)
-    return render_to_response('forum/user_profile.html', {
+    context = {
         'forum_user': forum_user,
-        'last_seen': last_seen,
-        'doing': doing,
         'forum_profile': ForumProfile.objects.get_for_user(forum_user),
         'recent_topics': Topic.objects.add_view_counts(recent_topics),
         'title': 'Forum Profile for %s' % forum_user,
         'avatar_dimensions': get_avatar_dimensions(),
-    }, context_instance=RequestContext(request))
+    }
+    if app_settings.USE_REDIS:
+        last_seen, doing = redis.get_last_seen(forum_user)
+        context['last_seen'] = last_seen
+        context['doing'] = doing
+        if request.user.is_authenticated():
+            redis.seen_user(request.user, 'Viewing user profile:', forum_user)
+    return render(request, 'forum/user_profile.html', context)
 
 def user_topics(request, user_id):
     """
@@ -874,7 +908,7 @@ def user_topics(request, user_id):
         filters['hidden'] = False
     queryset = Topic.objects.with_forum_details().filter(
         **filters).order_by('-started_at')
-    if request.user.is_authenticated():
+    if app_settings.USE_REDIS and request.user.is_authenticated():
         redis.seen_user(request.user, 'Viewing topics by:', forum_user)
     return object_list(request, queryset,
         paginate_by=get_topics_per_page(request.user), allow_empty=True,
@@ -898,7 +932,8 @@ def edit_user_forum_profile(request, user_id):
             message='You do not have permission to edit this user\'s forum profile.')
     user_profile = ForumProfile.objects.get_for_user(user)
     can_edit_title = auth.is_moderator(request.user)
-    redis.seen_user(request.user, 'Editing User Profile')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing User Profile')
     if request.method == 'POST':
         form = forms.UserProfileForm(can_edit_title, request.POST, instance=user_profile)
         if form.is_valid():
@@ -906,13 +941,13 @@ def edit_user_forum_profile(request, user_id):
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
         form = forms.UserProfileForm(can_edit_title, instance=user_profile)
-    return render_to_response('forum/edit_user_forum_profile.html', {
+    return render(request, 'forum/edit_user_forum_profile.html', {
         'forum_user': user,
         'forum_profile': user_profile,
         'form': form,
         'title': 'Edit Forum Profile',
         'avatar_dimensions': get_avatar_dimensions(),
-    }, context_instance=RequestContext(request))
+    })
 
 @login_required
 def edit_user_forum_settings(request):
@@ -920,7 +955,8 @@ def edit_user_forum_settings(request):
     Edits forum settings in the logged-in User's ForumProfile.
     """
     user_profile = ForumProfile.objects.get_for_user(request.user)
-    redis.seen_user(request.user, 'Editing Forum Settings')
+    if app_settings.USE_REDIS:
+        redis.seen_user(request.user, 'Editing Forum Settings')
     if request.method == 'POST':
         form = forms.ForumSettingsForm(request.POST, instance=user_profile)
         if form.is_valid():
@@ -928,9 +964,9 @@ def edit_user_forum_settings(request):
             return HttpResponseRedirect(user_profile.get_absolute_url())
     else:
         form = forms.ForumSettingsForm(instance=user_profile)
-    return render_to_response('forum/edit_user_forum_settings.html', {
+    return render(request, 'forum/edit_user_forum_settings.html', {
         'user': request.user,
         'forum_profile': user_profile,
         'form': form,
         'title': 'Edit Forum Settings',
-    }, context_instance=RequestContext(request))
+    })

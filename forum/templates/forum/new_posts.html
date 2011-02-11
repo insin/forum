@@ -13,15 +13,17 @@
 <div class="module no-margin">
 <h2>{{ title|escape }}</h2>
 {% if topic_list %}
+{% if redis %}
 {% add_view_counts topic_list %}
 {% add_last_read_times topic_list user %}
+{% endif %}
 <table>
 <col width="1">
 <col width="40%">
 <col width="25%">
 <col>
 <col width="1">
-<col width="1">
+{% if redis %}<col width="1">{% endif %}
 <col width="15%">
 <thead>
   <tr>
@@ -30,7 +32,7 @@
     <th>In Forum</th>
     <th>Started By</th>
     <th>Posts</th>
-    <th>Views</th>
+    {% if redis %}<th>Views</th>{% endif %}
     <th>Last Post</th>
   </tr>
 </thead>
@@ -48,7 +50,7 @@
     <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
     <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
     <td class="posts"><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
-    <td class="views">{{ topic.view_count|intcomma }}</td>
+    {% if redis %}<td class="views">{{ topic.view_count|intcomma }}</td>{% endif %}
     <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
