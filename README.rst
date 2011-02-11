@@ -7,6 +7,7 @@ project and should eventually be usable as a pluggable application in any
 Django project.
 
 .. contents::
+   :local:
    :depth: 2
 
 Features
