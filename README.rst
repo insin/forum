@@ -42,7 +42,8 @@ Features
   topics start to take a turn for the worse in that direction.
 
   People who just wanted to read and post in the original topic can
-  continue to do so *and* still have it out
+  continue to do so *and* still have it out in the metaposts. Win/win
+  or win/lose - the choice is yours.
 
   Inspired by my many years with the excellent people of `RLLMUK`_.
 
