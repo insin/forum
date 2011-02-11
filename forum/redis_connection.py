@@ -4,22 +4,21 @@ Connection and forum API for real-time tracking using Redis.
 import datetime
 import time
 
+from django.core import signals
 from django.utils.html import escape
 
-def get_instance():
-    import redis
-    from forum import app_settings
-    from django.core import signals
-    r = redis.Redis(app_settings.REDIS_HOST,
-                    app_settings.REDIS_PORT,
-                    app_settings.REDIS_DB)
-    # Ensure we disconnect at the end of the request cycle
-    signals.request_finished.connect(
-        lambda **kwargs: r.connection.disconnect()
-    )
-    return r
+import redis
+from forum import app_settings
 
-r = get_instance()
+r = redis.Redis(app_settings.REDIS_HOST,
+                app_settings.REDIS_PORT,
+                app_settings.REDIS_DB)
+
+# Register an event that closes the Redis connection
+# when a Django request is finished.
+def close_connection(**kwargs):
+    r.connection.disconnect()
+signals.request_finished.connect(close_connection)
 
 def increment_view_count(topic):
     """Increments the view count for a Topic."""
