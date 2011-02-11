@@ -7,7 +7,7 @@
 {% block main_content %}
 <p class="description">If you don't have an account, you can <a href="{% url registration_register %}">sign up</a> for one.</p>
 <form method="POST" action="{% if next %}?next={{ next }}{% endif %}">
-{% csrf_token %}
+  {% csrf_token %}
   <div class="module aligned">
     <h2>Log in</h2>
     <div class="form-row">

@@ -7,6 +7,7 @@
 {% block main_content %}
 <p class="description">Fill out the form below (all fields are required) and your account will be created; you'll be sent an email with instructions on how to finish your registration.</p>
 <form action="." method="POST">
+  {% cstf_token %}
   <div class="module aligned">
     <h2>Sign up</h2>
     <div class="form-row">
