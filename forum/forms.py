@@ -266,6 +266,10 @@ class SearchForm(forms.Form):
             if self.cleaned_data['search_from'] != self.SEARCH_FROM_TODAY:
                 days_ago = int(self.cleaned_data['search_from'])
                 from_date = from_date - datetime.timedelta(days=days_ago)
+            if self.cleaned_data['search_when'] == self.SEARCH_OLDER:
+                # Less-than date searches should compare to midnight on
+                # the following day.
+                from_date = from_date + datetime.timedelta(days=1)
 
         # Some lookup fields which change based on the search type
         if search_type == Search.POST_SEARCH:
