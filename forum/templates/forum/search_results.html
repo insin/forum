@@ -3,7 +3,7 @@
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
 &raquo; <a href="{% url forum_search %}">Search</a>
-&raquo; <strong>{{ title|escape }}</strong>
+&raquo; <strong>{{ title }}</strong>
 {% endblock %}
 
 {% block main_content %}
@@ -17,11 +17,11 @@
 {% endif %}
 {% for post in object_list %}
 <div class="module">
-<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title|escape }}</a> in <a href="{% url forum_forum_detail post.forum_id %}">{{ post.forum_name|escape }}</a> - {{ post.topic_post_count|intcomma }} Post{{ post.topic_post_count|pluralize }}{% if redis %}, {{ post.topic_view_count|intcomma }} View{{ post.topic_view_count|pluralize }}{% endif %}</h2>
+<h2><a href="{% url forum_topic_detail post.topic_id %}">{{ post.topic_title }}</a> in <a href="{% url forum_forum_detail post.forum_id %}">{{ post.forum_name }}</a> - {{ post.topic_post_count|intcomma }} Post{{ post.topic_post_count|pluralize }}{% if redis %}, {{ post.topic_view_count|intcomma }} View{{ post.topic_view_count|pluralize }}{% endif %}</h2>
 <div class="post" id="post{{ post.id }}">
   <div class="postbody">
     <div class="body">
-      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time:user }}</p>
+      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a>, {{ post.posted_at|post_time:user }}</p>
       <div class="content">
       {{ post.body_html|safe }}
       </div>
@@ -30,19 +30,19 @@
   <div class="profile">
     <dl>
       {% if post.user_avatar %}
-      <dt class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""{{ avatar_dimensions }}></dt>
+      <dt class="avatar"><img src="{{ post.user_avatar }}" alt=""{{ avatar_dimensions }}></dt>
       {% endif %}
-      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
+      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a></dt>
       {% if post.user_title %}
-      <dd class="title">{{ post.user_title|escape }}</dd>
+      <dd class="title">{{ post.user_title }}</dd>
       {% endif %}
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
-      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      <dd class="location"><strong>Location:</strong> {{ post.user_location }}</dd>
       {% endif %}
       {% if user|is_moderator and post.user_ip %}
-      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
+      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip }}</dd>
       {% endif %}
     </dl>
   </div>
@@ -83,15 +83,15 @@
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       {% if topic|has_new_posts %}<a href="{% url forum_redirect_to_unread_post topic.id %}" class="unread"><img src="{{ MEDIA_URL }}forum/img/unread_post.gif" alt="First Unread Post" title="Go to first unread post"></a>{% endif %}
-      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
-      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title }}</a> {{ topic|topic_pagination:posts_per_page }}
+      {% if topic.description %}<p class="description">{{ topic.description }}</p>{% endif %}
     </td>
-    <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a></td>
-    <td><a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a></td>
-    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td><a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name }}</a></td>
+    <td><a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name }}</a></td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username }}</a></td>
     <td class="posts"><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
     {% if redis %}<td class="views">{{ topic.view_count|intcomma }}</td>{% endif %}
-    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username }}</a></td>
   </tr>{% endfor %}
 </tbody>
 </table>

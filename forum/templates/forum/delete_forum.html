@@ -1,6 +1,6 @@
 {% extends "forum/base.html" %}{% load forum_tags %}
 {% block main_content %}
-<p class="description">Are you sure you want to delete the <strong>{{ forum.name|escape }}</strong> forum?</p>
+<p class="description">Are you sure you want to delete the <strong>{{ forum.name }}</strong> forum?</p>
 {% if topic_count %}
 <p>This will result in the deletion of its {{ topic_count }} topic{{ topic_count|pluralize }} and all {{ topic_count|pluralize:"its,their" }} posts.</p>
 {% endif %}

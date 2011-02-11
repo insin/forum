@@ -5,7 +5,7 @@
 <div class="post odd">
   <div class="postbody">
     <div class="body">
-      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time:user }}</p>
+      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a>, {{ post.posted_at|post_time:user }}</p>
       <div class="content">
       {{ post.body_html|safe }}
       </div>
@@ -14,19 +14,19 @@
   <div class="profile">
     <dl>
       {% if post.user_avatar %}
-      <dt class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""{{ avatar_dimensions }}></dt>
+      <dt class="avatar"><img src="{{ post.user_avatar }}" alt=""{{ avatar_dimensions }}></dt>
       {% endif %}
-      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
+      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a></dt>
       {% if post.user_title %}
-      <dd class="title">{{ post.user_title|escape }}</dt>
+      <dd class="title">{{ post.user_title }}</dt>
       {% endif %}
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
-      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      <dd class="location"><strong>Location:</strong> {{ post.user_location }}</dd>
       {% endif %}
       {% if user|is_moderator and post.user_ip %}
-      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
+      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip }}</dd>
       {% endif %}
     </dl>
   </div>

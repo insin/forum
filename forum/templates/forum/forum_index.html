@@ -9,7 +9,7 @@
 {% endif %}
 {% for section,forum_list in section_list %}
 <div class="module">
-<h2><a href="{{ section.get_absolute_url }}">{{ section.name|escape }}</a></h2>
+<h2><a href="{{ section.get_absolute_url }}">{{ section.name }}</a></h2>
 {% if forum_list %}
 <table>
 <col width="65%">
@@ -25,14 +25,14 @@
 {% for forum in forum_list %}
   <tr class="forum {% cycle odd,even %}">
     <td>
-      <a href="{{ forum.get_absolute_url }}">{{ forum.name|escape }}</a>
-      {% if forum.description %}<p class="description">{{ forum.description|escape }}</p>{% endif %}
+      <a href="{{ forum.get_absolute_url }}">{{ forum.name }}</a>
+      {% if forum.description %}<p class="description">{{ forum.description }}</p>{% endif %}
     </td>
     <td>{{ forum.topic_count }}</td>
     <td class="last-post">{% if forum.last_post_at %}
       <a href="{% url forum_redirect_to_last_post forum.last_topic_id %}">Last post</a> {{ forum.last_post_at|post_time:user }}<br>
-      <strong>In:</strong> <a href="{% url forum_topic_detail forum.last_topic_id %}">{{ forum.last_topic_title|escape }}</a><br>
-      <strong>By:</strong> <a href="{% url forum_user_profile forum.last_user_id %}">{{ forum.last_username|escape }}</a>
+      <strong>In:</strong> <a href="{% url forum_topic_detail forum.last_topic_id %}">{{ forum.last_topic_title }}</a><br>
+      <strong>By:</strong> <a href="{% url forum_user_profile forum.last_user_id %}">{{ forum.last_username }}</a>
     {% else %}N/A{% endif %}</td>
   </tr>{% endfor %}
 </tbody>

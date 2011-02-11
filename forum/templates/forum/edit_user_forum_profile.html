@@ -1,8 +1,8 @@
 {% extends "forum/base.html" %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ forum_user.username|escape }}</a>
-&raquo; <strong>{{ title|escape }}</strong>
+&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ forum_user.username }}</a>
+&raquo; <strong>{{ title }}</strong>
 {% endblock %}
 {% block main_content %}
 <form name="editForumProfileForm" id="editForumProfileForm" action="." method="POST">
@@ -29,7 +29,7 @@
     <div class="form-field{% if forum_profile.avatar %} avatar-field{% endif %}">
       {{ form.avatar }}
       {% if forum_profile.avatar %}
-      <img src="{{ forum_profile.avatar|escape }}" alt=""{{ avatar_dimensions }}>
+      <img src="{{ forum_profile.avatar }}" alt=""{{ avatar_dimensions }}>
       {% endif %}
     </div>
   </div>

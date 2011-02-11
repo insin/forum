@@ -1,8 +1,8 @@
 {% extends "forum/base.html" %}
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ user.username|escape }}</a>
-&raquo; <strong>{{ title|escape }}</strong>
+&raquo; <a href="{{ forum_profile.get_absolute_url }}">Forum Profile for {{ user.username }}</a>
+&raquo; <strong>{{ title }}</strong>
 {% endblock %}
 {% block main_content %}
 <form name="editUserForumSettingsForm" id="editUserForumSettingsForm" action="." method="POST">

@@ -4,7 +4,7 @@
 {% if is_paginated %}<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Paginator.js"></script>{% endif %}
 {% endblock %}
 {% block main_content %}
-{% if forum.description %}<p class="description">{{ forum.description|escape }}</p>{% endif %}
+{% if forum.description %}<p class="description">{{ forum.description }}</p>{% endif %}
 <div class="tools">
 {% if is_paginated %}<div class="paginator">{% paginator "Topic" %}</div>{% endif %}
 {% if user.is_authenticated %}
@@ -14,7 +14,7 @@
 {% endif %}
 </div>
 <div class="module no-margin">
-<h2><span class="title">{{ forum.name|escape }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_forum forum.id %}">Edit Forum</a> | <a href="{% url forum_delete_forum forum.id %}">Delete Forum</a></span>{% endif %}</h2>
+<h2><span class="title">{{ forum.name }}</span>{% if user|is_admin %}<span class="separator"> - </span><span class="controls"><a href="{% url forum_edit_forum forum.id %}">Edit Forum</a> | <a href="{% url forum_delete_forum forum.id %}">Delete Forum</a></span>{% endif %}</h2>
 {% if topic_list or pinned_topics %}
 <table>
 <col width="1">
@@ -42,13 +42,13 @@
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       {% if topic|has_new_posts %}<a href="{% url forum_redirect_to_unread_post topic.id %}" class="unread"><img src="{{ MEDIA_URL }}forum/img/unread_post.gif" alt="First Unread Post" title="Go to first unread post"></a>{% endif %}
-      Pinned: <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
-      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+      Pinned: <a href="{{ topic.get_absolute_url }}">{{ topic.title }}</a> {{ topic|topic_pagination:posts_per_page }}
+      {% if topic.description %}<p class="description">{{ topic.description }}</p>{% endif %}
     </td>
-    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username }}</a></td>
     <td class="posts">{{ topic.post_count|intcomma }}</td>
     {% if redis %}<td class="views">{{ topic.view_count|intcomma }}</td>{% endif %}
-    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username }}</a></td>
   </tr>{% endfor %}
   <tr>
     <th colspan="5" class="forum-topics">Forum Topics</th>
@@ -61,13 +61,13 @@
       {% if topic.hidden %}<img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
       {% if topic.locked %}<img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       {% if topic|has_new_posts %}<a href="{% url forum_redirect_to_unread_post topic.id %}" class="unread"><img src="{{ MEDIA_URL }}forum/img/unread_post.gif" alt="First Unread Post" title="Go to first unread post"></a>{% endif %}
-      <a href="{{ topic.get_absolute_url }}">{{ topic.title|escape }}</a> {{ topic|topic_pagination:posts_per_page }}
-      {% if topic.description %}<p class="description">{{ topic.description|escape }}</p>{% endif %}
+      <a href="{{ topic.get_absolute_url }}">{{ topic.title }}</a> {{ topic|topic_pagination:posts_per_page }}
+      {% if topic.description %}<p class="description">{{ topic.description }}</p>{% endif %}
     </td>
-    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username|escape }}</a></td>
+    <td><a href="{% url forum_user_profile topic.user_id %}">{{ topic.user_username }}</a></td>
     <td class="posts"><a href="{% url forum_topic_post_summary topic.id %}" class="topic-post-summary">{{ topic.post_count|intcomma }}</a></td>
     {% if redis %}<td class="views">{{ topic.view_count|intcomma }}</td>{% endif %}
-    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username|escape }}</a></td>
+    <td class="last-post">{{ topic.last_post_at|post_time:user }}<br><a href="{% url forum_redirect_to_last_post topic.id %}">Last Post</a> by <a href="{% url forum_user_profile topic.last_user_id %}">{{ topic.last_username }}</a></td>
   </tr>{% endfor %}
 </tbody>
 </table>

@@ -9,13 +9,13 @@
 
 {% block breadcrumbs %}
 <a href="{% url forum_index %}">Forums</a>
-&raquo; <a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name|escape }}</a>
-&raquo; <a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name|escape }}</a>
+&raquo; <a href="{% url forum_section_detail topic.section_id %}">{{ topic.section_name }}</a>
+&raquo; <a href="{% url forum_forum_detail topic.forum_id %}">{{ topic.forum_name }}</a>
 {% if meta %}
-&raquo; <a href="{{ topic.get_absolute_url }}">{{ title|escape }}</a>
+&raquo; <a href="{{ topic.get_absolute_url }}">{{ title }}</a>
 &raquo; Metaposts
 {% else %}
-&raquo; <strong>{{ title|escape }}</strong>
+&raquo; <strong>{{ title }}</strong>
 {% endif %}
 {% endblock %}
 
@@ -37,7 +37,7 @@
 </div>
 <div class="module no-margin">
 <h2>
-  <span class="title">{{ topic.title|escape }}{% if topic.description %}, {{ topic.description|escape }}{% endif %}</span>
+  <span class="title">{{ topic.title }}{% if topic.description %}, {{ topic.description }}{% endif %}</span>
   {% if not meta %}<span class="separator"> - </span><span class="controls"><a href="{{ topic.get_meta_url }}">View Metaposts</a>{% if user|can_edit_topic:topic %} | <a href="{% url forum_edit_topic topic.id %}">Edit Topic</a> | <a href="{% url forum_delete_topic topic.id %}">Delete Topic</a>{% endif %}</span>{% endif %}
 </h2>
 {% if post_list %}
@@ -54,7 +54,7 @@
     </ul>
     {% endif %}
     <div class="body">
-      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a>, {{ post.posted_at|post_time:user }}</p>
+      <p class="author"><a href="{{ post.get_absolute_url }}">{% if post.meta %}Metapost {% endif %}#{{ post.num_in_topic }}</a> by <a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a>, {{ post.posted_at|post_time:user }}</p>
       <div class="content">
       {{ post.body_html|safe }}
       </div>
@@ -63,19 +63,19 @@
   <div class="profile">
     <dl>
       {% if post.user_avatar %}
-      <dt class="avatar"><img src="{{ post.user_avatar|escape }}" alt=""{{ avatar_dimensions }}></dt>
+      <dt class="avatar"><img src="{{ post.user_avatar }}" alt=""{{ avatar_dimensions }}></dt>
       {% endif %}
-      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username|escape }}</a></dt>
+      <dt class="user"><a href="{% url forum_user_profile post.user_id %}">{{ post.user_username }}</a></dt>
       {% if post.user_title %}
-      <dd class="title">{{ post.user_title|escape }}</dd>
+      <dd class="title">{{ post.user_title }}</dd>
       {% endif %}
       <dd class="postcount"><strong>Posts:</strong> {{ post.user_post_count }}</dd>
       <dd class="joined"><strong>Joined:</strong> {{ post.user_date_joined|joined_date }}</dd>
       {% if post.user_location %}
-      <dd class="location"><strong>Location:</strong> {{ post.user_location|escape }}</dd>
+      <dd class="location"><strong>Location:</strong> {{ post.user_location }}</dd>
       {% endif %}
       {% if user|is_moderator and post.user_ip %}
-      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip|escape }}</dd>
+      <dd class="post-ip"><strong>Post IP:</strong> {{ post.user_ip }}</dd>
       {% endif %}
     </dl>
   </div>
