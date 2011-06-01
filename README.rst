@@ -92,7 +92,6 @@ Dependencies
   to format posts using `Markdown`_ syntax.
 - `postmarkup`_ and `Pygments`_ are required to use
   ``forum.formatters.BBCodeFormatter`` to format posts using `BBCode`_ syntax.
-- is required by postmarkup.
 
 **Others:**
 
