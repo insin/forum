@@ -39,7 +39,7 @@ class PostFormatter(object):
         """
         return linebreaks(urlize(escape(body.strip())))
 
-    def quote_post(post):
+    def quote_post(self, post):
         """
         Returns a raw post body which quotes the given Post.
         """
