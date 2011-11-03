@@ -10,15 +10,9 @@ from django.utils.html import escape
 import redis
 from forum import app_settings
 
-r = redis.Redis(app_settings.REDIS_HOST,
-                app_settings.REDIS_PORT,
-                app_settings.REDIS_DB)
-
-# Register an event that closes the Redis connection
-# when a Django request is finished.
-def close_connection(**kwargs):
-    r.connection.disconnect()
-signals.request_finished.connect(close_connection)
+r = redis.StrictRedis(app_settings.REDIS_HOST,
+                      app_settings.REDIS_PORT,
+                      app_settings.REDIS_DB)
 
 TOPIC_ViEWS = 't:%s:v'
 TOPIC_TRACKER = 'u:%s:t:%s'
@@ -72,7 +66,7 @@ def seen_user(user, doing, item=None):
     their last seen time in the active users sorted set.
     """
     last_seen = int(time.mktime(datetime.datetime.now().timetuple()))
-    r.zadd(ACTIVE_USERS, user.pk, last_seen)
+    r.zadd(ACTIVE_USERS, last_seen, user.pk)
     r.setnx(USER_USERNAME % user.pk, user.username)
     r.set(USER_LAST_SEEN % user.pk, last_seen)
     if item:
