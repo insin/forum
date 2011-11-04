@@ -1,23 +1,21 @@
 // Create Fast Reply controls
 if (createFastReplyControls)
-jQuery(function()
-{
-    if (jQuery("#topic-actions-bottom").size() > 0)
-    {
-        jQuery("#topic-actions-bottom")
-        .prepend(document.createTextNode(" | "))
-        .prepend(jQuery('<a href="#fast-reply">Fast Reply</a>').click(function()
-        {
-            jQuery("#fast-reply").toggle();
-        }));
-    }
+$(function() {
+  if ($('#topic-actions-bottom').size() > 0) {
+    $('#topic-actions-bottom')
+      .prepend(document.createTextNode(' | '))
+      .prepend(
+        $('<a href="#fast-reply">Fast Reply</a>').click(function() {
+          $("#fast-reply").toggle()
+        })
+      )
+  }
 
-    if (jQuery("#fast-reply-buttons").size() > 0)
-    {
-        jQuery("#fast-reply-buttons")
-        .append(jQuery('<input type="button" value="Close Fast Reply">').click(function()
-        {
-            jQuery("#fast-reply").toggle();
-        }));
-    }
-});
+  if ($("#fast-reply-buttons").size() > 0) {
+    $("#fast-reply-buttons").append(
+      $('<input type="button" value="Close Fast Reply">').click(function() {
+        $("#fast-reply").toggle()
+      })
+    )
+  }
+})
