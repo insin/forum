@@ -4,6 +4,6 @@ django-debug-toolbar==0.8.5
 markdown2==1.0.1.19
 pil==1.1.7
 postmarkup==1.1.4
-Pygments=1.4
+Pygments==1.4
 pytz==2011k
 redis==2.4.10
