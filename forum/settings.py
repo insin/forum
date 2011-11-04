@@ -124,4 +124,5 @@ ACCOUNT_ACTIVATION_DAYS = 10
 # Forum settings
 FORUM_STANDALONE = True
 FORUM_USE_REDIS = True
+FORUM_USE_NODEJS = True
 FORUM_POST_FORMATTER = 'forum.formatters.BBCodeFormatter'

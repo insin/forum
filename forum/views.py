@@ -110,6 +110,7 @@ def render(request, template, context, *args, **kwargs):
     ``RequestContext``.
     """
     context['redis'] = app_settings.USE_REDIS
+    context['nodejs'] = app_settings.USE_NODEJS
     return render_to_response(template, context,
                               context_instance=RequestContext(request))
 
@@ -969,4 +970,14 @@ def edit_user_forum_settings(request):
         'forum_profile': user_profile,
         'form': form,
         'title': 'Edit Forum Settings',
+    })
+
+def stalk_users(request):
+    """
+    Realtime monitoring of user activity via Redis and Node.js.
+    """
+    if app_settings.USE_REDIS and request.user.is_authenticated():
+        redis.seen_user(request.user, 'Stalking Users')
+    return render(request, 'forum/stalk_users.html', {
+        'title': 'Stalk Users',
     })

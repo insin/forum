@@ -1,0 +1,33 @@
+{% extends "forum/base.html" %}{
+
+{% block extrahead %}
+<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/DOMBuilder.dom.min.js"></script>
+{{ block.super }}
+<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Stalk.js"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<a href="{% url forum_index %}">Forums</a>
+&raquo; <strong>{{ title }}</strong>
+{% endblock %}
+
+{% block main_content %}
+<p class="description">User activity updates.</p>
+<div class="module no-margin">
+<h2>{{ title }}</h2>
+<table>
+<col width="15%">
+<col width="30%">
+<col>
+<thead>
+  <tr>
+    <th>User</th>
+    <th>Last Seen</th>
+    <th>Doing</th>
+  </tr>
+</thead>
+<tbody id="stalkUsers">
+</tbody>
+</table>
+</div>
+{% endblock %}

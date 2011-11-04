@@ -8,6 +8,9 @@
   </div>
   <div id="user-tools">
     <a href="{% url forum_new_posts %}">View New Posts</a> |
+    {% if nodejs %}
+    <a href="{% url forum_stalk_users %}">Stalk Users</a> |
+    {% endif %}
     <a href="{% url forum_search %}">Search</a>
   </div>
 {% else %}

@@ -4,3 +4,4 @@ MANIFEST
 build/
 dist/
 forum/database.db
+node_modules
