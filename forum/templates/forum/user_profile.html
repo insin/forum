@@ -107,8 +107,8 @@
 {% for topic in recent_topics %}
   <tr class="topic {% cycle odd,even %}{% if topic.hidden %} hidden-topic{% endif %}">
     <td>
-      {% if topic.hidden %}<img src="{{ MEDIA_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
-      {% if topic.locked %}<img src="{{ MEDIA_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
+      {% if topic.hidden %}<img src="{{ STATIC_URL }}forum/img/icon_exclamation.gif" alt="Hidden" title="This topic is hidden">{% endif %}
+      {% if topic.locked %}<img src="{{ STATIC_URL }}forum/img/icon_lock.gif" alt="Locked" title="This topic is locked">{% endif %}
       <a href="{{ topic.get_absolute_url }}">{{ topic.title }}</a>
       {% if topic.description %}<p class="description">{{ topic.description }}</p>{% endif %}
     </td>

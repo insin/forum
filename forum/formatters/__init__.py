@@ -21,7 +21,7 @@ class PostFormatter(object):
     def __init__(self, emoticons=None):
         if emoticons is None: emoticons = {}
         self.emoticon_processor = Emoticons(emoticons,
-            base_url='%sforum/img/emoticons/' % settings.MEDIA_URL)
+            base_url='%sforum/img/emoticons/' % settings.STATIC_URL)
 
     def format_post(self, body, process_emoticons=True):
         """

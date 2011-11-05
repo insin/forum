@@ -4,8 +4,8 @@
   <title>{% block title %}{{ title }}{% endblock %}</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="Author" content="Jonathan Buchanan">
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}forum/css/style.css" media="all">
-  <!--[if LT IE 7]><link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}forum/css/ie.css" media="all"><![endif]-->
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}forum/css/style.css" media="all">
+  <!--[if LT IE 7]><link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}forum/css/ie.css" media="all"><![endif]-->
   {% block extrahead %}{% endblock %}
 </head>
 <body>
@@ -25,7 +25,7 @@
 
 <div id="footer">
   <a href="https://github.com/insin/forum/">Django Forum</a>,
-  <a href="http://www.djangoproject.com/"><img src="{{ MEDIA_URL }}forum/img/djangosite.gif" alt="A Django site." title="A Django site."></a>
+  <a href="http://www.djangoproject.com/"><img src="{{ STATIC_URL }}forum/img/djangosite.gif" alt="A Django site." title="A Django site."></a>
 </div>
 
 </body>

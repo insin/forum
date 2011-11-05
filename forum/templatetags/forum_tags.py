@@ -204,7 +204,7 @@ def topic_status_image(topic):
         src = u'forum/img/no_new_posts.gif'
         description = u'No New Posts'
     return mark_safe(u'<img src="%s" alt="%s" title="%s">' % (
-        urljoin(settings.MEDIA_URL, src), description, description))
+        urljoin(settings.STATIC_URL, src), description, description))
 
 @register.filter
 def has_new_posts(topic):

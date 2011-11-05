@@ -1,0 +1,96 @@
+body { font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif; font-size: 12px; margin: 0; padding: 1em; background-color: #fff; color: #000; }
+a img { border: none; }
+blockquote { border-left: 2px solid #595979; margin-left: 1em; padding-left: 6px; }
+img { vertical-align: text-bottom; }
+.clickable { cursor: pointer; }
+
+/* Tables */
+table  { border-collapse: collapse; width: 100%; }
+td, th { padding: 4px 6px; border: 1px solid #999; text-align: left; }
+th { font-weight: bold; }
+td p.description { margin: 4px 0 0 0; }
+td.icon, td.posts, td.views { text-align: center; }
+td.last-post { white-space: nowrap; }
+th.forum-topics { text-align: center; }
+a.unread { margin-right: 4px; }
+a.unread img { vertical-align: middle; }
+
+/* Common formatting */
+.odd { background-color: #e9e9f9; }
+.even { background-color: #e3e3f3; }
+.module { border: 1px solid #ccc; margin-bottom: 1em; background-color: #fff; }
+.module-body { padding: 4px 8px; }
+.no-margin { margin: 0; }
+.module h2, .module caption { overflow: hidden; margin: 0; padding: 2px 8px 3px 8px; font-size: 1em; text-align: left; font-weight: bold; background: #595979 url("../img/module-bg.gif") top left repeat-x; color: #fff; border-bottom: 0; }
+.module h2 a { color: #fff; }
+.module h2 span.title { float: left; }
+.module h2 span.controls { float: right; }
+  .module h2 span.controls a { color: #ff0; }
+.module h2 span.separator { display: none; }
+.module h3 { margin: 0 0 8px 0; }
+  .module h3 span { font-weight: normal; }
+.module p.message { text-align: center; margin: 1em; }
+.clear { clear: both; }
+
+/* Navigation elements */
+#userbar { padding: 4px 6px; overflow: hidden; border: 1px solid #ccc; background: #e9e9f9 url("../img/module-bg.gif") top left repeat-x; }
+#authenticated { float: left; }
+  #authenticated a.user { font-weight: bold; }
+#user-tools { float: right; }
+#breadcrumbs { padding: 6px 0; }
+p.description { font-style: italic; }
+
+div.tools { overflow: hidden; padding: 4px 0; }
+  div.tools .actions { float: right; }
+div.paginator { float: left; }
+
+h1 { margin: .25em 0 .5em 0; }
+
+/* Posts */
+div.post { overflow: hidden; padding: 0 10px; }
+  div.postbody { float: left; width: 76%; clear: both; padding-top: 6px; }
+    div.postbody ul.post-actions { float: right; margin: 0; padding: 0; }
+    div.postbody ul.post-actions li { list-style-type: none; float: left; margin-left: 10px; }
+    p.author { margin: 0 0 .5em 0; }
+  div.profile { border-left: 1px solid #fff; float: right; width: 22%; margin: 8px 0; }
+    div.profile dl { margin-top: 0; margin-bottom: 0; }
+    div.profile dd, div.profile dt { margin-left: 8px; }
+    div.profile dd.postcount { margin-top: 1em; }
+
+/* Forms */
+fieldset { padding: 0; margin-left: 0; margin-right: 0; }
+.form-row { height: 100%; overflow: hidden; padding: 8px 12px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
+.form-row img, .form-row input { vertical-align: middle; }
+.aligned label { padding: 0 1em 3px 0; float: left; width: 9em; }
+.checkbox-row label, label.checkbox, .radio-list label { pading: 0 0 3px 0; float: none; width: auto; }
+.radio-list ul { list-style-type: none; margin: 0; padding: 0; }
+.radio-list li { padding: 4px 0; margin: 0; }
+.form-field { float: left; }
+.avatar-field input, .avatar-field img { vertical-align: top; }
+.post-preview .body { padding: 0 12px; }
+#fast-reply { width: 70%; margin: 1em auto 0 auto; }
+  .fast-reply-field { padding: 8px 12px; }
+  .fast-reply-field textarea { width: 98.5%; margin: 0; padding: 3px; }
+  #fast-reply .buttons { text-align: center; }
+  #fast-reply .checkbox-row { text-align: center; padding-top: 0; }
+.post-body-field { margin-right: 1em; margin-bottom: .5em; }
+.quick-help { float: left; }
+  .quick-help table { width: auto; }
+  .quick-help ul, .quick-help li { margin: 0 0 0 1em; padding: 0; }
+  .quick-help blockquote { margin: 0 0 0 2em; }
+.emoticon-help { float: left; }
+  .emoticon-help table { width: auto; }
+  .emoticon-help th, .emoticon-help td { text-align: center; }
+ul.errorlist { margin: 0; padding: 0; }
+  ul.errorlist li { padding: 4px 8px 4px 25px; margin: 0 0 8px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/icon_alert.gif") 5px .3em no-repeat; }
+
+.col-l { float: left; width: 30%; }
+  .forum-profile th, .forum-settings th { width: 30%; }
+.col-r { float: right; width: 70%; }
+  .col-r .last-topics-started { margin-left: 1em; }
+
+#active-users p { margin: 0; }
+
+#footer { clear: both; margin-top: 1em; padding: 4px 0; }
+
+#debug { clear: both; }

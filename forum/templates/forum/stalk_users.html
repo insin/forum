@@ -1,9 +1,9 @@
 {% extends "forum/base.html" %}{
 
 {% block extrahead %}
-<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/DOMBuilder.dom.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}forum/js/DOMBuilder.dom.min.js"></script>
 {{ block.super }}
-<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/Stalk.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}forum/js/Stalk.js"></script>
 {% endblock %}
 
 {% block breadcrumbs %}

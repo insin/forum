@@ -42,10 +42,6 @@ if app_settings.STANDALONE:
     admin.autodiscover()
     urlpatterns += patterns('',
         (r'^accounts/', include('registration.backends.default.urls')),
-        (r'^admin/(.*)', admin.site.root),
+        (r'^admin/', include(admin.site.urls)),
     )
 
-    if settings.DEBUG:
-        urlpatterns += patterns('',
-            (r'^media/forum/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-        )

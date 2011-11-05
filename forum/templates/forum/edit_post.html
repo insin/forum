@@ -1,7 +1,7 @@
 {% extends "forum/base.html" %}{% load forum_tags %}
 {% block extrahead %}
 {{ block.super }}
-<script type="text/javascript" src="{{ MEDIA_URL }}forum/js/PostForm.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}forum/js/PostForm.js"></script>
 {% endblock %}
 {% block main_content %}
 {% if preview %}
