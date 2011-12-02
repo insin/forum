@@ -9,10 +9,13 @@ from django.db import connection, models, transaction
 from django.utils.encoding import smart_unicode
 from django.utils.text import truncate_words
 
-from forum import redis_connection as redis
+from forum import app_settings
 from forum.formatters import post_formatter
 from forum.utils import models as model_utils
 from pytz import common_timezones
+
+if app_settings.USE_REDIS:
+    from forum import redis_connection as redis
 
 __all__ = ['ForumProfile', 'Section', 'Forum', 'Topic',  'Post', 'Search']
 

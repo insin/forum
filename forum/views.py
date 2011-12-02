@@ -19,7 +19,9 @@ from forum import forms
 from forum import moderation
 from forum.formatters import post_formatter
 from forum.models import Forum, ForumProfile, Post, Search, Section, Topic
-from forum import redis_connection as redis
+
+if app_settings.USE_REDIS:
+    from forum import redis_connection as redis
 
 qn = connection.ops.quote_name
 
